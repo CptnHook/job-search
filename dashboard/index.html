@@ -71,6 +71,7 @@ button{cursor:pointer}
 .item.net{border-left-color:var(--info)}
 .item .meta{font-size:13px;color:var(--muted)}
 .item p{margin:0}
+#needsList,#netList{display:flex;flex-direction:column;gap:8px}
 .empty{border:1.5px dashed var(--line);border-radius:10px;padding:18px;color:var(--muted);text-align:center;font-size:14px}
 
 /* tabs */
@@ -154,6 +155,7 @@ textarea{min-height:120px;resize:vertical}
 @media (max-width:760px){.split{grid-template-columns:1fr}}
 .entryform{display:flex;flex-direction:column;gap:10px;max-width:none;padding:14px;background:var(--sunk);border:0}
 .entryform .row{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:560px){.entryform .row{grid-template-columns:1fr}}
 select{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:9px 10px;width:100%}
 .entryform textarea{min-height:80px}
 .timeline{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
@@ -216,8 +218,8 @@ select{border:1px solid var(--line);background:var(--bg);border-radius:8px;paddi
 
   <section class="duo">
     <div class="panel" aria-labelledby="needsH">
-      <div class="panel-h"><h2 id="needsH">Needs you</h2><span class="eyebrow">CAPTCHAs, manual-only sites, errors, limits</span></div>
-      <div id="needsList"><div class="empty">Nothing needs you right now. When an agent can't finish a submission itself, the task and its link land here.</div></div>
+      <div class="panel-h"><h2 id="needsH">Needs you</h2><span class="eyebrow">Follow-ups, manual-only sites, errors, limits</span></div>
+      <div id="needsList"><div class="empty">Nothing needs you right now. Follow-ups that are due, and submissions an agent couldn't finish, land here.</div></div>
     </div>
     <div class="panel" aria-labelledby="netH">
       <div class="panel-h"><h2 id="netH">People to call</h2><span class="eyebrow">Your network at these companies</span></div>
@@ -283,15 +285,20 @@ const STAGE = {
   approved:{t:"Approved",c:"ok"}, submitting:{t:"Submitting",c:"ok"}, submitted:{t:"Submitted",c:"ok"},
   needs_me:{t:"Needs you",c:"warn"}, failed:{t:"Error",c:"crit"},
   recruiter:{t:"Recruiter called",c:"ok"}, interviewing:{t:"Interview cycle",c:"ok"}, negotiating:{t:"Negotiations",c:"ok"},
-  hired:{t:"Job achieved",c:"ok"}, rejected:{t:"Rejected",c:"crit"}, withdrawn:{t:"Withdrawn",c:""},
-  interview:{t:"Interview cycle",c:"ok"}, offer:{t:"Negotiations",c:"ok"}
+  assessment:{t:"Assessment",c:"ok"}, offer:{t:"Offer",c:"ok"},
+  hired:{t:"Job achieved",c:"ok"}, rejected:{t:"Rejected",c:"crit"}, noresponse:{t:"No response",c:""}, withdrawn:{t:"Withdrawn",c:""},
+  interview:{t:"Interview cycle",c:"ok"}
 };
-const PIPE = ["queued","drafting","awaiting_approval","approved","submitting","submitted","needs_me","failed","recruiter","interviewing","negotiating","hired","rejected","withdrawn","interview","offer"];
-// Where Casey is in the process after applying, in order; the last two close a ticket.
-const STEPS = [["submitted","Applied"],["recruiter","Recruiter called"],["interviewing","Interview cycle"],["negotiating","Negotiations"],["hired","Job achieved"]];
-const CLOSERS = [["rejected","Rejected"],["withdrawn","Withdrew"]];
-const KINDS = ["Call","Email","Interview","Feedback","Offer","Note"];
-const ACTIVE = ["recruiter","interviewing","negotiating","interview","offer"];
+const PIPE = ["queued","drafting","awaiting_approval","approved","submitting","submitted","needs_me","failed","recruiter","assessment","interviewing","offer","negotiating","hired","rejected","noresponse","withdrawn","interview"];
+// Where Casey is in the process after applying, in order; the closers end a ticket.
+const STEPS = [["submitted","Applied"],["recruiter","Recruiter called"],["assessment","Assessment"],["interviewing","Interview cycle"],["offer","Offer"],["negotiating","Negotiations"],["hired","Job achieved"]];
+const CLOSERS = [["rejected","Rejected"],["noresponse","No response"],["withdrawn","Withdrew"]];
+const CLOSED = ["rejected","noresponse","withdrawn","hired"];
+const AFTER_APPLY = ["submitted","recruiter","assessment","interviewing","interview","offer","negotiating"]; // open, can stall
+// Timeline entry types. Everything except a note or Casey's own follow-up counts as the company reaching out.
+const KINDS = ["Call","Email","Interview","Feedback","Offer","Follow-up I sent","Note"];
+const INBOUND = ["Call","Email","Interview","Feedback","Offer"];
+const ACTIVE = ["recruiter","assessment","interviewing","offer","negotiating","interview"];
 let db=null, canWrite=true, settings={autoApprove:false,minFitAuto:75}, jobs=[], actions=[], network=[], entries=[];
 let openJob = null;       // job id whose ticket is open
 let ticketDirty = false;  // Casey is typing in the ticket; don't redraw under him
@@ -300,7 +307,7 @@ const openDocs = new Set(); // job ids whose document panel is open
 let deferApprove = false;  // a snapshot arrived while Casey was typing
 // Rules the agents follow, and the coach's suggested changes to them. Agents read only `rules`;
 // a suggestion changes nothing until Casey accepts it here.
-let rules = [], proposals = [];
+let rules = [], proposals = [], transitions = [], requests = [];
 let ruleUi = null;         // {id, mode:"edit"|"reject"} for the open suggestion form
 let rulesDirty = false;    // a snapshot arrived while Casey was typing in the Rules tab
 const ruleDrafts = {};     // what Casey has typed in a suggestion's edit or reject box, by input id
@@ -370,8 +377,15 @@ function renderTicket(){
   const j = jobs.find(x=>x.id===openJob);
   if(!j){ box.innerHTML = `<div class="empty">This application no longer exists.</div>`; return; }
   const st = STAGE[j.stage] || {t:j.stage,c:""};
-  const cur = STEPS.findIndex(s=>s[0]===(j.stage==="interview"?"interviewing":j.stage==="offer"?"negotiating":j.stage));
-  const closed = ["rejected","withdrawn"].includes(j.stage);
+  const cur = STEPS.findIndex(s=>s[0]===(j.stage==="interview"?"interviewing":j.stage));
+  const closed = ["rejected","noresponse","withdrawn"].includes(j.stage);
+  const spans = stageSpans(j), stall = stalled(j);
+  const fuLimit = ruleVal("followupsBeforeCold", 2);
+  const fu = CLOSED.includes(j.stage) ? ""
+    : j.nextFollowupAt ? `Next follow-up <strong>${esc(day(j.nextFollowupAt+"T12:00:00Z"))}</strong>${j.nextFollowupAt<today()?` <span class="chip crit">overdue</span>`:j.nextFollowupAt===today()?` <span class="chip warn">today</span>`:""} · ${esc(j.followupCount||0)} of ${esc(fuLimit)} sent`
+    : goneQuiet(j) ? `${esc(j.followupCount)} follow-ups sent with no reply. <button class="btn" data-act="stage" data-stage="noresponse" data-id="${esc(j.id)}">Mark no response</button>`
+    : ruleVal("followupNeedsContactEmail", true) && !j.contactEmail ? "Follow-ups start when a recruiter or other contact reaches out and you add their email."
+    : "Follow-ups start from the next contact you log.";
   const steps = STEPS.map(([k,t],i)=>`<button class="step ${i<cur?"done":i===cur?"now":""}" data-act="stage" data-stage="${k}" data-id="${esc(j.id)}" ${i===cur?'aria-current="step"':""}>${esc(t)}</button>`).join(`<span class="sep">›</span>`)
     + `<span class="sep">·</span>` + CLOSERS.map(([k,t])=>`<button class="step ${j.stage===k?"closed":""}" data-act="stage" data-stage="${k}" data-id="${esc(j.id)}">${esc(t)}</button>`).join("");
   const ev = entries.filter(e=>e.jobId===j.id).sort((a,b)=>String(b.date||b.createdAt).localeCompare(String(a.date||a.createdAt)));
@@ -381,12 +395,18 @@ function renderTicket(){
     <div class="head" style="align-items:flex-start">
       <div><div class="eyebrow">${esc(j.company||"")}</div><h2>${esc(j.role||"")}</h2>
         <div class="facts"><span class="chip ${st.c}">${esc(st.t)}</span>${j.fit!=null?`<span class="chip num">fit ${esc(j.fit)}</span>`:""}
-        ${salary(j)?`<span class="chip num">${esc(salary(j))}</span>`:""}${j.submittedAt?`<span class="chip">applied ${esc(day(j.submittedAt))}</span>`:""}</div></div>
+        ${salary(j)?`<span class="chip num">${esc(salary(j))}</span>`:""}${j.submittedAt?`<span class="chip">applied ${esc(day(j.submittedAt))}</span>`:""}
+        ${stall?`<span class="chip warn">stalled ${esc(stall)} days</span>`:""}</div></div>
       <div class="acts" style="margin:0">${safeUrl(j.url)?`<a class="link" href="${esc(j.url)}" target="_blank" rel="noopener">Posting</a>`:""}
         ${safeUrl(j.cvDocUrl)?`<a class="link" href="${esc(j.cvDocUrl)}" target="_blank" rel="noopener">Resume</a>`:""}</div>
     </div>
     <div><div class="eyebrow" style="margin-bottom:8px">Where you are</div><div class="steps">${steps}</div>
-      <p class="meta">Click a step to move the ticket; each move is logged below.</p></div>
+      <div class="acts" style="margin-top:8px"><label for="sDate" style="flex-direction:row;align-items:center;gap:8px;font-weight:500">Date of the move
+        <input id="sDate" type="date" value="${today()}" max="${today()}" style="width:auto"></label>
+        <span class="meta">Click a step to move the ticket. Set the date first if it happened earlier.</span></div>
+      ${spans.length?`<div class="facts">${spans.map(x=>`<span class="chip ${x.current?"info":""}">${esc(STAGE[x.stage]?.t||x.stage)} · ${esc(day(x.at.length>10?x.at:x.at+"T12:00:00Z"))} · <span class="num">${esc(x.days)}</span>d${x.source&&!["you","backfill"].includes(x.source)?" · "+esc(x.source):""}</span>`).join("")}</div>`:""}</div>
+    <div class="lesson" style="background:var(--sunk)"><b style="color:var(--ink)">Follow-ups:</b> ${fu}
+      ${j.contactEmail?`<span class="meta"> · Contact: ${esc(j.contactEmail)}</span>`:""}</div>
     <div class="split">
       <section>
         <h3>Log a contact or update</h3>
@@ -396,6 +416,8 @@ function renderTicket(){
             <label for="eDate">Date <input id="eDate" type="date" value="${today()}"></label>
             <label for="eWho">With <input id="eWho" placeholder="e.g. recruiter, hiring manager"></label>
           </div>
+          <label for="eEmail">Their email <span class="hint">Optional. Adding it starts follow-up reminders for this application.</span>
+            <input id="eEmail" type="email" placeholder="name@company.com" value="${esc(j.contactEmail||"")}"></label>
           <label for="eNotes">What happened <textarea id="eNotes" placeholder="Who reached out, what was discussed, next steps"></textarea></label>
           <label for="eLearn">What I learned <span class="hint">About them, the role, or how you came across. This feeds your Learnings.</span>
             <textarea id="eLearn" placeholder="e.g. They care more about release predictability than headcount"></textarea></label>
@@ -476,6 +498,49 @@ function readEditor(r, id){
 const same = (a,b) => JSON.stringify(a)===JSON.stringify(b);
 const typingInRules = () => { const a=document.activeElement; return !!(a && a.closest?.("#v-rules") && a.matches?.("input,textarea,select")); };
 const ruleById = id => rules.find(r=>r.id===id);
+const ruleVal = (id, fallback) => { const v = ruleById(id)?.value; return v===undefined || v===null ? fallback : v; };
+const addDays = (ymd, n) => { const d = new Date((ymd||today())+"T00:00:00Z"); d.setUTCDate(d.getUTCDate()+Number(n||0)); return d.toISOString().slice(0,10); };
+const daysBetween = (a, b) => Math.max(0, Math.round((new Date(b+"T00:00:00Z") - new Date(String(a).slice(0,10)+"T00:00:00Z"))/864e5));
+const validEmail = e => /^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']+$/.test(e||"");
+
+// Stage history for one job, oldest first, with days spent in each stage.
+function stageSpans(j){
+  const ts = transitions.filter(t=>t.jobId===j.id).sort((a,b)=>String(a.at).localeCompare(String(b.at)) || String(a.createdAt).localeCompare(String(b.createdAt)));
+  return ts.map((t,i)=>({stage:t.to, at:t.at, source:t.source, days: daysBetween(t.at, i+1<ts.length ? String(ts[i+1].at).slice(0,10) : today()), current: i===ts.length-1}));
+}
+function stageSince(j){
+  const sp = stageSpans(j); const last = sp[sp.length-1];
+  if(last && last.stage===j.stage) return String(last.at).slice(0,10);
+  return String(j.stageSince || j.submittedAt || j.updatedAt || "").slice(0,10) || null;
+}
+// Days in the current stage when it has run past the stalled rule, else 0.
+function stalled(j){
+  if(!AFTER_APPLY.includes(j.stage)) return 0;
+  const since = stageSince(j); if(!since) return 0;
+  const d = daysBetween(since, today());
+  return d > ruleVal("stalledAfterDays", 14) ? d : 0;
+}
+// Follow-ups (Casey's rule, 2026-10-16): none after a blind application. The first date is set only
+// once a contact with an email reaches out; later contact resets it; Casey's own follow-ups count
+// toward the "gone quiet" limit.
+function followupPatch(j, kind, date, email){
+  const p = {};
+  if(email) p.contactEmail = email;
+  if(CLOSED.includes(j.stage)) return p;
+  const hasEmail = !!(email || j.contactEmail);
+  if(kind==="Follow-up I sent"){
+    const n = (j.followupCount||0) + 1;
+    p.followupCount = n; p.lastFollowupAt = date;
+    p.nextFollowupAt = n >= ruleVal("followupsBeforeCold", 2) ? null : addDays(date, ruleVal("followupAfterResponseDays", 3));
+    return p;
+  }
+  if(INBOUND.includes(kind) && (hasEmail || !ruleVal("followupNeedsContactEmail", true))){
+    p.followupCount = 0;
+    p.nextFollowupAt = addDays(date, kind==="Interview" ? ruleVal("followupAfterInterviewDays", 1) : ruleVal("followupAfterResponseDays", 3));
+  }
+  return p;
+}
+const goneQuiet = j => !CLOSED.includes(j.stage) && !j.nextFollowupAt && (j.followupCount||0) >= ruleVal("followupsBeforeCold", 2);
 
 function proposalCard(p){
   const isNew = p.ruleId==="new";
@@ -605,8 +670,13 @@ function render(){
   const pipe = jobs.filter(j=>PIPE.includes(j.stage));
   $("cReview").textContent = review.length; $("pReview").textContent = review.length;
   $("cApprove").textContent = approve.length; $("pApprove").textContent = approve.length;
-  $("cNeeds").textContent = openActions.length; $("cNeedsBox").classList.toggle("hot", openActions.length>0);
-  $("cSubmitted").textContent = jobs.filter(j=>["submitted","recruiter","interviewing","negotiating","hired","rejected","interview","offer"].includes(j.stage)).length;
+  const fuJobs = jobs.filter(j=>j.nextFollowupAt && !CLOSED.includes(j.stage));
+  const fuDue = fuJobs.filter(j=>j.nextFollowupAt<=today()).sort((a,b)=>a.nextFollowupAt.localeCompare(b.nextFollowupAt));
+  const fuSoon = fuJobs.filter(j=>j.nextFollowupAt>today() && j.nextFollowupAt<=addDays(today(),3)).sort((a,b)=>a.nextFollowupAt.localeCompare(b.nextFollowupAt));
+  const quiet = jobs.filter(goneQuiet);
+  const needN = openActions.length + fuDue.length + quiet.length;
+  $("cNeeds").textContent = needN; $("cNeedsBox").classList.toggle("hot", needN>0);
+  $("cSubmitted").textContent = jobs.filter(j=>[...AFTER_APPLY,"hired","rejected","noresponse"].includes(j.stage)).length;
   $("cInterview").textContent = jobs.filter(j=>ACTIVE.includes(j.stage)).length;
   $("pPipe").textContent = pipe.length;
 
@@ -626,7 +696,7 @@ function render(){
   $("v-pipe").innerHTML = pipe.length ? `<div class="tablewrap"><table><thead><tr><th>Company</th><th>Role</th><th>Status</th><th class="num">Fit</th><th>Updated</th><th>Note</th><th></th></tr></thead><tbody>${
       pipe.sort((a,b)=>String(b.updatedAt||"").localeCompare(String(a.updatedAt||""))).map(j=>{const st=STAGE[j.stage]||{t:j.stage,c:""};
         return `<tr><td>${esc(j.company)}</td><td>${safeUrl(j.url)?`<a href="${esc(j.url)}" target="_blank" rel="noopener">${esc(j.role)}</a>`:esc(j.role)}</td>
-        <td><span class="chip ${st.c}">${esc(st.t)}</span></td><td class="num">${esc(j.fit??"")}</td><td>${esc(day(j.updatedAt))}</td>
+        <td><span class="chip ${st.c}">${esc(st.t)}</span>${stalled(j)?` <span class="chip warn">stalled ${esc(stalled(j))}d</span>`:""}${j.nextFollowupAt&&j.nextFollowupAt<=today()&&!CLOSED.includes(j.stage)?` <span class="chip warn">follow up</span>`:""}</td><td class="num">${esc(j.fit??"")}</td><td>${esc(day(j.updatedAt))}</td>
         <td>${esc(j.note||"")}${entries.some(e=>e.jobId===j.id)?` <span class="chip">${entries.filter(e=>e.jobId===j.id).length} notes</span>`:""}</td>
         <td><button class="btn" data-act="open" data-id="${esc(j.id)}">Open</button></td></tr>`}).join("")
     }</tbody></table></div>` : `<div class="empty">No applications yet.</div>`;
@@ -634,12 +704,25 @@ function render(){
   renderLearn();
   renderRules();
 
-  $("needsList").innerHTML = openActions.length ? openActions.map(a=>`<div class="item">
+  const reqOpen = id => requests.some(r=>r.jobId===id && r.kind==="draft-followup" && r.status!=="done");
+  const fuItem = (j, when) => `<div class="item ${when==="soon"?"net":""}">
+      <div class="eyebrow">Follow-up ${when==="overdue"?"overdue":when==="today"?"due today":"coming up"} · ${esc(j.company||"")}</div>
+      <p><strong>${esc(j.role||"")}</strong></p>
+      <p class="meta">${esc(day(j.nextFollowupAt+"T12:00:00Z"))} · ${esc(j.followupCount||0)} of ${esc(ruleVal("followupsBeforeCold",2))} sent${j.contactEmail?" · "+esc(j.contactEmail):""}</p>
+      <div class="acts" style="margin:0">${reqOpen(j.id)?`<span class="chip info">Draft requested</span>`:`<button class="btn" data-act="draftFollowup" data-id="${esc(j.id)}">Draft follow-up</button>`}
+      <button class="btn" data-act="sentFollowup" data-id="${esc(j.id)}">I sent it</button>
+      <button class="btn" data-act="open" data-id="${esc(j.id)}">Open</button></div></div>`;
+  const fuHtml = [...fuDue.map(j=>fuItem(j, j.nextFollowupAt<today()?"overdue":"today")), ...fuSoon.map(j=>fuItem(j,"soon")),
+    ...quiet.map(j=>`<div class="item"><div class="eyebrow">Gone quiet · ${esc(j.company||"")}</div><p><strong>${esc(j.role||"")}</strong></p>
+      <p class="meta">${esc(j.followupCount)} follow-ups sent with no reply.</p>
+      <div class="acts" style="margin:0"><button class="btn" data-act="stage" data-stage="noresponse" data-id="${esc(j.id)}">Mark no response</button>
+      <button class="btn" data-act="open" data-id="${esc(j.id)}">Open</button></div></div>`)].join("");
+  $("needsList").innerHTML = fuHtml + (openActions.length ? openActions.map(a=>`<div class="item">
       <div class="eyebrow">${esc(a.kind||"Task")}${a.company?" · "+esc(a.company):""}</div>
       <p><strong>${esc(a.title)}</strong></p>${a.detail?`<p class="meta">${esc(a.detail)}</p>`:""}
       <div class="acts" style="margin:0">${safeUrl(a.url)?`<a class="link" href="${esc(a.url)}" target="_blank" rel="noopener">Open</a>`:""}
       <button class="btn" data-act="done" data-id="${esc(a.id)}">Mark done</button></div></div>`).join("")
-    : `<div class="empty">Nothing needs you right now. When an agent can't finish a submission itself, the task and its link land here.</div>`;
+    : fuHtml ? "" : `<div class="empty">Nothing needs you right now. Follow-ups that are due, and submissions an agent couldn't finish, land here.</div>`);
 
   const openNet = network.filter(n=>n.status!=="dismissed");
   $("netList").innerHTML = openNet.length ? openNet.map(n=>`<div class="item net">
@@ -729,13 +812,37 @@ document.addEventListener("click", async ev=>{
   b.disabled=true;
   if(act==="stage"){
     const j = jobs.find(x=>x.id===id), to = b.dataset.stage;
+    const when = ($("sDate")?.value || today()) > today() ? today() : ($("sDate")?.value || today());
     if(j && j.stage!==to){
-      const patch = {stage:to, updatedAt:now()};
-      if(to==="submitted" && !j.submittedAt) patch.submittedAt = now();
+      const patch = {stage:to, stageSince:when, updatedAt:now()};
+      if(to==="submitted" && !j.submittedAt) patch.submittedAt = when===today() ? now() : when;
+      if(CLOSED.includes(to)) patch.nextFollowupAt = null;
+      else if(to==="submitted" && !ruleVal("followupNeedsContactEmail", true) && !j.nextFollowupAt)
+        patch.nextFollowupAt = addDays(when, ruleVal("followupAfterResponseDays", 3));
       await write(db.doc("jobs/"+id), patch, `Moved to ${STAGE[to]?.t||to}.`);
-      try{ await db.collection("entries").add({jobId:id, company:j.company||"", role:j.role||"", kind:"Stage", date:today(),
-        notes:`Moved from ${STAGE[j.stage]?.t||j.stage} to ${STAGE[to]?.t||to}`, stage:to, createdAt:now()}); }catch(e){}
+      try{
+        if(!transitions.some(t=>t.jobId===id))  // first recorded move: keep where it came from
+          await db.collection("transitions").add({jobId:id, company:j.company||"", role:j.role||"", from:"", to:j.stage,
+            at:String(j.stageSince||j.submittedAt||j.updatedAt||when).slice(0,10), source:"backfill", createdAt:now()});
+        await db.collection("transitions").add({jobId:id, company:j.company||"", role:j.role||"", from:j.stage, to, at:when, source:"you", createdAt:now()});
+        await db.collection("entries").add({jobId:id, company:j.company||"", role:j.role||"", kind:"Stage", date:when,
+          notes:`Moved from ${STAGE[j.stage]?.t||j.stage} to ${STAGE[to]?.t||to}`, stage:to, createdAt:now()});
+      }catch(e){}
     }
+    b.disabled=false; return;
+  }
+  if(act==="draftFollowup" || act==="sentFollowup"){
+    const j = jobs.find(x=>x.id===id); if(!j){ b.disabled=false; return; }
+    try{
+      if(act==="draftFollowup"){
+        await db.collection("requests").add({kind:"draft-followup", jobId:id, company:j.company||"", role:j.role||"", status:"open", createdAt:now()});
+        toast("Requested. The draft lands on the ticket; nothing is sent without you.");
+      } else {
+        await db.collection("entries").add({jobId:id, company:j.company||"", role:j.role||"", kind:"Follow-up I sent", date:today(),
+          who:j.contactEmail||"", notes:"", learning:"", stage:j.stage||"", createdAt:now()});
+        await write(db.doc("jobs/"+id), {updatedAt:now(), ...followupPatch(j, "Follow-up I sent", today(), "")}, "Logged. Next reminder set.");
+      }
+    }catch(e){ toast(e?.code==="invalid_argument"?"Only the owner can do this.":"That didn't save. Try again."); }
     b.disabled=false; return;
   }
   if(act==="saveRetro"){
@@ -788,13 +895,16 @@ document.addEventListener("submit", async ev=>{
   const f = ev.target; if(f.id!=="entryForm") return;
   ev.preventDefault(); if(!db) return;
   const jobId = f.dataset.job, j = jobs.find(x=>x.id===jobId) || {};
-  const notes=$("eNotes").value.trim(), learning=$("eLearn").value.trim();
-  if(!notes && !learning){ toast("Add what happened or what you learned."); return; }
+  const notes=$("eNotes").value.trim(), learning=$("eLearn").value.trim(), kind=$("eKind").value;
+  const email=($("eEmail")?.value||"").trim(), date=$("eDate").value||today();
+  if(!notes && !learning && kind!=="Follow-up I sent"){ toast("Add what happened or what you learned."); return; }
+  if(email && !validEmail(email)){ toast("That email doesn't look right."); return; }
   const btn = f.querySelector('button[type="submit"]'); btn.disabled = true;
   try{
-    await db.collection("entries").add({jobId, company:j.company||"", role:j.role||"", kind:$("eKind").value,
-      date:$("eDate").value||today(), who:$("eWho").value.trim(), notes, learning, stage:j.stage||"", createdAt:now()});
-    await write(db.doc("jobs/"+jobId), {updatedAt:now(), lastContactAt:$("eDate").value||today()});
+    await db.collection("entries").add({jobId, company:j.company||"", role:j.role||"", kind,
+      date, who:$("eWho").value.trim(), notes, learning, stage:j.stage||"", createdAt:now()});
+    const fp = followupPatch(j, kind, date, email && email!==j.contactEmail ? email : "");
+    await write(db.doc("jobs/"+jobId), {updatedAt:now(), ...(INBOUND.includes(kind)?{lastContactAt:date}:{}), ...fp});
     toast("Added to the timeline."); document.activeElement?.blur?.(); ticketDirty=false; renderTicket();
   }catch(e){ toast(e?.code==="invalid_argument"?"Only the owner can add notes.":"That didn't save. Try again."); }
   btn.disabled = false;
@@ -841,5 +951,7 @@ render();
   db.collection("network").limit(200).onSnapshot(s=>{ network=s.docs.map(d=>({id:d.id,...d.data()})); render(); }, fail);
   db.collection("rules").limit(100).onSnapshot(s=>{ rules=s.docs.map(d=>({...d.data(),id:d.id})); render(); }, fail);
   db.collection("ruleProposals").limit(300).onSnapshot(s=>{ proposals=s.docs.map(d=>({...d.data(),id:d.id})); render(); }, fail);
+  db.collection("transitions").limit(2000).onSnapshot(s=>{ transitions=s.docs.map(d=>({...d.data(),id:d.id})); render(); }, fail);
+  db.collection("requests").limit(300).onSnapshot(s=>{ requests=s.docs.map(d=>({...d.data(),id:d.id})); render(); }, fail);
 })();
 </script>
