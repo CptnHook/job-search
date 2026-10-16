@@ -1,12 +1,12 @@
-%% Example CV - [YOUR_NAME]
+%% Master CV - Casey Caster
 %% Comprehensive overview of all competencies, experience, and achievements.
 %% Use as a master reference when tailoring role-specific CVs.
 %%
-%% SETUP: Run /setup to populate this with your actual information.
+%% Facts come from 01-candidate-profile.md (Drive profile is the source of truth).
 %% Compile with: lualatex main_example.tex
 %% (pdflatex often fails on modern MiKTeX with fontawesome5 font-expansion errors.)
 
-\documentclass[11pt,a4paper,sans]{moderncv}
+\documentclass[11pt,letterpaper,sans]{moderncv}
 \moderncvstyle{banking}
 \moderncvcolor{blue}
 
@@ -40,7 +40,7 @@
     linkcolor=blue,
     filecolor=magenta,
     urlcolor=blue,
-    pdftitle={[YOUR_NAME] - CV},
+    pdftitle={Casey Caster - CV},
     % Keep pdfpagemode=UseNone: this block runs after moderncv's own
     % \AtEndPreamble (moderncv.cls sets pdfpagemode there), so a FullScreen
     % value here would win and open every CV in fullscreen presentation mode.
@@ -48,15 +48,14 @@
 }}
 \usepackage[scale=0.80]{geometry}
 \usepackage{import}
+\usepackage{needspace}
 
 % personal data
-\name{[First]}{[Last]}
-% If you have no address to list, DELETE this whole line. \address{}{}{} fails
-% with "There's no line here to end" on every moderncv version.
-\address{[Your Address, City, Country]}{}{}
-\phone[mobile]{[+XX XXXXXXXXXX]}
-\email{[your.email@example.com]}
-\extrainfo{\href{[https://linkedin.com/in/your-profile]}{LinkedIn}, \href{[https://github.com/your-username]}{GitHub}}
+\name{Casey}{Caster}
+\address{Pacifica, CA, USA}{}{}
+\phone[mobile]{650.799.9926}
+\email{casey.caster@gmail.com}
+\extrainfo{\href{https://www.linkedin.com/in/caster/}{linkedin.com/in/caster}}
 
 \begin{document}
 
@@ -67,7 +66,7 @@
 % ============================================================
 
 \vspace{6pt}
-\small{[Write a 3-5 line profile statement tailored to the role you're applying for. Focus on what makes you uniquely qualified. Example: "Data scientist with a PhD in [field] and X years of industry experience. Combines deep domain expertise in [domain] with strong applied machine learning and Python development skills. Experienced in developing end-to-end ML pipelines, from data ingestion to stakeholder-facing dashboards."]}
+\small{Strategic operator and product-minded executive with 15+ years scaling capabilities across fintech, blockchain, SaaS, and enterprise technology. Builds functions from the ground up and turns ambiguity into structured, cross-functional programs that unlock efficiency, revenue, and customer success. Works directly with executives on product, operations, and roadmap strategy, and does his best work in high-growth companies of 100--1,000 people.}
 
 % ============================================================
 %     CORE COMPETENCIES
@@ -77,15 +76,17 @@
 \vspace{1pt}
 \begin{itemize}
 
-\item \textbf{[Skill Category 1]}: [Specific skills, frameworks, tools. Be concrete.]
+\item \textbf{Engineering Operations \& Technical Program Management}: Runs internal services and TPM for a cloud database company; 5x engineering velocity through agile transformation and accountability systems.
 
-\item \textbf{[Skill Category 2]}: [Specific skills, frameworks, tools.]
+\item \textbf{Strategy \& Operations / Chief of Staff}: Chief of staff to the CPO and CTO; owns cost optimization, governance, and M\&A programs.
 
-\item \textbf{[Skill Category 3]}: [Specific skills, frameworks, tools.]
+\item \textbf{Cost \& Revenue Optimization}: Cut internal cloud spend 50\%; built a COGS intelligence engine with Finance; rescued \$30M+ in recurring ARR.
 
-\item \textbf{[Skill Category 4]}: [Domain expertise, methods, approaches.]
+\item \textbf{AI Enablement \& Governance}: Leads internal GenAI adoption, governance, and AI tooling across the development stack.
 
-\item \textbf{[Skill Category 5]}: [Tools, platforms, software.]
+\item \textbf{Building \& Scaling Teams}: Grew a global delivery team from 3 to 25 project managers plus 75 engineers and architects; mentored three future CEOs.
+
+\item \textbf{Global Delivery \& Customer Success}: 800+ global implementations; SOW/MSA negotiation; governance with bank C-suite executives.
 
 \end{itemize}
 
@@ -97,84 +98,93 @@
 \vspace{3pt}
 \begin{itemize}
 
-% --- Most Recent Role ---
-\item{\cventry{[YYYY-Present]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+\needspace{5\baselineskip}
+\item{\cventry{2021--Present}{Sr Director, Engineering -- Internal Services \& Technical Program Management (CTO Chief of Staff)}{SingleStore}{San Francisco, CA}{}{\vspace{1pt}
+Strategy and operations for a cloud-native database company in hypergrowth, reporting to the CPO and then the CTO. Managed seven teams.
 \begin{itemize}
-    \item {[Achievement or responsibility 1 - be specific, use numbers where possible]}
-    \item {[Achievement or responsibility 2]}
-    \item {[Achievement or responsibility 3]}
-    \item {[Achievement or responsibility 4]}
+    \item {\textbf{Unlocked \$30M+ in recurring ARR} by rescuing a failing strategic partner integration through a cross-functional realignment.}
+    \item {\textbf{Cut internal cloud spend by 50\%} through cross-team policy reform and usage modeling.}
+    \item {\textbf{Increased engineering velocity 5x} through agile transformation and accountability systems.}
+    \item {\textbf{Launched an internal development platform}, reducing infrastructure bottlenecks by 70\%.}
+    \item {\textbf{Drove internal GenAI adoption} with a governance and ops program, creating and launching internal platforms.}
+    \item {\textbf{Built a COGS intelligence engine} with Finance, aligning growth trends with operational investment decisions.}
+    \item {\textbf{De-risked M\&A} by leading technical due diligence, then integrating acquired teams into core systems and workflows.}
+    \item {\textbf{Leads tooling and AI enablement} across the development stack, expanding engineering leverage.}
 \end{itemize}}}
 
 \vspace{3pt}
 
-% --- Previous Role ---
-\item{\cventry{[YYYY-YYYY]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+\needspace{5\baselineskip}
+\item{\cventry{2016--2020}{Global Head of Program Management, Customer Success}{Ripple, Inc.}{San Francisco, CA}{}{\vspace{1pt}
+Promoted to lead global delivery programs for RippleNet and architect the implementation function.
 \begin{itemize}
-    \item {[Achievement or responsibility 1]}
-    \item {[Achievement or responsibility 2]}
-    \item {[Achievement or responsibility 3]}
+    \item {\textbf{Delivered 800+ global implementations}; built a team of 25 project managers and 75+ indirect partners.}
+    \item {\textbf{Created the RippleNet Committee}, negotiating with C-suite executives of major banks to govern a network handling millions of transactions.}
+    \item {\textbf{Built customer care and infrastructure strategy} for enterprise financial institutions, including SOW and MSA negotiation and fulfillment.}
 \end{itemize}}}
 
 \vspace{3pt}
 
-% --- Earlier Role ---
-\item{\cventry{[YYYY-YYYY]}{[Job Title]}{[Company]}{[City, Country]}{}{\vspace{1pt}
+\needspace{5\baselineskip}
+\item{\cventry{2014--2015}{Senior Program Manager}{Wells Fargo Bank}{San Francisco, CA}{}{\vspace{1pt}
 \begin{itemize}
-    \item {[Achievement or responsibility 1]}
-    \item {[Achievement or responsibility 2]}
+    \item {\textbf{Delivered a \$20M+ digital transformation initiative}, coordinating 300+ testers.}
+    \item {\textbf{Led an upgrade of project portfolio systems} for 10,000+ vendors.}
 \end{itemize}}}
 
+\vspace{3pt}
+
+\needspace{5\baselineskip}
+\item{\cventry{2013--2014}{Senior Program Manager, Head of Continuous Improvement}{Autodesk}{San Francisco, CA}{}{\vspace{1pt}
+\begin{itemize}
+    \item {\textbf{Led portfolio optimization with \$2M+ in savings} and improved user satisfaction.}
+    \item {Analyzed 150+ projects and delivered recommendations to improve efficiency and employee engagement.}
+\end{itemize}}}
+
+\vspace{3pt}
+
+\needspace{5\baselineskip}
+\item{\cventry{2012--2013}{Head of Customer Success}{Engajer}{Mountain View, CA}{}{\vspace{1pt}
+\begin{itemize}
+    \item {Built and led programs supporting 850+ customers of an interactive video platform.}
+    \item {\textbf{Increased revenue 20\% per account}; 85\% retention and 60\% reactivation of dormant accounts.}
+\end{itemize}}}
+
+\vspace{3pt}
+
+\needspace{5\baselineskip}
+\item{\cventry{2010--2012}{Senior Consultant}{Avanade}{San Francisco, CA}{}{\vspace{1pt}
+\begin{itemize}
+    \item {Delivered CRM and communications transformations in utilities and healthcare.}
+    \item {Created a healthcare recovery tracking system to reduce cardiac readmissions.}
+\end{itemize}}}
+
+\end{itemize}
+
+% ============================================================
+%     SELECTED ACCOMPLISHMENTS (resume does not tie these to one role)
+% ============================================================
+
+\section{Selected Accomplishments}
+\vspace{1pt}
+\begin{itemize}
+\item {\textbf{Built a world-class global team from the ground up}: from 3 project managers to 25, plus 75 engineers and architects; 250+ concurrent global projects and 800+ completed over three years.}
+\item {\textbf{Established Ripple's payments network}: membership scheme, governing body, and business rules; enrolled the first 12 banks and grew membership past 200.}
+\item {\textbf{Implemented a \$4M virtual testing network program} with teams in Bangalore and London, saving hundreds of person-hours per test cycle.}
+\item {\textbf{Launched Ford's North American CRM platform} across corporate headquarters and dealerships in the U.S. and Canada.}
+\item {\textbf{Mentored dozens of team members}, three of whom became CEOs at other companies.}
 \end{itemize}
 
 % ============================================================
 %     EDUCATION
 % ============================================================
 
-\section{Education}
+\section{Education \& Certifications}
 \vspace{1pt}
 \begin{itemize}
-
-\item{\cventry{[YYYY-YYYY]}{[Degree] in [Field]}{[Institution]}{[City, Country]}{}{\vspace{1pt}
-Thesis: ``[Thesis Title].'' [Brief description of research focus.]
-}}
-
-\vspace{3pt}
-
-\item{\cventry{[YYYY-YYYY]}{[Degree] in [Field]}{[Institution]}{[City, Country]}{}{\vspace{1pt}
-[Brief description or key topics.]
-}}
-
-\end{itemize}
-
-% ============================================================
-%     LANGUAGES
-% ============================================================
-
-\section{Languages}
-\vspace{1pt}
-\begin{itemize}
-\item {[Language 1] (native), [Language 2] (fluent), [Language 3] (intermediate).}
-\end{itemize}
-
-% ============================================================
-%     PUBLICATIONS (optional)
-% ============================================================
-
-\section{Publications}
-\vspace{1pt}
-\begin{itemize}
-\item {[Author(s)] ([Year]). [Title]. [Journal/Conference]. \href{[DOI_URL]}{DOI link}}
-\end{itemize}
-
-% ============================================================
-%     HONORS AND AWARDS (optional)
-% ============================================================
-
-\section{Honors and Awards}
-\vspace{1pt}
-\begin{itemize}
-\item{\textbf{[Award Name]} -- [Event/Organization] ([Year]).}
+\item{\textbf{MBA} -- Cornell Johnson Graduate School of Management, Ithaca, NY}
+\item{\textbf{BS, Electronic Engineering Technology} -- DeVry University, Pomona, CA}
+\item{\textbf{Project Management Professional (PMP)} -- Project Management Institute}
 \end{itemize}
 
 % ============================================================
