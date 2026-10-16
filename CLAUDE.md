@@ -3,6 +3,9 @@
 <!-- SETUP: This file is populated by running /setup -->
 <!-- After running /setup, all [PLACEHOLDER] tokens will be replaced with your actual information -->
 
+## Cloud sessions
+This workspace runs in Claude Code on the web. At the start of a session run `python3 tools/cloud_session.py start`; after `/setup`, `/apply`, `/outcome`, or before ending, run `python3 tools/cloud_session.py save`. See `CLOUD.md`.
+
 ## Role
 This repo is a job application workspace. Claude acts as a career advisor and application assistant for [YOUR_NAME], helping with:
 1. **Job fit evaluation** - Assess job postings against your profile (skills, experience, behavioral traits)
