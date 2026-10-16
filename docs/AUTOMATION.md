@@ -35,11 +35,20 @@ Rules the drafter and submitter enforce:
 | Path | Fields |
 | --- | --- |
 | `settings/main` | `autoApprove`, `minFitAuto`, `salaryFloor`, `updatedAt` |
-| `jobs/<id>` | `company`, `role`, `stage`, `fit`, `summary`, `holds[]`, `location`, `workMode`, `salaryMin`, `salaryMax`, `currency`, `ats`, `url`, `cvUrl`, `coverUrl`, `requisitionKey`, `approval{by,at}`, `attempts`, `lastError`, `submittedAt`, `note`, `source`, `content` (pasted listings), `context`, `createdAt`, `updatedAt` |
+| `jobs/<id>` | `company`, `role`, `stage`, `fit`, `summary`, `holds[]`, `location`, `workMode`, `salaryMin`, `salaryMax`, `currency`, `ats`, `url`, `cvUrl`, `coverUrl`, `requisitionKey`, `approval{by,at}`, `coverDraft`, `coverText`, `coverEditedByCasey`, `coverEditedAt`, `cvDocUrl`, `cvChanges[]{where,before,after,why,status}`, `attempts`, `lastError`, `submittedAt`, `note`, `source`, `content` (pasted listings), `context`, `createdAt`, `updatedAt` |
 | `actions/<id>` | `kind`, `title`, `detail`, `url`, `company`, `jobId`, `status` (`open`/`done`), `createdAt`, `doneAt` |
 | `network/<id>` | `company`, `forRole`, `jobId`, `name`, `title`, `how` (how Casey knows them), `suggestion`, `profileUrl`, `status` (`new`/`contacted`/`dismissed`) |
 
 Stages: `new` → `review` → `queued` → `drafting` → `awaiting_approval` → `approved` → `submitting` → `submitted` → `interview` / `offer` / `rejected`. Side exits: `backlog`, `declined`, `needs_me`, `failed`, `withdrawn`.
+
+## Reviewing documents before approval
+
+Every application at `awaiting_approval` or `approved` has a **Review and edit documents** panel on the dashboard:
+- **Cover letter:** the drafter writes plain text to both `coverDraft` (its version, never overwritten by Casey) and `coverText` (what gets submitted). Casey edits `coverText` in place; `coverEditedByCasey` marks his version. The dashboard won't approve while he has unsaved edits. At submit time the submitter lays `coverText` out in his letter format; it never regenerates or "improves" text Casey edited.
+- **Resume:** the drafter copies his resume Google Doc per application (`cvDocUrl`) and lists each change in `cvChanges` (`status`: `suggested` or `applied`). Casey can edit the copy directly in Google Docs. At submit time the submitter exports that Doc to PDF as it stands, so Casey's edits win.
+- Approved-but-not-submitted applications stay editable, and Casey can undo the approval until the submitter moves them to `submitting`.
+
+Applying suggested resume changes needs the **Google Docs** connector (Drive alone can copy and export but not edit a Doc). Until it's on, changes stay `suggested` and Casey applies them himself.
 
 ## Resume format
 
