@@ -18,6 +18,7 @@ Starting rules:
 | Follow-ups start only when a contact with an email reaches out | On | Yes |
 | Follow-up after a response / after an interview | 3 / 1 days | Yes |
 | Follow-ups before marking cold | 2 | Yes |
+| Days in one stage before it's flagged as stalled | 14 | Yes |
 | Base salary floor / goal | $300K / $350K | Yes |
 | Match signals, ranked | Access to leadership, high-growth, AI/dev tooling | Yes |
 | Skip reasons that decline a listing outright | Onsite only, salary below floor, below VP | Yes |
@@ -40,9 +41,9 @@ How it works:
 
 | # | Change | What you'll see |
 | --- | --- | --- |
-| A1 | **Stages** add Assessment, Offer (separate from Negotiations), and No response. | Stage bar: Applied → Recruiter called → Assessment → Interview cycle → Offer → Negotiations → Job achieved; closers Rejected, No response, Withdrew. |
-| A2 | **Stage history** with the real event date and source (you, Gmail, agent). Back-dating allowed. | Days in each stage on the ticket; "stalled" flag when a stage runs long. |
-| A3 | **Follow-up engine.** Casey's rule (2026-10-16): no follow-ups after a blind application, since many postings have no contact email. The first follow-up date is set only when a recruiter or other contact reaches out and the ticket has their email; later responses and interviews reset it. | "Follow-ups due" group in *Needs you* (urgent, overdue, upcoming); a "Draft follow-up" button. Drafts follow /outcome's rules: under 150 words, lead with value, never "just checking in". |
+| A1 | (done) **Stages** add Assessment, Offer (separate from Negotiations), and No response. | Stage bar: Applied → Recruiter called → Assessment → Interview cycle → Offer → Negotiations → Job achieved; closers Rejected, No response, Withdrew. |
+| A2 | (done) **Stage history** with the real event date and source (you, Gmail, agent). Back-dating allowed. | Days in each stage on the ticket; "stalled" flag when a stage runs long. |
+| A3 | (done) **Follow-up engine.** Casey's rule (2026-10-16): no follow-ups after a blind application, since many postings have no contact email. The first follow-up date is set only when a recruiter or other contact reaches out and the ticket has their email; later responses and interviews reset it. | "Follow-ups due" group in *Needs you* (urgent, overdue, upcoming); a "Draft follow-up" button. Drafts follow /outcome's rules: under 150 words, lead with value, never "just checking in". |
 | A4 | **Interview debrief** entry type: round (recruiter, hiring manager, peer, panel), interviewer, questions asked each marked strong / solid / gap, process intel (comp mentioned, timeline, next steps, other candidates), verbatim feedback. | A question bank across companies; /interview prep reads past debriefs. |
 | A5 | **Comp tracker** on each ticket: advertised, recruiter-stated, offer, and final figures, each tagged with its source (posting, recruiter verbal, offer letter, contract). | Checked against your floor and goal; warns if a later number contradicts an earlier one you gave. |
 | A6 | **Fit confidence** (High / Medium / Low) next to the fit score, plus a **posting legitimacy** note (age, reposts, apply button live). | Low confidence holds auto-approval (rule above). Legitimacy is informational and doesn't change the score. |

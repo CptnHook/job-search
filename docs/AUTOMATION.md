@@ -41,12 +41,18 @@ Rules the drafter and submitter enforce:
 | `settings/main` | `autoApprove`, `updatedAt` (older `minFitAuto` and `salaryFloor` fields are fallbacks only; the values now live in `rules`) |
 | `rules/<id>` | `id`, `title`, `group`, `type` (`number`/`money`/`bool`/`list`), `unit`, `help`, `value`, `locked`, `order`, `version`, `updatedAt`, `updatedBy`, `history[]{version,value,at,by,note,proposalId}` |
 | `ruleProposals/<id>` | `ruleId` (or `new` with `newRule{id,title,type,unit,group,help}`), `from`, `to`, `why`, `evidence[]`, `sampleSize`, `expectedEffect`, `status` (`proposed`/`accepted`/`rejected`/`snoozed`), `createdAt`, `decidedAt`, `acceptedValue`, `edited`, `note` |
-| `jobs/<id>` | `company`, `role`, `stage`, `fit`, `summary`, `holds[]`, `location`, `workMode`, `salaryMin`, `salaryMax`, `currency`, `ats`, `url`, `cvUrl`, `coverUrl`, `requisitionKey`, `approval{by,at}`, `coverDraft`, `coverText`, `coverEditedByCasey`, `coverEditedAt`, `cvDocUrl`, `cvChanges[]{where,before,after,why,status}`, `attempts`, `lastError`, `submittedAt`, `lastContactAt`, `retro{why,marketable,differently,savedAt}`, `note`, `source`, `content` (pasted listings), `context`, `createdAt`, `updatedAt` |
+| `jobs/<id>` | `company`, `role`, `stage`, `fit`, `summary`, `holds[]`, `location`, `workMode`, `salaryMin`, `salaryMax`, `currency`, `ats`, `url`, `cvUrl`, `coverUrl`, `requisitionKey`, `approval{by,at}`, `coverDraft`, `coverText`, `coverEditedByCasey`, `coverEditedAt`, `cvDocUrl`, `cvChanges[]{where,before,after,why,status}`, `attempts`, `lastError`, `submittedAt`, `stageSince`, `lastContactAt`, `contactEmail`, `nextFollowupAt`, `followupCount`, `lastFollowupAt`, `retro{why,marketable,differently,savedAt}`, `note`, `source`, `content` (pasted listings), `context`, `createdAt`, `updatedAt` |
+| `transitions/<id>` | `jobId`, `company`, `role`, `from`, `to`, `at` (the date it happened, which can be earlier than when it was logged), `source` (`you`, `gmail`, `agent`, or `backfill` for the stage a ticket was in before history started), `createdAt` |
+| `requests/<id>` | `kind` (`draft-followup` for now), `jobId`, `company`, `role`, `status` (`open`/`done`), `result`, `createdAt`, `doneAt`. Agents pick these up; nothing outbound happens without Casey |
 | `actions/<id>` | `kind`, `title`, `detail`, `url`, `company`, `jobId`, `status` (`open`/`done`), `createdAt`, `doneAt` |
 | `entries/<id>` | `jobId`, `company`, `role`, `kind` (`Call`/`Email`/`Interview`/`Feedback`/`Offer`/`Note`/`Stage`), `date`, `who`, `notes`, `learning`, `stage` (ticket stage when logged), `createdAt` |
 | `network/<id>` | `company`, `forRole`, `jobId`, `name`, `title`, `how` (how Casey knows them), `suggestion`, `profileUrl`, `status` (`new`/`contacted`/`dismissed`) |
 
-Stages: `new` → `review` → `queued` → `drafting` → `awaiting_approval` → `approved` → `submitting` → `submitted` (Applied) → `recruiter` (Recruiter called) → `interviewing` (Interview cycle) → `negotiating` (Negotiations) → `hired` (Job achieved). Closers: `rejected`, `withdrawn`. Side exits: `backlog`, `declined`, `needs_me`, `failed`. Older `interview` and `offer` values read as Interview cycle and Negotiations.
+Stages: `new` → `review` → `queued` → `drafting` → `awaiting_approval` → `approved` → `submitting` → `submitted` (Applied) → `recruiter` (Recruiter called) → `assessment` (Assessment) → `interviewing` (Interview cycle) → `offer` (Offer) → `negotiating` (Negotiations) → `hired` (Job achieved). Closers: `rejected`, `noresponse` (No response), `withdrawn`. Side exits: `backlog`, `declined`, `needs_me`, `failed`. An older `interview` value reads as Interview cycle.
+
+Every stage move writes a `transitions` doc with the date it happened, so the ticket shows days in each stage. An open application that sits in one stage longer than the `stalledAfterDays` rule is flagged as stalled.
+
+**Follow-ups** (Casey's rule, 2026-10-16): no reminders after a blind application. The first follow-up date is set only when a contact reaches out and the ticket has their email (`followupNeedsContactEmail`). After that, each call, email, interview, feedback, or offer logged resets the date (`followupAfterResponseDays`, or `followupAfterInterviewDays` after an interview) and the count. Each "Follow-up I sent" adds one; at `followupsBeforeCold` the reminder stops and the ticket shows as gone quiet with a "Mark no response" button. Closing a ticket clears the reminder. Due and overdue follow-ups appear in *Needs you*, with "Draft follow-up" (writes a `requests` doc) and "I sent it".
 
 ## Reviewing documents before approval
 
@@ -60,7 +66,7 @@ Applying suggested resume changes needs the **Google Docs** connector (Drive alo
 ## Tracking an application after it's sent
 
 Each application in the Pipeline tab opens as a ticket:
-- **Where you are:** a step bar (Applied, Recruiter called, Interview cycle, Negotiations, Job achieved, plus Rejected and Withdrew). Each move is logged as a `Stage` entry.
+- **Where you are:** a step bar (Applied, Recruiter called, Assessment, Interview cycle, Offer, Negotiations, Job achieved, plus Rejected, No response, and Withdrew), with a date for moves that happened earlier. Each move is logged as a `Stage` entry and a `transitions` doc.
 - **Timeline:** Casey logs calls, emails, interviews, feedback, and notes as `entries`, each with an optional "What I learned". Recruiter emails and interview invites found by the status-sync agent are proposed the same way.
 - **Retrospective:** when a ticket closes, why he did or didn't get it, what would make him more marketable, and what he'd do differently.
 - **Learnings tab:** every lesson and retrospective across applications. The coach agent reads it and proposes concrete changes: profile facts, resume framing, skills to build, target roles to add or drop.
