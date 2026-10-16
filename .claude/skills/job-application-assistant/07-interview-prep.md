@@ -16,42 +16,65 @@ Keep answers to 1-2 minutes. Be specific. End with what you learned or would do 
 
 <!-- These are populated by /setup from your actual experience. Below are templates showing the format. -->
 
-### 1. [PROJECT_NAME] ([SKILL_DEMONSTRATED])
-**S:** [CONTEXT - what was happening, what was the problem]
-**T:** [YOUR RESPONSIBILITY - what you specifically needed to do]
-**A:** [WHAT YOU DID - specific actions, tools, methods]
-**R:** [OUTCOME - measurable results, adoption, impact]
-**Use for:** "[QUESTION_TYPE_1]", "[QUESTION_TYPE_2]"
+Built from the resume's results. The situation and outcome are documented; the step-by-step actions are only outlined, so Casey should fill in the details (marked *to confirm*) before using them in an interview.
 
-### 2. [PROJECT_NAME] ([SKILL_DEMONSTRATED])
-**S:** [CONTEXT]
-**T:** [YOUR RESPONSIBILITY]
-**A:** [WHAT YOU DID]
-**R:** [OUTCOME]
-**Use for:** "[QUESTION_TYPE_1]", "[QUESTION_TYPE_2]"
+### 1. Rescuing a failing partner integration (cross-functional turnaround)
+**S:** At SingleStore, a strategic partner integration was failing.
+**T:** As the CTO's chief of staff, get it back on track.
+**A:** Led a cross-functional realignment across the teams involved. *(Specific steps to confirm.)*
+**R:** Unlocked $30M+ in recurring ARR.
+**Use for:** "Tell me about a turnaround", "How do you align teams that disagree?"
 
-### 3. [PROJECT_NAME] ([SKILL_DEMONSTRATED])
-**S:** [CONTEXT]
-**T:** [YOUR RESPONSIBILITY]
-**A:** [WHAT YOU DID]
-**R:** [OUTCOME]
-**Use for:** "[QUESTION_TYPE_1]", "[QUESTION_TYPE_2]"
+### 2. Cutting internal cloud spend in half (cost and data-driven change)
+**S:** SingleStore's internal cloud spend was growing during hypergrowth.
+**T:** Reduce it without slowing engineering.
+**A:** Modeled usage and drove policy reform across teams. *(Specifics to confirm.)*
+**R:** Internal cloud spend down 50%. Related: built a COGS intelligence engine with Finance.
+**Use for:** "Tell me about a data-driven decision", "How do you drive change you don't directly control?"
+
+### 3. Launching Ripple's global payments network (building from zero)
+**S:** Ripple needed a payments network of banks using blockchain and digital assets.
+**T:** Create the network's structure and bring in the first members.
+**A:** Created the membership scheme, governing body (RippleNet Committee), and business rules; negotiated with bank C-suite executives.
+**R:** Enrolled the first 12 banks; membership grew past 200.
+**Use for:** "Tell me about something you built from scratch", "How do you influence senior executives?"
+
+### 4. Building a global delivery team (scaling an organization)
+**S:** A global delivery organization had to scale fast. *(Which company: confirm. The resume lists this under Selected Accomplishments, not a specific role.)*
+**T:** Build the team and delivery model.
+**A:** Set the vision and recruited, growing from 3 project managers to 25, plus 75 engineers and architects.
+**R:** 250+ concurrent global projects; 800+ delivered over three years.
+**Use for:** "How do you build and scale teams?", "Tell me about hiring leaders"
+
+### 5. 5x engineering velocity (operating rhythm)
+**S:** SingleStore engineering needed to ship faster.
+**T:** Improve delivery speed and accountability.
+**A:** Led an agile transformation and put accountability systems in place; launched an internal development platform. *(Specifics to confirm.)*
+**R:** Engineering velocity up 5x; infrastructure bottlenecks down 70%.
+**Use for:** "How do you improve team performance?", "Tell me about process change"
+
+### 6. GenAI adoption and governance (AI enablement)
+**S:** SingleStore wanted to adopt GenAI internally, safely.
+**T:** Stand up governance and operations for internal AI use.
+**A:** Ran a governance and ops program and launched internal platforms; leads tooling and AI enablement across the development stack. *(Details, and what the "$8 bug" refers to, to confirm.)*
+**R:** *(Adoption results to confirm.)*
+**Use for:** "How are you using AI?", "Tell me about introducing a new technology"
 
 <!-- Add more STAR examples as needed. Aim for 4-6 covering different competencies. -->
 
 ## Common Tough Questions
 
-### "Why did you leave [previous company]?"
-> [PREPARE YOUR ANSWER - be honest, forward-looking, no negativity about former employer]
+### "Why are you leaving SingleStore?"
+> *(To prepare with Casey.)* Keep it forward-looking and positive about SingleStore.
 
 ### "You don't have [specific skill/experience]."
-> [PREPARE YOUR ANSWER - acknowledge the gap, bridge to adjacent experience, show willingness to learn]
+> Acknowledge the gap, then bridge: he has repeatedly built new functions in unfamiliar areas (blockchain payments, GenAI governance, M&A integration) and learned the domain on the job.
 
 ### "Where do you see yourself in 5 years?"
-> [PREPARE YOUR ANSWER - show ambition aligned with the role's growth path]
+> *(To prepare with Casey.)* Tie it to building and leading a larger function at a high-growth company.
 
 ### "What's your biggest weakness?"
-> [PREPARE YOUR ANSWER - genuine weakness with concrete mitigation strategy]
+> *(To prepare with Casey.)* Must be his own answer; don't invent one.
 
 ### "Why this company specifically?"
 > Customize per company. Must reference: specific projects, company values, market position, or team structure. Never give a generic answer.

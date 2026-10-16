@@ -1,13 +1,10 @@
-# Job Application Assistant for [YOUR_NAME]
-
-<!-- SETUP: This file is populated by running /setup -->
-<!-- After running /setup, all [PLACEHOLDER] tokens will be replaced with your actual information -->
+# Job Application Assistant for Casey Caster
 
 ## Cloud sessions
 This workspace runs in Claude Code on the web. At the start of a session run `python3 tools/cloud_session.py start`; after `/setup`, `/apply`, `/outcome`, or before ending, run `python3 tools/cloud_session.py save`. See `CLOUD.md`.
 
 ## Role
-This repo is a job application workspace. Claude acts as a career advisor and application assistant for [YOUR_NAME], helping with:
+This repo is a job application workspace. Claude acts as a career advisor and application assistant for Casey Caster, helping with:
 1. **Job fit evaluation** - Assess job postings against your profile (skills, experience, behavioral traits)
 2. **CV tailoring** - Adapt existing CV templates (LaTeX/moderncv) to target specific roles
 3. **Cover letter writing** - Draft targeted cover letters using existing templates (LaTeX)
@@ -16,79 +13,81 @@ This repo is a job application workspace. Claude acts as a career advisor and ap
 
 ## Candidate Profile
 
-<!-- This section is auto-populated by /setup. You can also fill it in manually. -->
+Sources: the resume Google Doc "CASEY CASTER Resume_2026" and the profile JSON in Google Drive (`PersonalCommandCenter/casey-caster-profile.json`). Drive is the source of truth; if this file and Drive disagree, Drive wins. Items marked *(to confirm)* are not in either source yet.
 
 ### Identity
-- **Name:** [YOUR_NAME]
-- **Location:** [YOUR_CITY], [YOUR_COUNTRY] ([YOUR_COMMUTE_CONSTRAINTS])
+- **Name:** Casey Caster (legal name, confirmed)
+- **Pronouns:** he/him
+- **Location:** Pacifica, CA, USA (San Francisco Bay Area). Commute, remote, and relocation preferences *(to confirm)*
+- **Contact:** casey.caster@gmail.com | 650.799.9926 | linkedin.com/in/caster
+- **Work authorization:** US citizen; no sponsorship needed now or in the future
 - **Languages:**
   | Language | Level |
   |----------|-------|
-  | [LANGUAGE] | [LEVEL] |
-  <!-- Every language you work in professionally, with your level (CEFR, "native," "professional
-  working proficiency," whatever your CV/LinkedIn use - no need to force it into one scale). An
-  undeclared language is a hard deal-breaker if a posting requires it; a declared language at a
-  lower level than a posting wants is flagged for your own judgment, not auto-rejected. See
-  04-job-evaluation.md's Language Gate. -->
-- **CV language:** [YOUR_CV_LANGUAGE] <!-- English unless your market expects otherwise; /setup asks -->
+  | English | Native *(to confirm)* |
+- **CV language:** English
 
-- **Status:** [YOUR_EMPLOYMENT_STATUS]
-- **LinkedIn headline:** "[YOUR_LINKEDIN_HEADLINE]"
+- **Status:** Employed. Sr Director, Engineering at SingleStore (2021 - present). Start date for a new role: 4 weeks from the offer, or "2 weeks notice" when a form asks for free text
+- **LinkedIn headline:** "Strategy & Operations | Tech-Forward Executive | Builder of High-Impact Programs" (resume headline; LinkedIn's own *(to confirm)*)
 
 ### Education
-<!-- List your degrees, most recent first -->
-- **[DEGREE_LEVEL] in [FIELD]** ([YEAR_START]-[YEAR_END]) - [INSTITUTION]
-  - Thesis: "[THESIS_TITLE]"
-  - Topics: [KEY_TOPICS]
+- **MBA** - Cornell Johnson Graduate School of Management, Ithaca, NY (dates not on resume; LinkedIn shows attendance 2021-2023, unconfirmed)
+- **BS, Electronic Engineering Technology** - DeVry University, Pomona, CA (dates not on resume)
 
 ### Professional Experience
-<!-- List your roles, most recent first -->
-- **[JOB_TITLE]** ([START_DATE] - [END_DATE]) - **[COMPANY]** ([LOCATION])
-  - [KEY_RESPONSIBILITY_1]
-  - [KEY_RESPONSIBILITY_2]
-  - [KEY_ACHIEVEMENT]
+- **Sr Director, Engineering - Internal Services & Technical Program Management (CTO Chief of Staff)** (2021 - Present) - **SingleStore** (San Francisco, CA)
+  - Strategy and operations for a cloud-native database company in hypergrowth; reported to the CPO, then the CTO, in a chief-of-staff role; managed seven teams
+  - Owned cost optimization, M&A, governance, and AI platform operations programs
+  - Unlocked $30M+ recurring ARR by rescuing a failing strategic partner integration; cut internal cloud spend 50%; increased engineering velocity 5x; internal development platform cut infrastructure bottlenecks 70%
+  - Drove internal GenAI adoption (governance and ops program, internal platforms); built a COGS intelligence engine with Finance; led M&A technical due diligence and integration; leads tooling and AI enablement across the development stack
+- **Global Head of Program Management, Customer Success** (2016 - 2020) - **Ripple, Inc.** (San Francisco, CA)
+  - Promoted to lead global delivery for RippleNet and built the implementation function
+  - Delivered 800+ global implementations; built a team of 25 project managers and 75+ indirect partners
+  - Established the RippleNet Committee governance body with bank C-suite executives; network grew to hundreds of members
+- **Senior Program Manager** (2014 - 2015) - **Wells Fargo Bank** (San Francisco, CA)
+  - Delivered a $20M+ digital transformation initiative with 300+ testers; led a project-portfolio systems upgrade for 10,000+ vendors
+- **Senior Program Manager, Head of Continuous Improvement** (2013 - 2014) - **Autodesk** (San Francisco, CA)
+  - Portfolio optimization with $2M+ savings; analyzed 150+ projects for efficiency and engagement
+- **Head of Customer Success** (2012 - 2013) - **Engajer** (Mountain View, CA)
+  - Programs supporting 850+ customers; +20% revenue per account, 85% retention, 60% reactivation of dormant accounts
+- **Senior Consultant** (2010 - 2012) - **Avanade** (San Francisco, CA)
+  - CRM and communications transformations in utilities and healthcare; built a recovery tracking system to reduce cardiac readmissions
 
 ### Technical Skills
-- **Primary:** [YOUR_PRIMARY_SKILLS]
-- **Secondary:** [YOUR_SECONDARY_SKILLS]
-- **Domain:** [YOUR_DOMAIN_EXPERTISE]
-- **Software:** [YOUR_TOOLS_AND_SOFTWARE]
+- **Primary:** Technical program and portfolio management, engineering operations, strategy and operations, building and scaling teams, cross-functional delivery
+- **Secondary:** Cloud cost optimization and COGS analysis, GenAI adoption and governance, M&A technical due diligence and integration, agile transformation, customer success and global implementations, vendor and contract (SOW/MSA) management
+- **Domain:** Cloud databases and SaaS, fintech and payments, blockchain and digital assets, enterprise software, CRM and digital transformation
+- **Software:** Not listed on the resume *(to confirm)*. Uses **Claude Code** for agentic workflows
 
 ### Certifications
-<!-- List relevant certifications with dates -->
-- **[CERTIFICATION_NAME]** - [HOURS]h - completed [DATE]
+- **Project Management Professional (PMP)** - Project Management Institute (issue date and ID differ between two LinkedIn entries; confirm before quoting)
+- **Scrum Master Certified (SMC)** - SCRUMstudy, Dec 2015 (seen on LinkedIn only; confirm before using)
 
 ### Publications
-<!-- List peer-reviewed publications, if any -->
-- [AUTHOR_LIST] ([YEAR]). [TITLE]. [JOURNAL].
+- None
 
 ### Awards
-<!-- List relevant awards, hackathons, competitions -->
-- [AWARD_NAME] - [EVENT] ([YEAR])
+- None listed
 
 ### Behavioral Profile
-<!-- Your behavioral assessment results (PI, DISC, Myers-Briggs, or self-assessment) -->
-- **[TRAIT_1]** - [DESCRIPTION]
-- **[TRAIT_2]** - [DESCRIPTION]
-- **Strengths:** [YOUR_STRENGTHS]
-- **Growth areas:** [YOUR_GROWTH_AREAS]
-- **Thrives in:** [YOUR_IDEAL_ENVIRONMENT]
+No formal assessment on file. From the resume's own words:
+- **Builder, not a maintainer** - stands up new functions, global programs, and teams from scratch
+- **Systems thinker** - turns ambiguity into structured cross-functional programs
+- **Strengths:** data-driven decisions, hiring and developing leaders (mentored three future CEOs), executive alignment, cost and revenue focus
+- **Growth areas:** *(to confirm)*
+- **Thrives in:** high-growth companies of 100-1,000 people where clarity, speed, and structure matter
 
 ### What Excites You
-<!-- What motivates you professionally -->
-- [PASSION_1]
-- [PASSION_2]
+- Building capabilities and organizations from the ground up
+- Turning underused resources into revenue; bridging technology and business
+- AI enablement and engineering leverage
+- *(more to confirm)*
 
 ### Target Sectors
-<!-- Industries and companies you're targeting -->
-- [SECTOR_1]: [EXAMPLE_COMPANIES]
-- [SECTOR_2]: [EXAMPLE_COMPANIES]
+- *(to confirm)* Evidence points to: cloud infrastructure and databases, developer and AI tooling, fintech and payments, enterprise SaaS
 
 ### Deal-breakers
-<!-- Hard constraints on job search. Language requirements are handled separately and
-automatically from your Languages table above - don't duplicate them here. -->
-- [DEALBREAKER_1]
-- [DEALBREAKER_2]
+- *(to confirm)* None recorded yet. Do not apply on Casey's behalf without his review and approval
 
 ## Repo Structure
 - `cv/` - LaTeX CV variants (moderncv template, banking style)

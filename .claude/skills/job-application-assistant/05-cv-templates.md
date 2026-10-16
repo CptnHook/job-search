@@ -59,7 +59,7 @@ Expected output: `Output written on main_<company>_<role>.pdf (2 pages, ...)`. A
     linkcolor=blue,
     filecolor=magenta,
     urlcolor=blue,
-    pdftitle={[YOUR_NAME] - CV},
+    pdftitle={Casey Caster - CV},
     % Keep pdfpagemode=UseNone: this block runs after moderncv's own
     % \AtEndPreamble (moderncv.cls sets pdfpagemode there), so a FullScreen
     % value here would win and open every CV in fullscreen presentation mode.
@@ -69,13 +69,13 @@ Expected output: `Output written on main_<company>_<role>.pdf (2 pages, ...)`. A
 \usepackage{import}
 
 % Personal data
-\name{[FIRST_NAME]}{[LAST_NAME]}
+\name{Casey}{Caster}
 % If you have no address to list, DELETE this whole line. \address{}{}{} fails
 % with "There's no line here to end" on every moderncv version.
-\address{[YOUR_ADDRESS]}{}{}
-\phone[mobile]{[YOUR_PHONE]}
-\email{[YOUR_EMAIL]}
-\extrainfo{\href{[YOUR_LINKEDIN_URL]}{LinkedIn}, \href{[YOUR_GITHUB_URL]}{GitHub}}
+\address{Pacifica, CA, USA}{}{}
+\phone[mobile]{650.799.9926}
+\email{casey.caster@gmail.com}
+\extrainfo{\href{https://www.linkedin.com/in/caster/}{linkedin.com/in/caster}}
 
 \begin{document}
 \makecvtitle
@@ -137,11 +137,14 @@ When the role sits outside your home domain, **lead with the domain-transfer arg
 **Create 2-3 profile statement templates for your main role types:**
 
 <!-- SETUP: These are populated based on your background -->
-**For [YOUR_PRIMARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_1]
+**For engineering operations / technical program management leadership roles:**
+> Engineering operations and technical program leader with 15+ years scaling delivery across cloud infrastructure, fintech, and enterprise SaaS. At SingleStore, runs internal services and TPM as the CTO's chief of staff: cut internal cloud spend 50%, increased engineering velocity 5x, and rescued a partner integration worth $30M+ in recurring ARR. Builds teams and operating systems from the ground up, and leads AI tooling enablement across the development stack.
 
-**For [YOUR_SECONDARY_ROLE_TYPE] roles:**
-> [YOUR_PROFILE_STATEMENT_TEMPLATE_2]
+**For strategy & operations / chief of staff roles:**
+> Strategic operator and product-minded executive with 15+ years in fintech, blockchain, SaaS, and enterprise technology. Turns ambiguity into structured cross-functional programs that unlock efficiency and revenue, from launching Ripple's global payments network with its first 12 banks to building SingleStore's COGS intelligence engine with Finance. Works directly with executives on product, operations, and long-term roadmap strategy; most effective in high-growth companies of 100-1,000 people.
+
+**For customer success / global delivery leadership roles:**
+> Global delivery and customer success leader who built Ripple's implementation function: 800+ implementations, a team of 25 project managers and 75+ partners, and a governance body negotiated with bank C-suites. Earlier, raised revenue per account 20% with 85% retention at Engajer. Combines SOW/MSA negotiation, executive relationships, and program discipline (PMP).
 
 Statements labeled *[Used for: <company>_<role>]* were extracted from archived application drafts by `/setup` Path A. They are **phrasing references, never fact sources**: when drafting from one, every factual claim still comes from `01-candidate-profile.md` - a past tailored draft does not vouch for its own accuracy.
 

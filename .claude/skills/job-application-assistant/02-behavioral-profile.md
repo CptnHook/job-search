@@ -4,51 +4,51 @@ framework_version: 1.0.0
 
 # Behavioral Profile
 
-<!-- SETUP: This file is populated by running /setup -->
-<!-- You can use results from PI, DISC, Myers-Briggs, StrengthsFinder, or a self-assessment -->
+No formal assessment (PI, DISC, Myers-Briggs) is on file. Everything below comes from how Casey describes himself in his resume. Treat it as self-description, and ask him before relying on any part he hasn't confirmed.
 
 ## Overview
-[YOUR_NAME]'s behavioral assessment identifies them as a **[PROFILE_TYPE]** pattern. [1-2 SENTENCE_SUMMARY].
+Casey describes himself as a **builder**: a strategic operator brought in to create new functions, global programs, and teams, rather than to maintain existing ones. He works across technology and business and is drawn to ambiguity that needs structure.
 
 ## Core Behavioral Drives
 
 | Drive | Level | Meaning |
 |-------|-------|---------|
-| [DRIVE_1] | [LEVEL] | [DESCRIPTION] |
-| [DRIVE_2] | [LEVEL] | [DESCRIPTION] |
-| [DRIVE_3] | [LEVEL] | [DESCRIPTION] |
-| [DRIVE_4] | [LEVEL] | [DESCRIPTION] |
+| Building new things | High | "Not a maintainer, a builder": creates programs, functions, and teams from scratch |
+| Structure from ambiguity | High | Turns unclear situations into cross-functional programs with clear accountability |
+| Data-driven decisions | High | Uses modeling and metrics (usage modeling, COGS engine) to make the case |
+| Developing people | High | Hires strong people leaders and mentors (three mentees became CEOs) |
 
 ## Strongest Behaviors
-- **[BEHAVIOR_1]:** [DESCRIPTION]
-- **[BEHAVIOR_2]:** [DESCRIPTION]
-- **[BEHAVIOR_3]:** [DESCRIPTION]
+- **Force multiplier:** raises the output of engineering and delivery organizations (5x velocity, 70% fewer infrastructure bottlenecks)
+- **Executive alignment:** works directly with executives and bank C-suites on strategy, governance, and roadmaps
+- **Cost and revenue focus:** finds money in underused resources (50% cloud savings, $30M+ ARR rescued)
 
 ## How You Work Best
-- [ENVIRONMENT_PREFERENCE_1]
-- [ENVIRONMENT_PREFERENCE_2]
-- [ENVIRONMENT_PREFERENCE_3]
+- High-growth companies of roughly 100-1,000 people
+- Roles where clarity, speed, and structure are mission-critical
+- Close to executive leadership, with room to build
 
 ## Growth Areas (frame positively in applications)
-- **[AREA_1]:** [HOW_TO_FRAME_IT_POSITIVELY]
-- **[AREA_2]:** [HOW_TO_FRAME_IT_POSITIVELY]
+- *(to confirm with Casey)* Do not invent weaknesses for him
 
 ## Mapping to Job Posting Language
 
 When a job posting mentions these keywords, it's a **strong behavioral fit**:
-- [KEYWORD_OR_PHRASE_THAT_MATCHES_YOUR_STYLE]
-- [ANOTHER_KEYWORD]
+- "build from the ground up", "0 to 1", "stand up a new function"
+- "scale", "hypergrowth", "operating rhythm", "chief of staff"
+- "cross-functional", "ambiguity", "drive alignment across executives"
+- "cost efficiency", "FinOps", "AI enablement", "M&A integration"
 
 When a job posting mentions these, flag as **potential friction** (not deal-breaker):
-- [KEYWORD_OR_PHRASE_THAT_MIGHT_CLASH]
-- [ANOTHER_KEYWORD]
+- Pure maintenance or "keep the lights on" roles
+- Very large, slow-moving organizations with little room to build
+- Individual-contributor coding roles
 
 ## Management Style Preferences
-- [WHAT_MANAGEMENT_STYLE_WORKS_FOR_YOU]
-- [WHAT_DOESN'T_WORK]
+- *(to confirm)* The resume shows him reporting to the CPO and CTO and managing seven teams; his preferences aren't recorded
 
 ## Using This in Applications
-- **Cover letters:** [HOW_TO_WEAVE_IN_BEHAVIORAL_STRENGTHS]
-- **CV:** [WHAT_TO_EMPHASIZE]
-- **Interviews:** [WHAT_STAR_EXAMPLES_TO_USE]
-- **Don't overstate:** [WHAT_NOT_TO_CLAIM]
+- **Cover letters:** lead with building and scaling, backed by one or two numbers; keep the tone simple and straightforward
+- **CV:** emphasize built-from-scratch programs, dollar outcomes, and team scale
+- **Interviews:** use the SingleStore ARR rescue, cloud-cost cut, Ripple network launch, and global team build (see `07-interview-prep.md`)
+- **Don't overstate:** he leads AI enablement and governance, not ML research or hands-on engineering; don't explain the "$8 bug" without asking him
