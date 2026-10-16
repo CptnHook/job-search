@@ -69,6 +69,9 @@ Casey prefers his own resume layout. The drafter copies his resume Google Doc pe
 
 ## Build order
 
+Superseded by the phased plan in [PLAN.md](PLAN.md), which also adds rule tuning: agents propose rule changes, Casey accepts them before they take effect. Original order:
+
+
 1. Dashboard (done; source in `dashboard/index.html`)
 2. Resume from his Google Doc
 3. Finder and scorer on a daily schedule
