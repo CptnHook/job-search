@@ -72,6 +72,25 @@ class CloudSessionTests(unittest.TestCase):
         self.assertFalse((self.data / "documents" / "cv" / ".gitkeep").exists())
         self.assertFalse((self.data / ".gitignore").exists())
 
+    def test_start_never_overwrites_tracked_or_unignored_files(self):
+        (self.data / ".gitignore").write_text("", encoding="utf-8")
+        (self.data / "documents" / "cv").mkdir(parents=True)
+        (self.data / "documents" / "cv" / "resume.pdf").write_text("synthetic", encoding="utf-8")
+        (self.data / "documents" / "cv" / ".gitkeep").write_text("stale", encoding="utf-8")
+        (self.data / "notes.md").write_text("not ignored", encoding="utf-8")
+        self.assertEqual(cloud_session.start(self.work, self.data), 0)
+        self.assertEqual((self.work / "documents" / "cv" / "resume.pdf").read_text(encoding="utf-8"), "synthetic")
+        self.assertEqual((self.work / "documents" / "cv" / ".gitkeep").read_text(encoding="utf-8"), "")
+        self.assertFalse((self.work / "notes.md").exists())
+
+    def test_clean_save_still_pushes_an_unpushed_commit(self):
+        (self.work / "job_search_tracker.csv").write_text("company\nExample\n", encoding="utf-8")
+        cloud_session.save(self.work, self.data, push=False)
+        self.assertEqual(cloud_session.save(self.work, self.data), 0)
+        remote_log = subprocess.run(["git", "--git-dir", str(self.remote), "log", "--oneline", "main"],
+                                    capture_output=True, text=True).stdout
+        self.assertIn("Save job-search working files", remote_log)
+
 
 if __name__ == "__main__":
     unittest.main()

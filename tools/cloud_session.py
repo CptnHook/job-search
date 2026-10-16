@@ -85,19 +85,36 @@ def copy(src: Path, dst: Path) -> None:
     shutil.copy2(src, dst)
 
 
+def restorable(repo: Path, paths: list[str]) -> set[str]:
+    """The subset of paths this repo ignores and doesn't track."""
+    if not paths:
+        return set()
+    # check-ignore without --no-index never reports tracked files as ignored.
+    result = subprocess.run(
+        ["git", "-C", str(repo), "check-ignore", "-z", "--stdin"],
+        input="\0".join(paths) + "\0", capture_output=True, text=True)
+    if result.returncode not in (0, 1):
+        raise SystemExit(f"git check-ignore failed in {repo}:\n{result.stderr.strip()}")
+    return {p for p in result.stdout.split("\0") if p}
+
+
 def start(repo: Path, data: Path) -> int:
     if not (data / ".git").is_dir():
         print(f"Data repo not found at {data}. Clone it there or set JOB_SEARCH_DATA_DIR.")
         return 1
     if git(data, "rev-parse", "--verify", "HEAD", check=False).strip():
         git(data, "pull", "--ff-only", "--quiet")
-    restored = 0
-    for rel in data_files(data):
-        if excluded(rel):
-            continue
-        copy(data / rel, repo / rel)
-        restored += 1
-    print(f"Restored {restored} file(s) from {data}.")
+    candidates = [rel for rel in data_files(data) if not excluded(rel)]
+    allowed = restorable(repo, candidates)
+    skipped = [rel for rel in candidates if rel not in allowed]
+    for rel in candidates:
+        if rel in allowed:
+            copy(data / rel, repo / rel)
+    print(f"Restored {len(allowed)} file(s) from {data}.")
+    if skipped:
+        # Only ignored, untracked paths are restored, so working files can
+        # never replace the profile, framework, or settings files git tracks.
+        print(f"Skipped {len(skipped)} path(s) this repo tracks or doesn't ignore: {', '.join(skipped)}")
     return 0
 
 
@@ -113,15 +130,22 @@ def save(repo: Path, data: Path, push: bool = True) -> int:
     for rel in removed:
         (data / rel).unlink()
     git(data, "add", "-A")
-    if not git(data, "status", "--porcelain").strip():
-        print("Nothing changed; data repo is up to date.")
-        return 0
-    stamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-    git(data, "commit", "--quiet", "-m", f"Save job-search working files ({stamp})")
-    if push:
+    changed = bool(git(data, "status", "--porcelain").strip())
+    if changed:
+        stamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+        git(data, "commit", "--quiet", "-m", f"Save job-search working files ({stamp})")
+    else:
+        print("No file changes since the last save.")
+    # Push even when nothing changed: an earlier --no-push save or a failed
+    # push can leave commits that exist only in this container.
+    has_commits = bool(git(data, "rev-parse", "--verify", "HEAD", check=False).strip())
+    if push and has_commits:
         branch = git(data, "branch", "--show-current").strip() or "main"
         git(data, "push", "--quiet", "-u", "origin", branch)
-    print(f"Saved {len(current)} file(s), removed {len(removed)}, to {data}{' and pushed' if push else ''}.")
+    if changed:
+        print(f"Saved {len(current)} file(s), removed {len(removed)}, to {data}{' and pushed' if push else ''}.")
+    elif push and has_commits:
+        print("Data repo is pushed and up to date.")
     return 0
 
 
