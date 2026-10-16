@@ -16,7 +16,14 @@ Sources: resume Google Doc "CASEY CASTER Resume_2026" and the Drive profile JSON
 - **GitHub:** none listed
 - **Status:** Employed at SingleStore. Available 4 weeks from an offer; "2 weeks notice" in free-text fields
 - **Work authorization:** US citizen; no sponsorship needed now or in the future
-- **Constraints:** commute, remote/hybrid, relocation, and travel preferences *(to confirm)*
+- **Constraints:** works in San Francisco today (about a 20-minute commute). Open to anywhere in the SF Bay Area / Peninsula. Remote or hybrid; a few office days a week is fine; no 5-day office. Travel and relocation *(not discussed)*
+
+### Target roles (confirmed 2026-10-16)
+- **Target level:** VP (confirmed 2026-10-16). Titles vary; functions of interest: engineering operations, customer success, program management (PMO/TPM), product management, and similar. Still narrowing where he fits best; treat this as open and revisit as applications come in
+- **Work arrangement:** remote or hybrid preferred; a few office days a week is fine. **No 5-day / fully onsite roles**
+- **Location:** anywhere in the SF Bay Area / Peninsula. Works in San Francisco today (about a 20-minute commute from Pacifica)
+- **Compensation:** base salary over $300K (ideally over $350K), plus bonus and equity
+
 
 ### Languages
 
@@ -35,7 +42,7 @@ Ask before giving any education dates on a form.
 
 ### Certifications
 - **Project Management Professional (PMP)** - Project Management Institute. Two LinkedIn entries show different IDs and issue dates (2013-01 and 2013-06, the latter expiring 2028-06). Ask before giving a license number or dates
-- **Scrum Master Certified (SMC)** - SCRUMstudy, December 2015. Seen on LinkedIn only; confirm before using
+- **Scrum Master Certified (SMC)** - SCRUMstudy, December 2015. **Lapsed (Casey, 2026-10-16): do not list it.** He doesn't want scrum master roles, but can build and run a scrum/agile program
 
 ## Professional Experience
 
@@ -52,6 +59,11 @@ San Francisco, CA
 - **Launched an internal development platform** that reduced infrastructure bottlenecks by 70%
 - **De-risked M&A** by leading technical due diligence, then integrating acquired teams into core systems and workflows
 - **Leads tooling and AI enablement** across the development stack, expanding engineering leverage and driving the "$8 bug" (ask what the "$8 bug" means before explaining it anywhere)
+
+Confirmed by Casey 2026-10-16 (no metrics given yet; ask before quoting numbers):
+- Runs **engineering capacity planning** and **delivery dashboards** for engineering leadership
+- **Owns a P&L** and works with Finance on it
+- **Negotiates with vendors** and **analyzes mergers** (alongside the M&A due diligence above)
 
 Note: the old cover letter calls this role "Engineering Infrastructure & Internal Services". Use the resume title unless Casey says otherwise.
 

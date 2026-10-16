@@ -24,51 +24,52 @@ Secondary (company career pages via Google):
 
 ## Query Categories
 
-Proposed from the resume; Casey still needs to confirm the target titles. All queries are English only.
+Target level is VP (confirmed 2026-10-16) across engineering operations, customer success, program management, and product management. Casey is still narrowing the best fit, so keep all four directions in the search. All queries are English only.
 
-### Priority 1: Engineering operations and technical program leadership
-
-```
-site:linkedin.com/jobs "Head of Engineering Operations" "San Francisco Bay Area"
-site:linkedin.com/jobs "Senior Director, Technical Program Management" United States
-site:boards.greenhouse.io "Director of Technical Program Management" (Remote OR "San Francisco")
-site:jobs.lever.co "Head of TPM" OR "VP, Technical Program Management"
-site:jobs.ashbyhq.com "Engineering Operations" Director
-```
-
-### Priority 2: Strategy & operations / chief of staff
+### Priority 1: Program management / engineering operations (VP)
 
 ```
-site:linkedin.com/jobs "Chief of Staff to the CTO" United States
-site:boards.greenhouse.io "VP, Strategy & Operations" (Remote OR "San Francisco")
-site:jobs.lever.co "Head of Business Operations" "San Francisco"
-site:jobs.ashbyhq.com "Chief of Staff" Engineering
+site:linkedin.com/jobs "VP, Program Management" OR "Vice President, Program Management Office" "San Francisco Bay Area"
+site:linkedin.com/jobs "VP, Engineering Operations" OR "Head of Engineering Operations" United States
+site:boards.greenhouse.io "VP" ("Technical Program Management" OR "PMO") (Remote OR "San Francisco")
+site:jobs.lever.co "VP" "Engineering Operations"
+site:jobs.ashbyhq.com "VP" ("Program Management" OR "Engineering Operations")
+site:myworkdayjobs.com "Vice President" "Program Management" "San Francisco"
 ```
 
-### Priority 3: AI enablement, FinOps, and platform operations
+### Priority 2: Customer success / delivery (VP)
 
 ```
-site:linkedin.com/jobs "Head of AI Enablement" United States
-site:boards.greenhouse.io "AI Operations" Director
-site:linkedin.com/jobs "FinOps" Director "San Francisco Bay Area"
-site:jobs.lever.co "Director, Internal Tools" OR "Developer Productivity" Director
+site:linkedin.com/jobs "VP, Customer Success" OR "VP, Professional Services" "San Francisco Bay Area"
+site:boards.greenhouse.io "VP" ("Customer Success" OR "Implementation" OR "Delivery") (Remote OR "San Francisco")
+site:jobs.lever.co "VP, Customer Success"
+site:jobs.ashbyhq.com "VP" "Customer Success"
 ```
 
-### Priority 4: Global delivery and customer success leadership
+### Priority 3: Strategy & operations / chief of staff (VP)
 
 ```
-site:linkedin.com/jobs "VP, Professional Services" fintech United States
-site:boards.greenhouse.io "Head of Implementation" OR "VP, Customer Success" payments
-site:jobs.lever.co "Global Head of Delivery" "San Francisco"
+site:linkedin.com/jobs "VP, Strategy & Operations" OR "VP, Business Operations" "San Francisco Bay Area"
+site:boards.greenhouse.io "Chief of Staff" (CTO OR "Chief Product") (Remote OR "San Francisco")
+site:jobs.lever.co "VP" "Operations" "San Francisco"
+```
+
+### Priority 4: Product management and AI/platform operations (VP)
+
+```
+site:linkedin.com/jobs "VP, Product" platform "San Francisco Bay Area"
+site:boards.greenhouse.io "VP" ("Product Operations" OR "AI Enablement" OR "Developer Productivity")
+site:jobs.ashbyhq.com "VP" "Product Operations"
 ```
 
 ## Location Filter
 
-Home is Pacifica, CA. Until Casey sets his commute and remote preferences, sort results like this:
-- Remote (US) or San Francisco / Peninsula hybrid - ideal
-- South Bay (Palo Alto, Mountain View, San Jose) hybrid - acceptable
-- East Bay or anything needing more than about 3 office days a week - borderline, flag it
-- Outside the Bay Area with no remote option - too far (relocation not confirmed)
+Home is Pacifica, CA; works in San Francisco today (~20-minute commute). Confirmed 2026-10-16:
+- Remote (US), or hybrid anywhere in the SF Bay Area / Peninsula - ideal
+- A few office days a week - fine
+- 5-day / fully onsite - exclude
+- Outside the Bay Area with no remote option - exclude
+- Base salary range topping out under $300K - exclude when the posting states pay
 
 ## Language Filter
 

@@ -18,7 +18,7 @@ Sources: the resume Google Doc "CASEY CASTER Resume_2026" and the profile JSON i
 ### Identity
 - **Name:** Casey Caster (legal name, confirmed)
 - **Pronouns:** he/him
-- **Location:** Pacifica, CA, USA (San Francisco Bay Area). Commute, remote, and relocation preferences *(to confirm)*
+- **Location:** Pacifica, CA, USA (San Francisco Bay Area). Works in San Francisco today, about a 20-minute commute. Relocation not considered *(not discussed)*
 - **Contact:** casey.caster@gmail.com | 650.799.9926 | linkedin.com/in/caster
 - **Work authorization:** US citizen; no sponsorship needed now or in the future
 - **Languages:**
@@ -40,6 +40,7 @@ Sources: the resume Google Doc "CASEY CASTER Resume_2026" and the profile JSON i
   - Owned cost optimization, M&A, governance, and AI platform operations programs
   - Unlocked $30M+ recurring ARR by rescuing a failing strategic partner integration; cut internal cloud spend 50%; increased engineering velocity 5x; internal development platform cut infrastructure bottlenecks 70%
   - Drove internal GenAI adoption (governance and ops program, internal platforms); built a COGS intelligence engine with Finance; led M&A technical due diligence and integration; leads tooling and AI enablement across the development stack
+  - Runs engineering capacity planning and delivery dashboards; owns a P&L with Finance; negotiates with vendors; analyzes mergers (confirmed 2026-10-16, no metrics yet)
 - **Global Head of Program Management, Customer Success** (2016 - 2020) - **Ripple, Inc.** (San Francisco, CA)
   - Promoted to lead global delivery for RippleNet and built the implementation function
   - Delivered 800+ global implementations; built a team of 25 project managers and 75+ indirect partners
@@ -61,7 +62,7 @@ Sources: the resume Google Doc "CASEY CASTER Resume_2026" and the profile JSON i
 
 ### Certifications
 - **Project Management Professional (PMP)** - Project Management Institute (issue date and ID differ between two LinkedIn entries; confirm before quoting)
-- **Scrum Master Certified (SMC)** - SCRUMstudy, Dec 2015 (seen on LinkedIn only; confirm before using)
+- **Scrum Master Certified (SMC)** - lapsed; do not list (Casey, 2026-10-16). Not seeking scrum master roles, but can build a scrum/agile program
 
 ### Publications
 - None
@@ -83,11 +84,20 @@ No formal assessment on file. From the resume's own words:
 - AI enablement and engineering leverage
 - *(more to confirm)*
 
+### Target Roles & Preferences
+- **Target level:** VP (confirmed 2026-10-16). Titles vary; functions of interest: engineering operations, customer success, program management (PMO/TPM), product management, and similar. Still narrowing where he fits best; treat this as open and revisit as applications come in
+- **Work arrangement:** remote or hybrid preferred; a few office days a week is fine. **No 5-day / fully onsite roles**
+- **Location:** anywhere in the SF Bay Area / Peninsula. Works in San Francisco today (about a 20-minute commute from Pacifica)
+- **Compensation:** base salary over $300K (ideally over $350K), plus bonus and equity
+
 ### Target Sectors
-- *(to confirm)* Evidence points to: cloud infrastructure and databases, developer and AI tooling, fintech and payments, enterprise SaaS
+- Not restricted. Evidence points to: cloud infrastructure and databases, developer and AI tooling, cybersecurity and enterprise SaaS, fintech and payments
 
 ### Deal-breakers
-- *(to confirm)* None recorded yet. Do not apply on Casey's behalf without his review and approval
+- 5-day / fully onsite office roles
+- Base salary below $300K
+- Roles below VP level (consider only with a clear reason)
+- Never apply on Casey's behalf without his review and approval
 
 ## Repo Structure
 - `cv/` - LaTeX CV variants (moderncv template, banking style)
