@@ -11,7 +11,9 @@ https://claude.ai/artifact/Ls27uvPHvxqwyKuhEjoPy3 (private to Casey).
 | Scorer | After the finder; also picks up listings Casey adds on the dashboard | `jobs` at `new`, the profile files | Fit score, summary, holds; stage `review` (or `declined` when a deal-breaker fails) |
 | Drafter | After scoring | `jobs` at `queued` (Casey said yes) | Runs `/apply`; stage `awaiting_approval`, or `approved` when auto-approve is on and no rule holds it |
 | Submitter | Hourly | `jobs` at `approved` | Submits; stage `submitted`, or `needs_me` / `failed` plus an `actions` doc |
-| Network | Alongside the drafter | Casey's LinkedIn `Connections.csv` export in Drive | `network` docs: VP-level (or other useful) people Casey knows at the company |
+| Network | Alongside the drafter | Casey's LinkedIn connections, converted to the Google Sheet "Connections" in Drive folder `1yTxny0rrxNQy9kjCBXv8yIbCHL9qxqYc` (current employer only; never copied into a repo) | `network` docs: VP-level (or other useful) people Casey knows at the company |
+| Status sync | Daily | Gmail (`/gmail-sync`), Google Calendar | Proposes `entries` (recruiter emails, interview invites) and stage moves; Casey confirms on the dashboard |
+| Coach | Weekly, and when a ticket closes | `entries` learnings and `jobs/*.retro` | `insights/main`: patterns across applications, what to build or reframe to be more marketable, profile and resume updates to propose |
 
 Agents write to the dashboard with the `ArtifactData` tool as Casey. The page's data rules allow only the owner to write; anyone it's shared with can only view.
 
@@ -35,11 +37,12 @@ Rules the drafter and submitter enforce:
 | Path | Fields |
 | --- | --- |
 | `settings/main` | `autoApprove`, `minFitAuto`, `salaryFloor`, `updatedAt` |
-| `jobs/<id>` | `company`, `role`, `stage`, `fit`, `summary`, `holds[]`, `location`, `workMode`, `salaryMin`, `salaryMax`, `currency`, `ats`, `url`, `cvUrl`, `coverUrl`, `requisitionKey`, `approval{by,at}`, `coverDraft`, `coverText`, `coverEditedByCasey`, `coverEditedAt`, `cvDocUrl`, `cvChanges[]{where,before,after,why,status}`, `attempts`, `lastError`, `submittedAt`, `note`, `source`, `content` (pasted listings), `context`, `createdAt`, `updatedAt` |
+| `jobs/<id>` | `company`, `role`, `stage`, `fit`, `summary`, `holds[]`, `location`, `workMode`, `salaryMin`, `salaryMax`, `currency`, `ats`, `url`, `cvUrl`, `coverUrl`, `requisitionKey`, `approval{by,at}`, `coverDraft`, `coverText`, `coverEditedByCasey`, `coverEditedAt`, `cvDocUrl`, `cvChanges[]{where,before,after,why,status}`, `attempts`, `lastError`, `submittedAt`, `lastContactAt`, `retro{why,marketable,differently,savedAt}`, `note`, `source`, `content` (pasted listings), `context`, `createdAt`, `updatedAt` |
 | `actions/<id>` | `kind`, `title`, `detail`, `url`, `company`, `jobId`, `status` (`open`/`done`), `createdAt`, `doneAt` |
+| `entries/<id>` | `jobId`, `company`, `role`, `kind` (`Call`/`Email`/`Interview`/`Feedback`/`Offer`/`Note`/`Stage`), `date`, `who`, `notes`, `learning`, `stage` (ticket stage when logged), `createdAt` |
 | `network/<id>` | `company`, `forRole`, `jobId`, `name`, `title`, `how` (how Casey knows them), `suggestion`, `profileUrl`, `status` (`new`/`contacted`/`dismissed`) |
 
-Stages: `new` → `review` → `queued` → `drafting` → `awaiting_approval` → `approved` → `submitting` → `submitted` → `interview` / `offer` / `rejected`. Side exits: `backlog`, `declined`, `needs_me`, `failed`, `withdrawn`.
+Stages: `new` → `review` → `queued` → `drafting` → `awaiting_approval` → `approved` → `submitting` → `submitted` (Applied) → `recruiter` (Recruiter called) → `interviewing` (Interview cycle) → `negotiating` (Negotiations) → `hired` (Job achieved). Closers: `rejected`, `withdrawn`. Side exits: `backlog`, `declined`, `needs_me`, `failed`. Older `interview` and `offer` values read as Interview cycle and Negotiations.
 
 ## Reviewing documents before approval
 
@@ -49,6 +52,16 @@ Every application at `awaiting_approval` or `approved` has a **Review and edit d
 - Approved-but-not-submitted applications stay editable, and Casey can undo the approval until the submitter moves them to `submitting`.
 
 Applying suggested resume changes needs the **Google Docs** connector (Drive alone can copy and export but not edit a Doc). Until it's on, changes stay `suggested` and Casey applies them himself.
+
+## Tracking an application after it's sent
+
+Each application in the Pipeline tab opens as a ticket:
+- **Where you are:** a step bar (Applied, Recruiter called, Interview cycle, Negotiations, Job achieved, plus Rejected and Withdrew). Each move is logged as a `Stage` entry.
+- **Timeline:** Casey logs calls, emails, interviews, feedback, and notes as `entries`, each with an optional "What I learned". Recruiter emails and interview invites found by the status-sync agent are proposed the same way.
+- **Retrospective:** when a ticket closes, why he did or didn't get it, what would make him more marketable, and what he'd do differently.
+- **Learnings tab:** every lesson and retrospective across applications. The coach agent reads it and proposes concrete changes: profile facts, resume framing, skills to build, target roles to add or drop.
+
+Listings added by hand carry only the text, apply link, and Casey's context; the scorer reads salary, location, work mode, and company from the listing.
 
 ## Resume format
 

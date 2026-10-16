@@ -140,6 +140,32 @@ textarea{min-height:120px;resize:vertical}
 .changes del{color:var(--crit);text-decoration-thickness:1px}
 .changes ins{color:var(--ok);text-decoration:none}
 .meta{font-size:13px;color:var(--muted)}
+
+/* application ticket */
+.ticket{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:16px}
+.back{background:none;border:0;color:var(--accent);font-weight:600;padding:0;align-self:flex-start}
+.steps{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.step{border:1px solid var(--line);background:var(--surface);border-radius:20px;padding:6px 12px;font-size:13px;font-weight:600;color:var(--muted)}
+.step.done{background:var(--ok-bg);color:var(--ok);border-color:transparent}
+.step.now{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.step.closed{background:var(--crit-bg);color:var(--crit);border-color:transparent}
+.sep{color:var(--line)}
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+@media (max-width:760px){.split{grid-template-columns:1fr}}
+.entryform{display:flex;flex-direction:column;gap:10px;max-width:none;padding:14px;background:var(--sunk);border:0}
+.entryform .row{grid-template-columns:repeat(3,minmax(0,1fr))}
+select{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:9px 10px;width:100%}
+.entryform textarea{min-height:80px}
+.timeline{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.timeline li{border-left:3px solid var(--line);padding:4px 0 4px 12px;display:flex;flex-direction:column;gap:3px}
+.timeline li.learned{border-left-color:var(--info)}
+.timeline .when{font:500 12px var(--mono);color:var(--muted)}
+.timeline p{margin:0;white-space:pre-wrap}
+.lesson{background:var(--info-bg);color:var(--ink);border-radius:8px;padding:6px 10px;font-size:13.5px}
+.lesson b{color:var(--info);font-weight:600}
+.retro{display:flex;flex-direction:column;gap:10px}
+.retro textarea{min-height:70px}
+.learncard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));
   background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:8px;font-size:14px;z-index:20}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -189,6 +215,7 @@ textarea{min-height:120px;resize:vertical}
       <button class="tab" role="tab" id="t-approve" aria-selected="true" data-view="approve">Approvals <span class="pill num" id="pApprove">0</span></button>
       <button class="tab" role="tab" id="t-review" aria-selected="false" data-view="review">Review queue <span class="pill num" id="pReview">0</span></button>
       <button class="tab" role="tab" id="t-pipe" aria-selected="false" data-view="pipe">Pipeline <span class="pill num" id="pPipe">0</span></button>
+      <button class="tab" role="tab" id="t-learn" aria-selected="false" data-view="learn">Learnings <span class="pill num" id="pLearn">0</span></button>
       <button class="tab" role="tab" id="t-add" aria-selected="false" data-view="add">Add a listing</button>
       <button class="tab" role="tab" id="t-rules" aria-selected="false" data-view="rules">Rules</button>
     </nav>
@@ -196,6 +223,8 @@ textarea{min-height:120px;resize:vertical}
     <div class="view" id="v-approve" role="tabpanel" aria-labelledby="t-approve"></div>
     <div class="view" id="v-review" role="tabpanel" aria-labelledby="t-review" hidden></div>
     <div class="view" id="v-pipe" role="tabpanel" aria-labelledby="t-pipe" hidden></div>
+    <div class="view" id="v-job" role="region" aria-label="Application ticket" hidden></div>
+    <div class="view" id="v-learn" role="tabpanel" aria-labelledby="t-learn" hidden></div>
 
     <div class="view" id="v-add" role="tabpanel" aria-labelledby="t-add" hidden>
       <form id="addForm">
@@ -205,11 +234,7 @@ textarea{min-height:120px;resize:vertical}
           <input id="fUrl" type="url" placeholder="https://"></label>
         <label for="fHow">How to apply, if there's no URL
           <input id="fHow" placeholder="e.g. referral through a friend; email the hiring manager"></label>
-        <div class="row">
-          <label for="fMin">Salary min <input id="fMin" type="number" inputmode="numeric" placeholder="300000"></label>
-          <label for="fMax">Salary max <input id="fMax" type="number" inputmode="numeric" placeholder="350000"></label>
-          <label for="fCur">Currency <input id="fCur" value="USD"></label>
-        </div>
+        <p class="meta" style="margin:0">Salary, location, work mode, and the company are read from the listing when it's scored.</p>
         <label for="fCtx">Your context <span class="hint">Anything the scorer should weigh: you know the hiring manager, dream company, referral.</span>
           <input id="fCtx" placeholder="e.g. I know the CPO from Ripple"></label>
         <div class="acts" style="margin:0"><button class="btn primary" id="addBtn" type="submit">Add listing</button><span id="addMsg" class="meta"></span></div>
@@ -240,11 +265,20 @@ const STAGE = {
   new:{t:"Scoring",c:""}, review:{t:"To review",c:"info"}, backlog:{t:"Backlog",c:""}, declined:{t:"Declined",c:""},
   queued:{t:"Queued to draft",c:"info"}, drafting:{t:"Drafting",c:"info"}, awaiting_approval:{t:"Awaiting approval",c:"warn"},
   approved:{t:"Approved",c:"ok"}, submitting:{t:"Submitting",c:"ok"}, submitted:{t:"Submitted",c:"ok"},
-  needs_me:{t:"Needs you",c:"warn"}, failed:{t:"Error",c:"crit"}, interview:{t:"Interview",c:"ok"},
-  offer:{t:"Offer",c:"ok"}, rejected:{t:"Rejected",c:""}, withdrawn:{t:"Withdrawn",c:""}
+  needs_me:{t:"Needs you",c:"warn"}, failed:{t:"Error",c:"crit"},
+  recruiter:{t:"Recruiter called",c:"ok"}, interviewing:{t:"Interview cycle",c:"ok"}, negotiating:{t:"Negotiations",c:"ok"},
+  hired:{t:"Job achieved",c:"ok"}, rejected:{t:"Rejected",c:"crit"}, withdrawn:{t:"Withdrawn",c:""},
+  interview:{t:"Interview cycle",c:"ok"}, offer:{t:"Negotiations",c:"ok"}
 };
-const PIPE = ["queued","drafting","awaiting_approval","approved","submitting","submitted","needs_me","failed","interview","offer","rejected","withdrawn"];
-let db=null, canWrite=true, settings={autoApprove:false,minFitAuto:75}, jobs=[], actions=[], network=[];
+const PIPE = ["queued","drafting","awaiting_approval","approved","submitting","submitted","needs_me","failed","recruiter","interviewing","negotiating","hired","rejected","withdrawn","interview","offer"];
+// Where Casey is in the process after applying, in order; the last two close a ticket.
+const STEPS = [["submitted","Applied"],["recruiter","Recruiter called"],["interviewing","Interview cycle"],["negotiating","Negotiations"],["hired","Job achieved"]];
+const CLOSERS = [["rejected","Rejected"],["withdrawn","Withdrew"]];
+const KINDS = ["Call","Email","Interview","Feedback","Offer","Note"];
+const ACTIVE = ["recruiter","interviewing","negotiating","interview","offer"];
+let db=null, canWrite=true, settings={autoApprove:false,minFitAuto:75}, jobs=[], actions=[], network=[], entries=[];
+let openJob = null;       // job id whose ticket is open
+let ticketDirty = false;  // Casey is typing in the ticket; don't redraw under him
 const drafts = {};        // unsaved cover-letter edits, by job id (this browser only)
 const openDocs = new Set(); // job ids whose document panel is open
 let deferApprove = false;  // a snapshot arrived while Casey was typing
@@ -258,9 +292,10 @@ function banner(msg,crit){ const b=$("banner"); b.textContent=msg; b.className="
 
 // tabs (remember the last one per viewer)
 function show(view){
-  document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-selected", String(b.dataset.view===view)));
+  document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-selected", String(b.dataset.view===view || (view==="job" && b.dataset.view==="pipe"))));
   document.querySelectorAll(".view").forEach(v=>v.hidden = v.id!=="v-"+view);
-  try{ localStorage.setItem("jh-tab",view) }catch(e){}
+  if(view!=="job") { openJob = null; $("v-job").innerHTML = ""; }
+  if(view!=="job") try{ localStorage.setItem("jh-tab",view) }catch(e){}
 }
 document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>show(b.dataset.view)));
 try{ const t=localStorage.getItem("jh-tab"); if(t && $("v-"+t)) show(t); }catch(e){}
@@ -300,6 +335,91 @@ function jobCard(j, mode){
     <div class="acts">${btns}${links?`<span class="link">${links}</span>`:""}</div>
     ${mode==="approve"||mode==="approved"?docPanel(j):""}
   </article>`;
+}
+
+const today = () => new Date().toISOString().slice(0,10);
+const typingInTicket = () => { const a=document.activeElement; return !!(a && a.closest?.("#v-job") && a.matches?.("input,textarea,select")); };
+
+function renderTicket(){
+  const box = $("v-job");
+  if(!openJob){ box.innerHTML=""; return; }
+  if(typingInTicket()){ ticketDirty = true; return; }
+  ticketDirty = false;
+  const j = jobs.find(x=>x.id===openJob);
+  if(!j){ box.innerHTML = `<div class="empty">This application no longer exists.</div>`; return; }
+  const st = STAGE[j.stage] || {t:j.stage,c:""};
+  const cur = STEPS.findIndex(s=>s[0]===(j.stage==="interview"?"interviewing":j.stage==="offer"?"negotiating":j.stage));
+  const closed = ["rejected","withdrawn"].includes(j.stage);
+  const steps = STEPS.map(([k,t],i)=>`<button class="step ${i<cur?"done":i===cur?"now":""}" data-act="stage" data-stage="${k}" data-id="${esc(j.id)}" ${i===cur?'aria-current="step"':""}>${esc(t)}</button>`).join(`<span class="sep">›</span>`)
+    + `<span class="sep">·</span>` + CLOSERS.map(([k,t])=>`<button class="step ${j.stage===k?"closed":""}" data-act="stage" data-stage="${k}" data-id="${esc(j.id)}">${esc(t)}</button>`).join("");
+  const ev = entries.filter(e=>e.jobId===j.id).sort((a,b)=>String(b.date||b.createdAt).localeCompare(String(a.date||a.createdAt)));
+  const r = j.retro || {};
+  box.innerHTML = `<div class="ticket">
+    <button class="back" data-act="back">‹ Back to pipeline</button>
+    <div class="head" style="align-items:flex-start">
+      <div><div class="eyebrow">${esc(j.company||"")}</div><h2>${esc(j.role||"")}</h2>
+        <div class="facts"><span class="chip ${st.c}">${esc(st.t)}</span>${j.fit!=null?`<span class="chip num">fit ${esc(j.fit)}</span>`:""}
+        ${salary(j)?`<span class="chip num">${esc(salary(j))}</span>`:""}${j.submittedAt?`<span class="chip">applied ${esc(day(j.submittedAt))}</span>`:""}</div></div>
+      <div class="acts" style="margin:0">${safeUrl(j.url)?`<a class="link" href="${esc(j.url)}" target="_blank" rel="noopener">Posting</a>`:""}
+        ${safeUrl(j.cvDocUrl)?`<a class="link" href="${esc(j.cvDocUrl)}" target="_blank" rel="noopener">Resume</a>`:""}</div>
+    </div>
+    <div><div class="eyebrow" style="margin-bottom:8px">Where you are</div><div class="steps">${steps}</div>
+      <p class="meta">Click a step to move the ticket; each move is logged below.</p></div>
+    <div class="split">
+      <section>
+        <h3>Log a contact or update</h3>
+        <form class="entryform" id="entryForm" data-job="${esc(j.id)}">
+          <div class="row">
+            <label for="eKind">Type <select id="eKind">${KINDS.map(k=>`<option>${k}</option>`).join("")}</select></label>
+            <label for="eDate">Date <input id="eDate" type="date" value="${today()}"></label>
+            <label for="eWho">With <input id="eWho" placeholder="e.g. recruiter, hiring manager"></label>
+          </div>
+          <label for="eNotes">What happened <textarea id="eNotes" placeholder="Who reached out, what was discussed, next steps"></textarea></label>
+          <label for="eLearn">What I learned <span class="hint">About them, the role, or how you came across. This feeds your Learnings.</span>
+            <textarea id="eLearn" placeholder="e.g. They care more about release predictability than headcount"></textarea></label>
+          <div class="acts" style="margin:0"><button class="btn primary" type="submit">Add to timeline</button></div>
+        </form>
+      </section>
+      <section>
+        <h3>Timeline</h3>
+        ${ev.length?`<ul class="timeline">${ev.map(e=>`<li class="${e.learning?"learned":""}">
+          <span class="when">${esc(e.date||day(e.createdAt))} · ${esc(e.kind||"Note")}${e.who?" · "+esc(e.who):""}${e.stage&&STAGE[e.stage]?" · "+esc(STAGE[e.stage].t):""}</span>
+          ${e.notes?`<p>${esc(e.notes)}</p>`:""}${e.learning?`<div class="lesson"><b>Learned:</b> ${esc(e.learning)}</div>`:""}</li>`).join("")}</ul>`
+          :`<div class="empty">Nothing logged yet. Add calls, emails, interviews, and feedback as they happen.</div>`}
+      </section>
+    </div>
+    <section class="retro">
+      <h3>${closed||j.stage==="hired"?"Retrospective":"Retrospective (fill in when it closes)"}</h3>
+      <label for="rWhy">Why I did or didn't get it <textarea id="rWhy" placeholder="Feedback you heard, or your honest read">${esc(r.why||"")}</textarea></label>
+      <label for="rMarket">What would make me more marketable <textarea id="rMarket" placeholder="Skills, proof points, or positioning to add">${esc(r.marketable||"")}</textarea></label>
+      <label for="rDiff">What I'd do differently <textarea id="rDiff" placeholder="In the application, the interviews, or the negotiation">${esc(r.differently||"")}</textarea></label>
+      <div class="acts" style="margin:0"><button class="btn primary" data-act="saveRetro" data-id="${esc(j.id)}">Save retrospective</button>
+        ${r.savedAt?`<span class="meta">Saved ${esc(day(r.savedAt))}</span>`:""}</div>
+    </section>
+  </div>`;
+}
+
+function renderLearn(){
+  const withLesson = entries.filter(e=>e.learning);
+  const retros = jobs.filter(j=>j.retro && (j.retro.why||j.retro.marketable||j.retro.differently));
+  $("pLearn").textContent = withLesson.length + retros.length;
+  if(!withLesson.length && !retros.length){
+    $("v-learn").innerHTML = `<div class="empty">No learnings yet. Each note's "What I learned" field and each closed application's retrospective collect here, so patterns across interviews show up in one place.</div>`;
+    return;
+  }
+  const byJob = {};
+  withLesson.forEach(e=>{ (byJob[e.jobId] ||= []).push(e); });
+  const ids = [...new Set([...Object.keys(byJob), ...retros.map(j=>j.id)])];
+  $("v-learn").innerHTML = `<p class="sub">Everything you've learned across applications. The coaching agent reads this to suggest how to position yourself and what to build next.</p>` +
+    ids.map(id=>{ const j = jobs.find(x=>x.id===id) || {}; const ls = (byJob[id]||[]).sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+      const r = j.retro || {};
+      return `<article class="learncard">
+        <div class="head" style="align-items:baseline"><div><div class="eyebrow">${esc(j.company||"")}</div><h3>${esc(j.role||"Application")}</h3></div>
+        <button class="btn" data-act="open" data-id="${esc(id)}">Open ticket</button></div>
+        ${ls.map(e=>`<div class="lesson"><b>${esc(e.date||"")} · ${esc(e.kind||"Note")}:</b> ${esc(e.learning)}</div>`).join("")}
+        ${r.why?`<p><strong>Why:</strong> ${esc(r.why)}</p>`:""}${r.marketable?`<p><strong>More marketable:</strong> ${esc(r.marketable)}</p>`:""}
+        ${r.differently?`<p><strong>Next time:</strong> ${esc(r.differently)}</p>`:""}
+      </article>`; }).join("");
 }
 
 function docPanel(j){
@@ -354,8 +474,8 @@ function render(){
   $("cReview").textContent = review.length; $("pReview").textContent = review.length;
   $("cApprove").textContent = approve.length; $("pApprove").textContent = approve.length;
   $("cNeeds").textContent = openActions.length; $("cNeedsBox").classList.toggle("hot", openActions.length>0);
-  $("cSubmitted").textContent = jobs.filter(j=>["submitted","interview","offer","rejected"].includes(j.stage)).length;
-  $("cInterview").textContent = by("interview").length;
+  $("cSubmitted").textContent = jobs.filter(j=>["submitted","recruiter","interviewing","negotiating","hired","rejected","interview","offer"].includes(j.stage)).length;
+  $("cInterview").textContent = jobs.filter(j=>ACTIVE.includes(j.stage)).length;
   $("pPipe").textContent = pipe.length;
 
   const byFit = (a,b)=>(b.fit??-1)-(a.fit??-1);
@@ -371,11 +491,15 @@ function render(){
   }
   $("v-review").innerHTML = review.length ? review.sort(byFit).map(j=>jobCard(j,"review")).join("")
     : `<div class="empty">The review queue is clear. Scored listings from the finder agent, and listings you add, show up here for a yes or no.</div>`;
-  $("v-pipe").innerHTML = pipe.length ? `<div class="tablewrap"><table><thead><tr><th>Company</th><th>Role</th><th>Status</th><th class="num">Fit</th><th>Updated</th><th>Note</th></tr></thead><tbody>${
+  $("v-pipe").innerHTML = pipe.length ? `<div class="tablewrap"><table><thead><tr><th>Company</th><th>Role</th><th>Status</th><th class="num">Fit</th><th>Updated</th><th>Note</th><th></th></tr></thead><tbody>${
       pipe.sort((a,b)=>String(b.updatedAt||"").localeCompare(String(a.updatedAt||""))).map(j=>{const st=STAGE[j.stage]||{t:j.stage,c:""};
         return `<tr><td>${esc(j.company)}</td><td>${safeUrl(j.url)?`<a href="${esc(j.url)}" target="_blank" rel="noopener">${esc(j.role)}</a>`:esc(j.role)}</td>
-        <td><span class="chip ${st.c}">${esc(st.t)}</span></td><td class="num">${esc(j.fit??"")}</td><td>${esc(day(j.updatedAt))}</td><td>${esc(j.note||"")}</td></tr>`}).join("")
+        <td><span class="chip ${st.c}">${esc(st.t)}</span></td><td class="num">${esc(j.fit??"")}</td><td>${esc(day(j.updatedAt))}</td>
+        <td>${esc(j.note||"")}${entries.some(e=>e.jobId===j.id)?` <span class="chip">${entries.filter(e=>e.jobId===j.id).length} notes</span>`:""}</td>
+        <td><button class="btn" data-act="open" data-id="${esc(j.id)}">Open</button></td></tr>`}).join("")
     }</tbody></table></div>` : `<div class="empty">No applications yet.</div>`;
+  renderTicket();
+  renderLearn();
 
   $("needsList").innerHTML = openActions.length ? openActions.map(a=>`<div class="item">
       <div class="eyebrow">${esc(a.kind||"Task")}${a.company?" · "+esc(a.company):""}</div>
@@ -394,6 +518,7 @@ function render(){
       <button class="btn" data-act="dismiss" data-id="${esc(n.id)}">Dismiss</button></div></div>`).join("")
     : `<div class="empty">No contacts matched yet. The network agent checks each company against your LinkedIn connections and lists anyone worth a call about the role.</div>`;
   document.querySelectorAll("[data-act]").forEach(b=>{
+    if(b.dataset.act==="open" || b.dataset.act==="back") return;
     const idle = b.dataset.act==="saveCover" && (drafts[b.dataset.id]===undefined || drafts[b.dataset.id]===(jobs.find(x=>x.id===b.dataset.id)?.coverText??""));
     b.disabled = !db || !canWrite || idle;
   });
@@ -408,8 +533,28 @@ async function write(ref, data, okMsg){
 }
 const now = () => new Date().toISOString();
 document.addEventListener("click", async ev=>{
-  const b = ev.target.closest("[data-act]"); if(!b || !db) return;
-  const id=b.dataset.id, act=b.dataset.act; b.disabled=true;
+  const b = ev.target.closest("[data-act]"); if(!b) return;
+  const id=b.dataset.id, act=b.dataset.act;
+  if(act==="open"){ openJob = id; show("job"); renderTicket(); window.scrollTo?.({top:$("v-job").offsetTop-20,behavior:"smooth"}); return; }
+  if(act==="back"){ show("pipe"); return; }
+  if(!db) return;
+  b.disabled=true;
+  if(act==="stage"){
+    const j = jobs.find(x=>x.id===id), to = b.dataset.stage;
+    if(j && j.stage!==to){
+      const patch = {stage:to, updatedAt:now()};
+      if(to==="submitted" && !j.submittedAt) patch.submittedAt = now();
+      await write(db.doc("jobs/"+id), patch, `Moved to ${STAGE[to]?.t||to}.`);
+      try{ await db.collection("entries").add({jobId:id, company:j.company||"", role:j.role||"", kind:"Stage", date:today(),
+        notes:`Moved from ${STAGE[j.stage]?.t||j.stage} to ${STAGE[to]?.t||to}`, stage:to, createdAt:now()}); }catch(e){}
+    }
+    b.disabled=false; return;
+  }
+  if(act==="saveRetro"){
+    await write(db.doc("jobs/"+id), {retro:{why:$("rWhy").value.trim(), marketable:$("rMarket").value.trim(),
+      differently:$("rDiff").value.trim(), savedAt:now()}, updatedAt:now()}, "Retrospective saved.");
+    b.disabled=false; document.activeElement?.blur?.(); renderTicket(); return;
+  }
   const J = db.doc("jobs/"+id);
   const job = jobs.find(x=>x.id===id);
   if(act==="approve" && drafts[id]!==undefined && drafts[id]!==(job?.coverText??"")){
@@ -444,6 +589,22 @@ document.addEventListener("input", ev=>{
 });
 document.addEventListener("focusout", ev=>{
   if(ev.target.matches?.("textarea[data-cover]") && deferApprove) setTimeout(render,0);
+  if(ticketDirty) setTimeout(()=>{ if(!typingInTicket()) renderTicket(); },0);
+});
+document.addEventListener("submit", async ev=>{
+  const f = ev.target; if(f.id!=="entryForm") return;
+  ev.preventDefault(); if(!db) return;
+  const jobId = f.dataset.job, j = jobs.find(x=>x.id===jobId) || {};
+  const notes=$("eNotes").value.trim(), learning=$("eLearn").value.trim();
+  if(!notes && !learning){ toast("Add what happened or what you learned."); return; }
+  const btn = f.querySelector('button[type="submit"]'); btn.disabled = true;
+  try{
+    await db.collection("entries").add({jobId, company:j.company||"", role:j.role||"", kind:$("eKind").value,
+      date:$("eDate").value||today(), who:$("eWho").value.trim(), notes, learning, stage:j.stage||"", createdAt:now()});
+    await write(db.doc("jobs/"+jobId), {updatedAt:now(), lastContactAt:$("eDate").value||today()});
+    toast("Added to the timeline."); document.activeElement?.blur?.(); ticketDirty=false; renderTicket();
+  }catch(e){ toast(e?.code==="invalid_argument"?"Only the owner can add notes.":"That didn't save. Try again."); }
+  btn.disabled = false;
 });
 document.addEventListener("toggle", ev=>{
   const d = ev.target; if(!d.matches?.("details[data-docs]")) return;
@@ -467,9 +628,8 @@ $("addForm").addEventListener("submit", async ev=>{
   $("addBtn").disabled=true;
   try{
     await db.collection("jobs").add({stage:"new",source:"manual",content,url:safeUrl(url),howToApply:how,
-      salaryMin:Number($("fMin").value)||null,salaryMax:Number($("fMax").value)||null,currency:$("fCur").value||"USD",
       context:$("fCtx").value.trim(),createdAt:now(),updatedAt:now()});
-    $("addForm").reset(); $("fCur").value="USD"; $("addMsg").textContent="Saved. The scorer will move it to the review queue.";
+    $("addForm").reset(); $("addMsg").textContent="Saved. The scorer will move it to the review queue.";
   }catch(e){ $("addMsg").textContent = e?.code==="quota_exceeded" ? "The store is full. Clear old declined listings first." : "That didn't save. Try again."; }
   $("addBtn").disabled=false;
 });
@@ -484,6 +644,7 @@ render();
   db.doc("settings/main").onSnapshot(s=>{ if(s.exists) settings={autoApprove:false,minFitAuto:75,...s.data()}; render(); }, fail);
   db.collection("jobs").limit(500).onSnapshot(s=>{ jobs=s.docs.map(d=>({id:d.id,...d.data()})); render(); }, fail);
   db.collection("actions").limit(200).onSnapshot(s=>{ actions=s.docs.map(d=>({id:d.id,...d.data()})); render(); }, fail);
+  db.collection("entries").limit(1000).onSnapshot(s=>{ entries=s.docs.map(d=>({id:d.id,...d.data()})); render(); }, fail);
   db.collection("network").limit(200).onSnapshot(s=>{ network=s.docs.map(d=>({id:d.id,...d.data()})); render(); }, fail);
 })();
 </script>

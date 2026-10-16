@@ -89,6 +89,7 @@ No formal assessment on file. From the resume's own words:
 - **Work arrangement:** remote or hybrid preferred; a few office days a week is fine. **No 5-day / fully onsite roles**
 - **Location:** anywhere in the SF Bay Area / Peninsula. Works in San Francisco today (about a 20-minute commute from Pacifica)
 - **Compensation:** base salary over $300K (ideally over $350K), plus bonus and equity
+- **Match signals, strongest first:** access to leadership (reports to or works with the C-suite); high-growth company; AI or developer tooling
 
 ### Target Sectors
 - Not restricted. Evidence points to: cloud infrastructure and databases, developer and AI tooling, cybersecurity and enterprise SaaS, fintech and payments
