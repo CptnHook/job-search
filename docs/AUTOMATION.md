@@ -15,6 +15,8 @@ https://claude.ai/artifact/Ls27uvPHvxqwyKuhEjoPy3 (private to Casey).
 | Status sync | Daily | Gmail (`/gmail-sync`), Google Calendar | Proposes `entries` (recruiter emails, interview invites) and stage moves; Casey confirms on the dashboard |
 | Coach | Weekly, and when a ticket closes | `entries` learnings and `jobs/*.retro` | `insights/main`: patterns across applications, what to build or reframe to be more marketable, profile and resume updates to propose |
 
+Every threshold and policy an agent applies comes from the `rules` collection, read at the start of each run. Agents never write `rules`; the coach writes suggestions to `ruleProposals`, and only Casey's Accept on the Rules tab changes a rule (see [PLAN.md](PLAN.md#rule-tuning-built-in-phase-a-used-by-every-later-phase)). Locked rules can't be changed from a suggestion.
+
 Agents write to the dashboard with the `ArtifactData` tool as Casey. The page's data rules allow only the owner to write; anyone it's shared with can only view.
 
 ## Approval switch and rules
@@ -29,14 +31,16 @@ Rules the drafter and submitter enforce:
 3. **Manual-only sites.** CAPTCHA, a required account sign-up (Workday), or LinkedIn Easy Apply (automating it breaks LinkedIn's terms): don't attempt. Set stage `needs_me` and add an `actions` doc with the apply link and the prepared resume, cover letter, and form answers.
 4. **One automatic attempt.** A submission that errors is not retried. Set stage `failed`, record `lastError` and `attempts`, and add an `actions` doc. Anything that might have gone through (timeout after clicking Submit) is treated as possibly submitted: Casey checks before any retry.
 5. **Deal-breakers.** Fully onsite, a posted top salary under $300K, or below VP level: never auto-approved; usually declined at scoring.
-6. **Low or unclear fit.** Fit below `settings/main.minFitAuto` (75), or an open question such as unconfirmed office days, adds a hold.
+6. **Low or unclear fit.** Fit below the `minFitAuto` rule (75 to start), or an open question such as unconfirmed office days, adds a hold.
 7. **Proof.** Every submission saves a confirmation screenshot to `job-search-data`, updates `job_search_tracker.csv` to `applied`, and sets `submittedAt`.
 
 ## Dashboard data model
 
 | Path | Fields |
 | --- | --- |
-| `settings/main` | `autoApprove`, `minFitAuto`, `salaryFloor`, `updatedAt` |
+| `settings/main` | `autoApprove`, `updatedAt` (older `minFitAuto` and `salaryFloor` fields are fallbacks only; the values now live in `rules`) |
+| `rules/<id>` | `id`, `title`, `group`, `type` (`number`/`money`/`bool`/`list`), `unit`, `help`, `value`, `locked`, `order`, `version`, `updatedAt`, `updatedBy`, `history[]{version,value,at,by,note,proposalId}` |
+| `ruleProposals/<id>` | `ruleId` (or `new` with `newRule{id,title,type,unit,group,help}`), `from`, `to`, `why`, `evidence[]`, `sampleSize`, `expectedEffect`, `status` (`proposed`/`accepted`/`rejected`/`snoozed`), `createdAt`, `decidedAt`, `acceptedValue`, `edited`, `note` |
 | `jobs/<id>` | `company`, `role`, `stage`, `fit`, `summary`, `holds[]`, `location`, `workMode`, `salaryMin`, `salaryMax`, `currency`, `ats`, `url`, `cvUrl`, `coverUrl`, `requisitionKey`, `approval{by,at}`, `coverDraft`, `coverText`, `coverEditedByCasey`, `coverEditedAt`, `cvDocUrl`, `cvChanges[]{where,before,after,why,status}`, `attempts`, `lastError`, `submittedAt`, `lastContactAt`, `retro{why,marketable,differently,savedAt}`, `note`, `source`, `content` (pasted listings), `context`, `createdAt`, `updatedAt` |
 | `actions/<id>` | `kind`, `title`, `detail`, `url`, `company`, `jobId`, `status` (`open`/`done`), `createdAt`, `doneAt` |
 | `entries/<id>` | `jobId`, `company`, `role`, `kind` (`Call`/`Email`/`Interview`/`Feedback`/`Offer`/`Note`/`Stage`), `date`, `who`, `notes`, `learning`, `stage` (ticket stage when logged), `createdAt` |
