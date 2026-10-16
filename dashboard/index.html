@@ -166,6 +166,21 @@ select{border:1px solid var(--line);background:var(--bg);border-radius:8px;paddi
 .retro{display:flex;flex-direction:column;gap:10px}
 .retro textarea{min-height:70px}
 .learncard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+/* rules and suggested changes */
+.rulegrid{display:flex;flex-direction:column;gap:10px;max-width:860px}
+.rulecard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.rulecard.locked{background:var(--sunk)}
+.rulecard.prop{border-left:4px solid var(--info)}
+.rulecard .val{font:600 15px/1.4 var(--mono);font-variant-numeric:tabular-nums}
+.rulecard ol.vals{margin:0;padding-left:20px;font:500 14px/1.5 var(--body)}
+.cmp{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+@media (max-width:560px){.cmp{grid-template-columns:1fr}}
+.cmp > div{background:var(--sunk);border-radius:8px;padding:8px 10px;min-width:0}
+.cmp > div.to{background:var(--info-bg)}
+.hist{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:13.5px}
+.hist li{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline}
+.editbox{display:flex;flex-direction:column;gap:8px;background:var(--sunk);border-radius:8px;padding:10px}
+.editbox textarea{min-height:80px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));
   background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:8px;font-size:14px;z-index:20}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -217,7 +232,7 @@ select{border:1px solid var(--line);background:var(--bg);border-radius:8px;paddi
       <button class="tab" role="tab" id="t-pipe" aria-selected="false" data-view="pipe">Pipeline <span class="pill num" id="pPipe">0</span></button>
       <button class="tab" role="tab" id="t-learn" aria-selected="false" data-view="learn">Learnings <span class="pill num" id="pLearn">0</span></button>
       <button class="tab" role="tab" id="t-add" aria-selected="false" data-view="add">Add a listing</button>
-      <button class="tab" role="tab" id="t-rules" aria-selected="false" data-view="rules">Rules</button>
+      <button class="tab" role="tab" id="t-rules" aria-selected="false" data-view="rules">Rules <span class="pill num" id="pRules">0</span></button>
     </nav>
 
     <div class="view" id="v-approve" role="tabpanel" aria-labelledby="t-approve"></div>
@@ -242,6 +257,7 @@ select{border:1px solid var(--line);background:var(--bg);border-radius:8px;paddi
     </div>
 
     <div class="view" id="v-rules" role="tabpanel" aria-labelledby="t-rules" hidden>
+      <div id="rulesLive"></div>
       <div class="rules">
         <h3>How approval works</h3>
         <p class="sub">The switch decides who approves. These rules always win: an application they flag waits for you even with auto-approve on.</p>
@@ -282,6 +298,12 @@ let ticketDirty = false;  // Casey is typing in the ticket; don't redraw under h
 const drafts = {};        // unsaved cover-letter edits, by job id (this browser only)
 const openDocs = new Set(); // job ids whose document panel is open
 let deferApprove = false;  // a snapshot arrived while Casey was typing
+// Rules the agents follow, and the coach's suggested changes to them. Agents read only `rules`;
+// a suggestion changes nothing until Casey accepts it here.
+let rules = [], proposals = [];
+let ruleUi = null;         // {id, mode:"edit"|"reject"} for the open suggestion form
+let rulesDirty = false;    // a snapshot arrived while Casey was typing in the Rules tab
+const ruleDrafts = {};     // what Casey has typed in a suggestion's edit or reject box, by input id
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const money = n => n ? "$"+Math.round(n/1000)+"K" : "";
@@ -422,6 +444,116 @@ function renderLearn(){
       </article>`; }).join("");
 }
 
+// rule values: number, money (dollars), days, bool (on/off), list (ranked strings)
+function fmtVal(r, v){
+  const t = r?.type;
+  if(v===undefined || v===null) return `<span class="meta">not set</span>`;
+  if(t==="bool" || typeof v==="boolean") return v ? "On" : "Off";
+  if(t==="list" || Array.isArray(v)) return Array.isArray(v) && v.length ? `<ol class="vals">${v.map(x=>`<li>${esc(x)}</li>`).join("")}</ol>` : `<span class="meta">none</span>`;
+  if(t==="money") return esc("$"+Number(v).toLocaleString("en-US"));
+  return esc(v) + (r?.unit ? " "+esc(r.unit) : "");
+}
+function editorFor(r, v, id){
+  if(ruleDrafts[id]!==undefined && (r?.type||"")!=="bool") return (r?.type==="list")
+    ? `<textarea id="${id}" aria-label="One per line, strongest first">${esc(ruleDrafts[id])}</textarea><span class="meta">One per line, in order.</span>`
+    : `<input id="${id}" type="number" inputmode="decimal" value="${esc(ruleDrafts[id])}">`;
+  const t = r?.type || (typeof v==="boolean"?"bool":Array.isArray(v)?"list":"number");
+  if(t==="bool") return `<select id="${id}"><option value="true" ${v?"selected":""}>On</option><option value="false" ${v?"":"selected"}>Off</option></select>`;
+  if(t==="list") return `<textarea id="${id}" aria-label="One per line, strongest first">${esc((v||[]).join("\n"))}</textarea><span class="meta">One per line, in order.</span>`;
+  return `<input id="${id}" type="number" inputmode="decimal" value="${esc(v??"")}">`;
+}
+// Returns {ok, value} or {ok:false, msg}.
+function readEditor(r, id){
+  const el = $(id); if(!el) return {ok:false, msg:"Open the editor first."};
+  const t = r?.type || "number";
+  if(t==="bool") return {ok:true, value: el.value==="true"};
+  if(t==="list"){ const v = el.value.split("\n").map(s=>s.trim()).filter(Boolean);
+    return v.length ? {ok:true, value:v} : {ok:false, msg:"Add at least one line."}; }
+  const n = Number(el.value);
+  if(el.value.trim()==="" || !isFinite(n) || n<0) return {ok:false, msg:"Enter a number of zero or more."};
+  return {ok:true, value:n};
+}
+const same = (a,b) => JSON.stringify(a)===JSON.stringify(b);
+const typingInRules = () => { const a=document.activeElement; return !!(a && a.closest?.("#v-rules") && a.matches?.("input,textarea,select")); };
+const ruleById = id => rules.find(r=>r.id===id);
+
+function proposalCard(p){
+  const isNew = p.ruleId==="new";
+  const r = isNew ? (p.newRule||{}) : ruleById(p.ruleId);
+  const title = isNew ? `New rule: ${p.newRule?.title||"untitled"}` : (r?.title || p.ruleId);
+  const locked = !isNew && r?.locked;
+  const missing = !isNew && !r;
+  const taken = isNew && p.newRule?.id && ruleById(p.newRule.id);
+  const stale = !isNew && r && p.from!==undefined && !same(r.value, p.from);
+  const ev = Array.isArray(p.evidence) ? p.evidence : (p.evidence ? [p.evidence] : []);
+  const blocked = locked || missing || taken;
+  const open = ruleUi?.id===p.id ? ruleUi.mode : null;
+  return `<article class="rulecard prop">
+    <div class="head" style="align-items:baseline"><div><div class="eyebrow">Suggested change${p.sampleSize?` · based on <span class="num">${esc(p.sampleSize)}</span> closed applications`:""}</div>
+      <h3>${esc(title)}</h3></div>${p.createdAt?`<span class="meta">${esc(day(p.createdAt))}</span>`:""}</div>
+    <div class="cmp"><div><div class="eyebrow">Now</div><div class="val">${isNew?`<span class="meta">doesn't exist yet</span>`:fmtVal(r, r?.value)}</div></div>
+      <div class="to"><div class="eyebrow">Suggested</div><div class="val">${fmtVal(r, p.to)}</div></div></div>
+    ${p.why?`<p style="margin:0">${esc(p.why)}</p>`:""}
+    ${ev.length?`<ul class="meta" style="margin:0;padding-left:18px">${ev.map(e=>`<li>${esc(typeof e==="string"?e:JSON.stringify(e))}</li>`).join("")}</ul>`:""}
+    ${p.expectedEffect?`<p class="meta" style="margin:0"><strong>Expected effect:</strong> ${esc(p.expectedEffect)}</p>`:""}
+    ${stale?`<p class="holds" style="margin:0"><span style="color:var(--warn)">This rule changed after the suggestion was made (it was ${fmtVal(r,p.from)}). Check the numbers before accepting.</span></p>`:""}
+    ${locked?`<p class="meta" style="margin:0;color:var(--crit)">This rule is locked and can't be changed from a suggestion.</p>`:""}
+    ${missing?`<p class="meta" style="margin:0;color:var(--crit)">The rule this refers to no longer exists.</p>`:""}
+    ${taken?`<p class="meta" style="margin:0;color:var(--crit)">A rule with this id already exists.</p>`:""}
+    ${open==="edit"?`<div class="editbox"><label for="pe-${esc(p.id)}">Value to accept</label>${editorFor(r, p.to, "pe-"+p.id)}
+        <div class="acts" style="margin:0"><button class="btn primary" data-act="acceptEdited" data-id="${esc(p.id)}">Accept this value</button>
+        <button class="btn" data-act="closeProp" data-id="${esc(p.id)}">Cancel</button></div></div>`:""}
+    ${open==="reject"?`<div class="editbox"><label for="pr-${esc(p.id)}">Why not? <span class="hint">Optional. The coach won't suggest this again until it has at least 5 more outcomes.</span>
+        <input id="pr-${esc(p.id)}" value="${esc(ruleDrafts["pr-"+p.id]??"")}" placeholder="e.g. I'd rather see more listings than fewer"></label>
+        <div class="acts" style="margin:0"><button class="btn danger" data-act="rejectProp" data-id="${esc(p.id)}">Reject suggestion</button>
+        <button class="btn" data-act="closeProp" data-id="${esc(p.id)}">Cancel</button></div></div>`:""}
+    ${open?"":`<div class="acts" style="margin:0">
+      ${blocked?"":`<button class="btn primary" data-act="acceptProp" data-id="${esc(p.id)}">Accept</button>
+      <button class="btn" data-act="editProp" data-id="${esc(p.id)}">Accept with edit</button>`}
+      <button class="btn danger" data-act="openReject" data-id="${esc(p.id)}">Reject</button>
+      <button class="btn" data-act="snoozeProp" data-id="${esc(p.id)}">Later</button></div>`}
+  </article>`;
+}
+
+function ruleCard(r){
+  const hist = (Array.isArray(r.history)?r.history:[]).slice().sort((a,b)=>(b.version??0)-(a.version??0));
+  return `<article class="rulecard ${r.locked?"locked":""}">
+    <div class="head" style="align-items:baseline"><div>${r.group?`<div class="eyebrow">${esc(r.group)}</div>`:""}<h3>${esc(r.title||r.id)}</h3></div>
+      <div class="facts" style="margin:0">${r.locked?`<span class="chip crit">Locked</span>`:`<span class="chip">Tunable</span>`}
+        <span class="chip num">v${esc(r.version??1)}</span>${r.updatedAt?`<span class="chip">${esc(day(r.updatedAt))}${r.updatedBy?" · "+esc(r.updatedBy):""}</span>`:""}</div></div>
+    <div class="val">${fmtVal(r, r.value)}</div>
+    ${r.help?`<p class="meta" style="margin:0">${esc(r.help)}</p>`:""}
+    ${hist.length>1?`<details><summary class="link" style="cursor:pointer">History (${hist.length} versions)</summary><ul class="hist">${hist.map(h=>`<li>
+        <span class="num">v${esc(h.version)}</span><span>${Array.isArray(h.value)?esc(h.value.join(" › ")):fmtVal(r, h.value)}</span>
+        <span class="meta">${esc(day(h.at))}${h.by?" · "+esc(h.by):""}${h.note?" · "+esc(h.note):""}</span>
+        ${!r.locked && h.version!==r.version && !same(h.value, r.value)?`<button class="btn" data-act="rollback" data-id="${esc(r.id)}" data-version="${esc(h.version)}">Roll back to this</button>`:""}</li>`).join("")}</ul></details>`:""}
+  </article>`;
+}
+
+function renderRules(){
+  const pending = proposals.filter(p=>(p.status||"proposed")==="proposed").sort((a,b)=>String(b.createdAt||"").localeCompare(String(a.createdAt||"")));
+  const snoozed = proposals.filter(p=>p.status==="snoozed");
+  const decided = proposals.filter(p=>["accepted","rejected"].includes(p.status)).sort((a,b)=>String(b.decidedAt||"").localeCompare(String(a.decidedAt||""))).slice(0,10);
+  $("pRules").textContent = pending.length;
+  $("pRules").style.background = pending.length ? "var(--info-bg)" : "";
+  $("pRules").style.color = pending.length ? "var(--info)" : "";
+  if(typingInRules()){ rulesDirty = true; return; }
+  rulesDirty = false;
+  const order = r => (r.locked?1:0);
+  const sorted = rules.slice().sort((a,b)=>order(a)-order(b) || (a.order??99)-(b.order??99) || String(a.title).localeCompare(String(b.title)));
+  $("rulesLive").innerHTML = `<div class="rulegrid">
+    <div><h3>Suggested changes</h3><p class="sub">The coach suggests rule changes when your results back them up. Nothing changes until you accept; agents read only the rules below.</p></div>
+    ${pending.length ? pending.map(proposalCard).join("") : `<div class="empty">No suggestions right now. The coach needs at least 5 closed applications behind any suggestion.</div>`}
+    ${snoozed.length?`<details><summary class="link" style="cursor:pointer">Later (${snoozed.length})</summary><div class="rulegrid" style="margin-top:8px">${snoozed.map(p=>`<div class="rulecard"><strong>${esc(ruleById(p.ruleId)?.title||p.newRule?.title||p.ruleId)}</strong>
+      <span class="meta">${esc(p.why||"")}</span><div class="acts" style="margin:0"><button class="btn" data-act="unsnoozeProp" data-id="${esc(p.id)}">Bring back</button></div></div>`).join("")}</div></details>`:""}
+    ${decided.length?`<details><summary class="link" style="cursor:pointer">Decided (${decided.length})</summary><ul class="hist">${decided.map(p=>`<li>
+      <span class="chip ${p.status==="accepted"?"ok":"crit"}">${p.status==="accepted"?"Accepted":"Rejected"}</span>
+      <span>${esc(ruleById(p.ruleId)?.title||p.newRule?.title||p.ruleId)}</span><span class="meta">${esc(day(p.decidedAt))}${p.note?" · "+esc(p.note):""}</span></li>`).join("")}</ul></details>`:""}
+    <div style="margin-top:8px"><h3>Current rules</h3><p class="sub">Locked rules protect against duplicate applications, site terms, and anything that can't be undone.</p></div>
+    ${sorted.length ? sorted.map(ruleCard).join("") : `<div class="empty">No rules loaded yet.</div>`}
+  </div>`;
+}
+
 function docPanel(j){
   const saved = j.coverText ?? "";
   const val = drafts[j.id] ?? saved;
@@ -465,7 +597,7 @@ function render(){
   $("autoToggle").setAttribute("aria-checked", String(on));
   $("autoToggle").disabled = !db || !canWrite;
   $("autoState").textContent = on ? "On" : "Off";
-  $("minFitTxt").textContent = settings.minFitAuto ?? 75;
+  $("minFitTxt").textContent = ruleById("minFitAuto")?.value ?? settings.minFitAuto ?? 75;
 
   const by = s => jobs.filter(j=>j.stage===s);
   const review = by("review"), approve = by("awaiting_approval");
@@ -500,6 +632,7 @@ function render(){
     }</tbody></table></div>` : `<div class="empty">No applications yet.</div>`;
   renderTicket();
   renderLearn();
+  renderRules();
 
   $("needsList").innerHTML = openActions.length ? openActions.map(a=>`<div class="item">
       <div class="eyebrow">${esc(a.kind||"Task")}${a.company?" · "+esc(a.company):""}</div>
@@ -532,6 +665,61 @@ async function write(ref, data, okMsg){
   }
 }
 const now = () => new Date().toISOString();
+
+// A new rule version: the value changes, the version goes up, and history keeps every value.
+async function setRuleValue(r, value, note, proposalId){
+  const v = (r.version ?? 1) + 1, at = now();
+  const hist = Array.isArray(r.history) ? r.history.slice() : [];
+  if(!hist.length) hist.push({version:r.version??1, value:r.value, at:r.updatedAt||at, by:r.updatedBy||"setup", note:"Starting value"});
+  hist.push({version:v, value, at, by:"Casey", note, ...(proposalId?{proposalId}:{})});
+  await db.doc("rules/"+r.id).update({value, version:v, updatedAt:at, updatedBy:"Casey", history:hist});
+}
+async function ruleAction(act, id, b){
+  const p = proposals.find(x=>x.id===id);
+  if(act==="editProp" || act==="openReject"){ ruleUi = {id, mode: act==="editProp"?"edit":"reject"}; renderRules(); $((act==="editProp"?"pe-":"pr-")+id)?.focus(); return; }
+  if(act==="closeProp"){ delete ruleDrafts["pe-"+id]; delete ruleDrafts["pr-"+id]; ruleUi = null; document.activeElement?.blur?.(); renderRules(); return; }
+  const P = db.doc("ruleProposals/"+id);
+  try{
+    if(act==="acceptProp" || act==="acceptEdited"){
+      if(!p) return;
+      const isNew = p.ruleId==="new";
+      const r = isNew ? null : ruleById(p.ruleId);
+      if(!isNew && (!r || r.locked)){ toast("This rule can't be changed from a suggestion."); return; }
+      let value = p.to;
+      if(act==="acceptEdited"){ const got = readEditor(isNew ? p.newRule : r, "pe-"+id); if(!got.ok){ toast(got.msg); return; } value = got.value; }
+      if(isNew){
+        const nr = p.newRule || {};
+        if(!/^[A-Za-z0-9_-]{1,60}$/.test(nr.id||"") || ruleById(nr.id)){ toast("This new rule needs a unique id."); return; }
+        const at = now();
+        await db.doc("rules/"+nr.id).set({id:nr.id, title:nr.title||nr.id, type:nr.type||"number", unit:nr.unit||"", group:nr.group||"",
+          help:nr.help||"", locked:false, value, version:1, updatedAt:at, updatedBy:"Casey",
+          history:[{version:1, value, at, by:"Casey", note:"Added from a suggestion", proposalId:id}]});
+      } else {
+        await setRuleValue(r, value, act==="acceptEdited" ? "Accepted with your edit" : "Accepted suggestion", id);
+      }
+      await P.update({status:"accepted", decidedAt:now(), acceptedValue:value, edited:act==="acceptEdited"});
+      delete ruleDrafts["pe-"+id]; ruleUi = null; document.activeElement?.blur?.(); toast("Rule updated. Agents use the new value from their next run.");
+    }
+    if(act==="rejectProp"){
+      const note = ($("pr-"+id)?.value||"").trim();
+      await P.update({status:"rejected", decidedAt:now(), note});
+      delete ruleDrafts["pr-"+id]; ruleUi = null; document.activeElement?.blur?.(); toast("Rejected. The rule stays as it is.");
+    }
+    if(act==="snoozeProp"){ await P.update({status:"snoozed", snoozedAt:now()}); toast("Moved to Later."); }
+    if(act==="unsnoozeProp"){ await P.update({status:"proposed"}); toast("Back in suggested changes."); }
+    if(act==="rollback"){
+      const r = ruleById(id), ver = Number(b.dataset.version);
+      const h = (r?.history||[]).find(x=>x.version===ver);
+      if(!r || r.locked || !h){ toast("That version isn't available."); return; }
+      await setRuleValue(r, h.value, `Rolled back to version ${ver}`);
+      toast(`Rolled back to version ${ver}.`);
+    }
+  }catch(e){
+    if(e?.code==="invalid_argument"){ canWrite=false; banner("You can view this dashboard but not change it."); }
+    else toast("That didn't save. Try again in a moment.");
+  }
+  renderRules();
+}
 document.addEventListener("click", async ev=>{
   const b = ev.target.closest("[data-act]"); if(!b) return;
   const id=b.dataset.id, act=b.dataset.act;
@@ -554,6 +742,9 @@ document.addEventListener("click", async ev=>{
     await write(db.doc("jobs/"+id), {retro:{why:$("rWhy").value.trim(), marketable:$("rMarket").value.trim(),
       differently:$("rDiff").value.trim(), savedAt:now()}, updatedAt:now()}, "Retrospective saved.");
     b.disabled=false; document.activeElement?.blur?.(); renderTicket(); return;
+  }
+  if(["editProp","openReject","closeProp","acceptProp","acceptEdited","rejectProp","snoozeProp","unsnoozeProp","rollback"].includes(act)){
+    await ruleAction(act, id, b); b.disabled=false; return;
   }
   const J = db.doc("jobs/"+id);
   const job = jobs.find(x=>x.id===id);
@@ -582,6 +773,7 @@ document.addEventListener("click", async ev=>{
 
 // cover-letter editing: keep drafts locally until Save
 document.addEventListener("input", ev=>{
+  if(/^p[er]-/.test(ev.target.id||"") && ev.target.closest?.("#v-rules")) ruleDrafts[ev.target.id] = ev.target.value;
   const t = ev.target.closest?.("textarea[data-cover]"); if(!t) return;
   const id = t.dataset.cover; drafts[id] = t.value;
   const card = t.closest("details"); const save = card?.querySelector('[data-act="saveCover"]');
@@ -590,6 +782,7 @@ document.addEventListener("input", ev=>{
 document.addEventListener("focusout", ev=>{
   if(ev.target.matches?.("textarea[data-cover]") && deferApprove) setTimeout(render,0);
   if(ticketDirty) setTimeout(()=>{ if(!typingInTicket()) renderTicket(); },0);
+  if(rulesDirty) setTimeout(()=>{ if(!typingInRules()) renderRules(); },0);
 });
 document.addEventListener("submit", async ev=>{
   const f = ev.target; if(f.id!=="entryForm") return;
@@ -646,5 +839,7 @@ render();
   db.collection("actions").limit(200).onSnapshot(s=>{ actions=s.docs.map(d=>({id:d.id,...d.data()})); render(); }, fail);
   db.collection("entries").limit(1000).onSnapshot(s=>{ entries=s.docs.map(d=>({id:d.id,...d.data()})); render(); }, fail);
   db.collection("network").limit(200).onSnapshot(s=>{ network=s.docs.map(d=>({id:d.id,...d.data()})); render(); }, fail);
+  db.collection("rules").limit(100).onSnapshot(s=>{ rules=s.docs.map(d=>({...d.data(),id:d.id})); render(); }, fail);
+  db.collection("ruleProposals").limit(300).onSnapshot(s=>{ proposals=s.docs.map(d=>({...d.data(),id:d.id})); render(); }, fail);
 })();
 </script>
