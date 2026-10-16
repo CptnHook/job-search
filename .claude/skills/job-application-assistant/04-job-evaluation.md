@@ -113,6 +113,11 @@ Does this role advance career goals and contain tasks that energize?
 - Build or scale a function at a high-growth company of about 100-1,000 people
 - Work close to the executive team on strategy, cost, and AI enablement
 
+**Match signals (Casey, 2026-10-16), strongest first; they raise Behavioral/Culture Fit and Career Alignment:**
+1. Access to leadership: the role reports to or works directly with the C-suite
+2. High-growth company: scaling fast, about 100-1,000 people, room to build functions
+3. AI or developer tooling: the company or role centers on AI platforms, engineering productivity, or dev tools
+
 **Motivation filter:** Evaluate not just whether you *can* do the tasks, but whether the tasks will *energize* you. Consider:
 - Tasks that energize: standing up new programs and teams, turning ambiguity into structure, finding cost and revenue upside, mentoring leaders
 - Tasks that drain: pure maintenance work ("not a maintainer"); more *(to confirm)*
