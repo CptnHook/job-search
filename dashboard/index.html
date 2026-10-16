@@ -124,6 +124,22 @@ textarea{min-height:120px;resize:vertical}
 .rules li strong{font-family:var(--display)}
 .banner{border-radius:10px;padding:10px 14px;font-size:14px;background:var(--info-bg);color:var(--info)}
 .banner.crit{background:var(--crit-bg);color:var(--crit)}
+/* document review */
+.docs{grid-column:1/-1;border-top:1px solid var(--line);margin-top:6px;padding-top:8px}
+.docs summary{cursor:pointer;font-weight:600;font-size:14px;color:var(--accent);list-style:none;display:flex;gap:8px;align-items:center}
+.docs summary::-webkit-details-marker{display:none}
+.docs summary::before{content:"▸";transition:transform .15s}
+.docs[open] summary::before{transform:rotate(90deg)}
+.docgrid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:16px;margin-top:12px}
+@media (max-width:760px){.docgrid{grid-template-columns:1fr}}
+.docgrid section{display:flex;flex-direction:column;gap:8px;min-width:0}
+.cover{min-height:320px;font:14px/1.55 var(--body);background:var(--bg)}
+.changes{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.changes li{background:var(--sunk);border-radius:8px;padding:8px 10px;font-size:13.5px}
+.changes .where{font:600 11px var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.changes del{color:var(--crit);text-decoration-thickness:1px}
+.changes ins{color:var(--ok);text-decoration:none}
+.meta{font-size:13px;color:var(--muted)}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));
   background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:8px;font-size:14px;z-index:20}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -229,6 +245,9 @@ const STAGE = {
 };
 const PIPE = ["queued","drafting","awaiting_approval","approved","submitting","submitted","needs_me","failed","interview","offer","rejected","withdrawn"];
 let db=null, canWrite=true, settings={autoApprove:false,minFitAuto:75}, jobs=[], actions=[], network=[];
+const drafts = {};        // unsaved cover-letter edits, by job id (this browser only)
+const openDocs = new Set(); // job ids whose document panel is open
+let deferApprove = false;  // a snapshot arrived while Casey was typing
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const money = n => n ? "$"+Math.round(n/1000)+"K" : "";
@@ -267,6 +286,8 @@ function jobCard(j, mode){
   if(mode==="approve") btns = `<button class="btn primary" data-act="approve" data-id="${esc(j.id)}">Approve and submit</button>
     <button class="btn" data-act="hold" data-id="${esc(j.id)}">Not now</button>
     <button class="btn danger" data-act="decline" data-id="${esc(j.id)}">Don't apply</button>`;
+  if(mode==="approved") btns = `<span class="meta">Approved. You can still edit the documents until the submitter starts.</span>
+    <button class="btn" data-act="unapprove" data-id="${esc(j.id)}">Undo approval</button>`;
   if(mode==="review") btns = `<button class="btn primary" data-act="yes" data-id="${esc(j.id)}">Yes, draft it</button>
     <button class="btn" data-act="backlog" data-id="${esc(j.id)}">Backlog</button>
     <button class="btn danger" data-act="no" data-id="${esc(j.id)}">No</button>`;
@@ -277,7 +298,45 @@ function jobCard(j, mode){
     ${j.summary?`<p class="why">${esc(j.summary)}</p>`:""}
     ${holds.length?`<div class="holds">${holds.map(h=>`<div>Held for you: ${esc(h)}</div>`).join("")}</div>`:""}
     <div class="acts">${btns}${links?`<span class="link">${links}</span>`:""}</div>
+    ${mode==="approve"||mode==="approved"?docPanel(j):""}
   </article>`;
+}
+
+function docPanel(j){
+  const saved = j.coverText ?? "";
+  const val = drafts[j.id] ?? saved;
+  const dirty = drafts[j.id] !== undefined && drafts[j.id] !== saved;
+  const edited = !!j.coverEditedByCasey;
+  const changes = Array.isArray(j.cvChanges) ? j.cvChanges : [];
+  const cvLink = safeUrl(j.cvDocUrl);
+  return `<details class="docs" data-docs="${esc(j.id)}" ${openDocs.has(j.id)?"open":""}>
+    <summary>Review and edit documents${dirty?` <span class="chip warn">Unsaved edits</span>`:edited?` <span class="chip ok">Edited by you</span>`:""}</summary>
+    <div class="docgrid">
+      <section aria-label="Cover letter">
+        <h3>Cover letter</h3>
+        ${saved || val ? `<textarea class="cover" id="cover-${esc(j.id)}" data-cover="${esc(j.id)}" aria-label="Cover letter text">${esc(val)}</textarea>
+          <div class="acts" style="margin:0">
+            <button class="btn primary" data-act="saveCover" data-id="${esc(j.id)}" ${dirty?"":"disabled"}>Save edits</button>
+            ${dirty?`<button class="btn" data-act="discardCover" data-id="${esc(j.id)}">Discard</button>`:""}
+            ${edited && j.coverDraft?`<button class="btn" data-act="revertCover" data-id="${esc(j.id)}">Restore agent draft</button>`:""}
+            <span class="meta">${j.coverEditedAt?`Saved ${esc(day(j.coverEditedAt))}`:"Agent draft"}</span>
+          </div>
+          <p class="meta">Your saved text is what gets submitted, laid out in your letter format.</p>`
+          : `<div class="empty">No cover letter yet. The drafter adds it here.</div>`}
+      </section>
+      <section aria-label="Resume">
+        <h3>Resume</h3>
+        ${cvLink?`<a class="btn" href="${esc(j.cvDocUrl)}" target="_blank" rel="noopener">Edit this copy in Google Docs</a>
+          <p class="meta">A copy of your own resume for this application. Whatever is in it when you approve is exported to PDF and submitted.</p>`
+          :`<p class="meta">The drafter makes a copy of your resume for each application.</p>`}
+        ${changes.length?`<div class="eyebrow">Changes from your resume</div><ul class="changes">${changes.map(c=>`<li>
+            <div class="where">${esc(c.where||"")} · ${c.status==="applied"?"applied in the copy":"suggested, not yet applied"}</div>
+            ${c.before?`<div><del>${esc(c.before)}</del></div>`:""}<div><ins>${esc(c.after||"")}</ins></div>
+            ${c.why?`<div class="meta">${esc(c.why)}</div>`:""}</li>`).join("")}</ul>`
+          :`<p class="meta">No changes: your resume goes as is.</p>`}
+      </section>
+    </div>
+  </details>`;
 }
 
 function render(){
@@ -300,8 +359,16 @@ function render(){
   $("pPipe").textContent = pipe.length;
 
   const byFit = (a,b)=>(b.fit??-1)-(a.fit??-1);
-  $("v-approve").innerHTML = approve.length ? approve.sort(byFit).map(j=>jobCard(j,"approve")).join("")
-    : `<div class="empty">No applications are waiting for approval. Drafted applications appear here with their resume and cover letter links${on?", unless auto-approve sends them straight on":""}.</div>`;
+  // Don't rebuild the approvals list under Casey's cursor; catch up when he leaves the editor.
+  const typing = document.activeElement?.matches?.("textarea[data-cover]");
+  if(typing){ deferApprove = true; }
+  else {
+    deferApprove = false;
+    const approvedWaiting = by("approved");
+    $("v-approve").innerHTML = (approve.length ? approve.sort(byFit).map(j=>jobCard(j,"approve")).join("")
+      : `<div class="empty">No applications are waiting for approval. Drafted applications appear here with their resume and cover letter${on?", unless auto-approve sends them straight on":""}.</div>`)
+      + (approvedWaiting.length ? `<h3 style="margin-top:10px">Approved, waiting to submit</h3>` + approvedWaiting.sort(byFit).map(j=>jobCard(j,"approved")).join("") : "");
+  }
   $("v-review").innerHTML = review.length ? review.sort(byFit).map(j=>jobCard(j,"review")).join("")
     : `<div class="empty">The review queue is clear. Scored listings from the finder agent, and listings you add, show up here for a yes or no.</div>`;
   $("v-pipe").innerHTML = pipe.length ? `<div class="tablewrap"><table><thead><tr><th>Company</th><th>Role</th><th>Status</th><th class="num">Fit</th><th>Updated</th><th>Note</th></tr></thead><tbody>${
@@ -326,7 +393,10 @@ function render(){
       ${n.status==="contacted"?`<span class="chip ok">Contacted</span>`:`<button class="btn" data-act="contacted" data-id="${esc(n.id)}">I reached out</button>`}
       <button class="btn" data-act="dismiss" data-id="${esc(n.id)}">Dismiss</button></div></div>`).join("")
     : `<div class="empty">No contacts matched yet. The network agent checks each company against your LinkedIn connections and lists anyone worth a call about the role.</div>`;
-  document.querySelectorAll("[data-act]").forEach(b=>b.disabled = !db || !canWrite);
+  document.querySelectorAll("[data-act]").forEach(b=>{
+    const idle = b.dataset.act==="saveCover" && (drafts[b.dataset.id]===undefined || drafts[b.dataset.id]===(jobs.find(x=>x.id===b.dataset.id)?.coverText??""));
+    b.disabled = !db || !canWrite || idle;
+  });
 }
 
 async function write(ref, data, okMsg){
@@ -341,7 +411,19 @@ document.addEventListener("click", async ev=>{
   const b = ev.target.closest("[data-act]"); if(!b || !db) return;
   const id=b.dataset.id, act=b.dataset.act; b.disabled=true;
   const J = db.doc("jobs/"+id);
+  const job = jobs.find(x=>x.id===id);
+  if(act==="approve" && drafts[id]!==undefined && drafts[id]!==(job?.coverText??"")){
+    toast("Save or discard your cover letter edits before approving."); openDocs.add(id); render(); return;
+  }
+  if(act==="saveCover"){ const text=drafts[id];
+    await write(J,{coverText:text,coverEditedByCasey:true,coverEditedAt:now(),updatedAt:now()},"Cover letter saved.");
+    delete drafts[id]; render(); return; }
+  if(act==="discardCover"){ delete drafts[id]; render(); return; }
+  if(act==="revertCover"){ delete drafts[id];
+    await write(J,{coverText:job?.coverDraft??"",coverEditedByCasey:false,coverEditedAt:null,updatedAt:now()},"Agent draft restored.");
+    render(); return; }
   if(act==="approve") await write(J,{stage:"approved",approval:{by:"manual",at:now()},updatedAt:now()},"Approved. The submitter picks it up on its next run.");
+  if(act==="unapprove") await write(J,{stage:"awaiting_approval",approval:null,updatedAt:now()},"Approval undone. It's back in your approvals.");
   if(act==="hold") await write(J,{stage:"backlog",updatedAt:now(),note:"Held by Casey"},"Moved to backlog.");
   if(act==="decline") await write(J,{stage:"declined",updatedAt:now()},"Marked don't apply.");
   if(act==="yes") await write(J,{stage:"queued",updatedAt:now()},"Queued for drafting.");
@@ -352,6 +434,21 @@ document.addEventListener("click", async ev=>{
   if(act==="dismiss") await write(db.doc("network/"+id),{status:"dismissed"},"Dismissed.");
   b.disabled=false;
 });
+
+// cover-letter editing: keep drafts locally until Save
+document.addEventListener("input", ev=>{
+  const t = ev.target.closest?.("textarea[data-cover]"); if(!t) return;
+  const id = t.dataset.cover; drafts[id] = t.value;
+  const card = t.closest("details"); const save = card?.querySelector('[data-act="saveCover"]');
+  const job = jobs.find(x=>x.id===id); if(save) save.disabled = !canWrite || t.value === (job?.coverText ?? "");
+});
+document.addEventListener("focusout", ev=>{
+  if(ev.target.matches?.("textarea[data-cover]") && deferApprove) setTimeout(render,0);
+});
+document.addEventListener("toggle", ev=>{
+  const d = ev.target; if(!d.matches?.("details[data-docs]")) return;
+  d.open ? openDocs.add(d.dataset.docs) : openDocs.delete(d.dataset.docs);
+}, true);
 
 $("autoToggle").addEventListener("click", async ()=>{
   if(!db) return;
