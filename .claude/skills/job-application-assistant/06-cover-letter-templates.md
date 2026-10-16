@@ -76,7 +76,7 @@ The font wrapper is mandatory — if you just move `\begin{itemize}` outside `\l
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %     TITLE NAME
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\namesection{}{\Huge{[YOUR_NAME]}}{  \href{mailto:[YOUR_EMAIL]}{[YOUR_EMAIL]} | [YOUR_PHONE] |  \urlstyle{same}\href{[YOUR_LINKEDIN_URL]}{LinkedIn}
+\namesection{}{\Huge{Casey Caster}}{  \href{mailto:casey.caster@gmail.com}{casey.caster@gmail.com} | 650.799.9926 |  \urlstyle{same}\href{https://www.linkedin.com/in/caster/}{LinkedIn}
 }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -108,7 +108,7 @@ The font wrapper is mandatory — if you just move `\begin{itemize}` outside `\l
 % doubled break triggers "! LaTeX Error: There's no line here to end."
 \closing{Kind regards,}
 
-\signature{[YOUR_NAME]}
+\signature{Casey Caster}
 \end{flushright}
 \end{document}
 ```
@@ -122,6 +122,24 @@ The font wrapper is mandatory — if you just move `\begin{itemize}` outside `\l
 | `\lettercontent{text}` | Body paragraph (adds spacing after) |
 | `\closing{text}` | Closing line |
 | `\signature{name}` | Printed name below signature |
+
+## Owner's Preferred Letter (use as the model)
+
+Casey chose his "Casey_Caster_Executive_Cover_Letter" Google Doc as the letter to use for applications. Its bracketed fields ([Date], [Hiring Manager Name], [Company Name], [Job Title]) are filled per job. Follow its structure and tone in the cover.cls template above:
+
+1. **Opening:** interest in the [Job Title] role at [Company]; "experienced software executive" with customer-facing delivery, digital transformation, vendor management, and engineering leadership; connects customer needs and technical decisions to business priorities (delivery, operational performance, cost efficiency).
+2. **Current role:** one line on leading engineering internal services at SingleStore. Tailor with one SingleStore result that fits the posting (ARR rescue, cloud spend, velocity, GenAI adoption, M&A).
+3. **Bullets (3):** hundreds of large-scale implementations across the global financial industry (Ripple); a $20M program across sites and vendors with 300+ testers (Wells Fargo); $2M+ cost efficiency and engagement gains (Autodesk). Swap in the most relevant evidence from `01-candidate-profile.md`.
+4. **How he leads:** collaboration; strong relationships with customers, colleagues, and vendors; bringing technical and business priorities together.
+5. **What he'd do at [Company]:** align customer commitments with engineering priorities and business goals, set direction across teams and sites, weigh investment against delivery, risk, and cost. Make this specific to the posting.
+6. **Close:** welcome a conversation about the [Job Title] role; thank them. Closing word: "Best,".
+
+Rules for this letter:
+- Plain, simple, straightforward tone. Run the draft through the humanizer skill before showing it.
+- Keep to about one page (roughly 220-280 words of body text).
+- Every career claim must be in `01-candidate-profile.md`. Choosing this letter doesn't confirm every claim in it.
+- Header name is "Casey Caster" (his legal name), not the "Casey R. Caster Jr." in the Google Doc, unless he says otherwise.
+- Use `\closing{Best,}` instead of "Kind regards,".
 
 ## Tailoring Guidelines
 

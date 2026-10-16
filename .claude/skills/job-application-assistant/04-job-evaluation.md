@@ -60,9 +60,9 @@ How well do the required/preferred skills align with the candidate's capabilitie
 | 40-59 | Partial match, significant upskilling needed |
 | 0-39 | Fundamental mismatch |
 
-**Strong match areas:** [YOUR_PRIMARY_SKILLS]
-**Moderate match areas:** [YOUR_SECONDARY_SKILLS]
-**Weak match areas:** [SKILLS_YOU_LACK]
+**Strong match areas:** technical program and portfolio management, engineering operations, strategy and operations / chief of staff, building and scaling teams, cross-functional delivery, executive alignment
+**Moderate match areas:** cloud cost optimization (FinOps) and COGS analysis, GenAI adoption and governance, M&A technical due diligence and integration, agile transformation, customer success and global implementations, SOW/MSA and vendor management
+**Weak match areas:** hands-on software engineering or coding, ML/data science research, people management of hundreds (largest documented org: 25 PMs plus 75 engineers and architects), roles needing specific tools not on the resume
 
 ### 2. Experience Match (0-100)
 Does work history align with what they're looking for? Match on the function and nature of the work performed, not the literal job title - a "Data Consultant" and a "Data Scientist" role can be functionally identical.
@@ -74,9 +74,9 @@ Does work history align with what they're looking for? Match on the function and
 | 40-59 | Adjacent experience, would need to make the case |
 | 0-39 | Unrelated experience |
 
-**Strong:** [YOUR_DIRECT_EXPERIENCE_DOMAINS]
-**Moderate:** [YOUR_ADJACENT_EXPERIENCE]
-**Entry-level:** [ROLES_WITH_LIMITED_EXPERIENCE]
+**Strong:** engineering operations and TPM leadership in cloud/SaaS (SingleStore), global delivery and implementation programs (Ripple), chief of staff to CTO/CPO, payments and fintech networks
+**Moderate:** strategy and business operations, customer success leadership, digital transformation and CRM programs, AI platform operations
+**Entry-level:** product management with P&L ownership, sales or revenue leadership, hands-on engineering management of large software teams
 
 ### 3. Behavioral/Culture Fit (0-100)
 Does the role and company culture match the behavioral profile?
@@ -107,19 +107,19 @@ Does this role advance career goals and contain tasks that energize?
 | 0-39 | Dead end or backwards step |
 
 **Career goals:**
-- [YOUR_CAREER_GOAL_1]
-- [YOUR_CAREER_GOAL_2]
-- [YOUR_CAREER_GOAL_3]
+- Senior leadership (Director, Senior Director, VP, or Head of) in strategy and operations, engineering operations, or technical program management *(target titles to confirm)*
+- Build or scale a function at a high-growth company of about 100-1,000 people
+- Work close to the executive team on strategy, cost, and AI enablement
 
 **Motivation filter:** Evaluate not just whether you *can* do the tasks, but whether the tasks will *energize* you. Consider:
-- Tasks that energize: [YOUR_ENERGIZING_TASKS]
-- Tasks that drain: [YOUR_DRAINING_TASKS]
+- Tasks that energize: standing up new programs and teams, turning ambiguity into structure, finding cost and revenue upside, mentoring leaders
+- Tasks that drain: pure maintenance work ("not a maintainer"); more *(to confirm)*
 - Non-task factors: leadership style, department culture, company values, degree of autonomy
 
 **Life situation alignment:** Consider personal constraints:
-- **Security**: [YOUR_FINANCIAL_SITUATION_CONTEXT]
-- **Flexibility**: [YOUR_SCHEDULE_CONSTRAINTS]
-- **Professional development**: [YOUR_GROWTH_PRIORITIES]
+- **Security**: currently employed; compensation expectations *(to confirm)*
+- **Flexibility**: lives in Pacifica, CA; remote, hybrid, commute, and travel preferences *(to confirm)*
+- **Professional development**: *(to confirm)*
 
 ### 6. Salary Benchmark (Optional)
 

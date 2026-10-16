@@ -12,69 +12,63 @@ The `site:` query templates in this file are the **WebSearch fallback** — for 
 
 ## Search Sites
 
-Primary (your market's job boards - scaffold one with `/add-portal`):
-- **[YOUR_JOB_BOARD]** - your market's largest general job board
-- **linkedin.com/jobs** - LinkedIn job listings (filter: [YOUR_COUNTRY] / [YOUR_CITY]); also covered by `linkedin-search` CLI
-- **[YOUR_INDUSTRY_JOB_BOARD]** - a niche/industry board for your field (optional)
-- **[YOUR_ADDITIONAL_JOB_BOARD]** - another major board for your market (optional)
+Market: United States, San Francisco Bay Area. The Danish portal CLIs stay disabled.
+
+Primary:
+- **linkedin.com/jobs** - filter: United States / San Francisco Bay Area and Remote (US); also covered by the `linkedin-search` CLI
+- **boards.greenhouse.io**, **jobs.lever.co**, **jobs.ashbyhq.com** - the applicant-tracking boards most high-growth tech companies post on
+- **builtin.com/jobs** (Built In San Francisco) - tech roles in the Bay Area
 
 Secondary (company career pages via Google):
-- Direct Google searches with `site:` filters for known target companies
+- Direct Google searches with `site:` filters for target companies *(target company list to confirm)*
 
 ## Query Categories
 
-Queries are grouped by priority. Write **each category in every language from your Languages table** (see Language scope above). Combine each query with your location terms (e.g. your city, region, or metro area) where the site supports it.
+Proposed from the resume; Casey still needs to confirm the target titles. All queries are English only.
 
-**Organize by function, not job title.** The same underlying work carries different titles across companies and markets (a "Data Scientist" role at one employer may be posted as "Insights Analyst" or "Data Consultant" at another). Name each priority category after the function it covers, and list several plausible job titles as query variants within that category rather than betting an entire priority tier on one exact title string.
-
-### Priority 1: [YOUR_PRIMARY_ROLE_TYPE]
-
-These match your strongest and most desired career direction.
+### Priority 1: Engineering operations and technical program leadership
 
 ```
-site:[YOUR_JOB_BOARD] "[YOUR_PRIMARY_JOB_TITLE_1]" [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "[YOUR_PRIMARY_JOB_TITLE_2]" [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "[YOUR_KEY_SKILL]" [YOUR_CITY]
-site:linkedin.com/jobs "[YOUR_PRIMARY_JOB_TITLE_1]" [YOUR_COUNTRY]
+site:linkedin.com/jobs "Head of Engineering Operations" "San Francisco Bay Area"
+site:linkedin.com/jobs "Senior Director, Technical Program Management" United States
+site:boards.greenhouse.io "Director of Technical Program Management" (Remote OR "San Francisco")
+site:jobs.lever.co "Head of TPM" OR "VP, Technical Program Management"
+site:jobs.ashbyhq.com "Engineering Operations" Director
 ```
 
-### Priority 2: [YOUR_DOMAIN_EXPERTISE]
-
-These match your domain expertise.
+### Priority 2: Strategy & operations / chief of staff
 
 ```
-site:[YOUR_JOB_BOARD] [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] OR [YOUR_REGION]
-site:[YOUR_JOB_BOARD] [YOUR_DOMAIN_KEYWORD_2] [YOUR_COUNTRY]
-site:linkedin.com/jobs [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] [YOUR_COUNTRY]
+site:linkedin.com/jobs "Chief of Staff to the CTO" United States
+site:boards.greenhouse.io "VP, Strategy & Operations" (Remote OR "San Francisco")
+site:jobs.lever.co "Head of Business Operations" "San Francisco"
+site:jobs.ashbyhq.com "Chief of Staff" Engineering
 ```
 
-### Priority 3: [YOUR_ADJACENT_ROLE_TYPE]
-
-Adjacent roles you could pivot into.
+### Priority 3: AI enablement, FinOps, and platform operations
 
 ```
-site:[YOUR_JOB_BOARD] "[YOUR_ADJACENT_TITLE_1]" [YOUR_KEY_SKILL] [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "[YOUR_ADJACENT_TITLE_2]" [YOUR_KEY_SKILL] [YOUR_CITY]
+site:linkedin.com/jobs "Head of AI Enablement" United States
+site:boards.greenhouse.io "AI Operations" Director
+site:linkedin.com/jobs "FinOps" Director "San Francisco Bay Area"
+site:jobs.lever.co "Director, Internal Tools" OR "Developer Productivity" Director
 ```
 
-### Priority 4: Broader Technical / Consulting
-
-Wider net for general technical roles.
+### Priority 4: Global delivery and customer success leadership
 
 ```
-site:[YOUR_JOB_BOARD] [YOUR_KEY_SKILL] developer [YOUR_CITY]
-site:linkedin.com/jobs "[YOUR_KEY_SKILL] developer" [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "technical consultant" [YOUR_DOMAIN] [YOUR_CITY]
+site:linkedin.com/jobs "VP, Professional Services" fintech United States
+site:boards.greenhouse.io "Head of Implementation" OR "VP, Customer Success" payments
+site:jobs.lever.co "Global Head of Delivery" "San Francisco"
 ```
 
 ## Location Filter
 
-When evaluating results, verify the job location is within reasonable commute distance from your home. Define acceptable areas:
-- [YOUR_CITY] and surrounding areas
-- [ACCEPTABLE_AREA_1]
-- [ACCEPTABLE_AREA_2]
-- [BORDERLINE_AREA] (borderline - ~X min by transit)
-- [TOO_FAR_AREA] (too far)
+Home is Pacifica, CA. Until Casey sets his commute and remote preferences, sort results like this:
+- Remote (US) or San Francisco / Peninsula hybrid - ideal
+- South Bay (Palo Alto, Mountain View, San Jose) hybrid - acceptable
+- East Bay or anything needing more than about 3 office days a week - borderline, flag it
+- Outside the Bay Area with no remote option - too far (relocation not confirmed)
 
 ## Language Filter
 
