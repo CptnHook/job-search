@@ -91,8 +91,10 @@ Does the role and company culture match the behavioral profile?
 **Red flags to research:** Department disorganization, work dominated by maintenance over development, poor chemistry with leadership, culture mismatches. Check reviews, media coverage, LinkedIn connections, and network contacts for insider perspective.
 
 ### 4. Location & Logistics (Pass/Fail + Notes)
-- Within commute range: PASS
-- Remote with occasional office: PASS
+- SF Bay Area / Peninsula office, hybrid: PASS
+- Remote, or remote with occasional office: PASS
+- 5-day / fully onsite: FAIL (deal-breaker)
+- Office days not stated: FLAG (confirm with the recruiter)
 - Requires relocation: FAIL (deal-breaker)
 - Frequent international travel: FLAG (discuss with user)
 
@@ -107,7 +109,7 @@ Does this role advance career goals and contain tasks that energize?
 | 0-39 | Dead end or backwards step |
 
 **Career goals:**
-- Senior leadership (Director, Senior Director, VP, or Head of) in strategy and operations, engineering operations, or technical program management *(target titles to confirm)*
+- VP-level leadership in engineering operations, customer success, program management (PMO/TPM), product management, or similar. He is still narrowing the best fit, so score function fit generously across these and note which direction each role points
 - Build or scale a function at a high-growth company of about 100-1,000 people
 - Work close to the executive team on strategy, cost, and AI enablement
 
@@ -117,8 +119,8 @@ Does this role advance career goals and contain tasks that energize?
 - Non-task factors: leadership style, department culture, company values, degree of autonomy
 
 **Life situation alignment:** Consider personal constraints:
-- **Security**: currently employed; compensation expectations *(to confirm)*
-- **Flexibility**: lives in Pacifica, CA; remote, hybrid, commute, and travel preferences *(to confirm)*
+- **Security**: currently employed. Base must be over $300K (ideally over $350K), plus bonus and equity. FLAG a posted range whose top is under $300K; note where $350K sits in the range
+- **Flexibility**: lives in Pacifica, CA, works in San Francisco today (~20-minute commute). Remote or hybrid; a few office days a week is fine; 5-day office is a deal-breaker
 - **Professional development**: *(to confirm)*
 
 ### 6. Salary Benchmark (Optional)
