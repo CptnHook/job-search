@@ -95,8 +95,8 @@ Does the role and company culture match the behavioral profile?
 - Remote, or remote with occasional office: PASS
 - 5-day / fully onsite: FAIL (deal-breaker)
 - Office days not stated: FLAG (confirm with the recruiter)
-- Requires relocation: FAIL (deal-breaker)
-- Frequent international travel: FLAG (discuss with user)
+- Requires relocation: FLAG (Casey is open for the right role but won't target moves; relocation is part of the conversation, not an automatic fail)
+- Travel over about 25%: FLAG (he travels as needed, preferably under 25%)
 
 ### 5. Career Alignment & Motivation (0-100)
 Does this role advance career goals and contain tasks that energize?
@@ -109,8 +109,9 @@ Does this role advance career goals and contain tasks that energize?
 | 0-39 | Dead end or backwards step |
 
 **Career goals:**
-- VP-level leadership in engineering operations, customer success, program management (PMO/TPM), product management, or similar. He is still narrowing the best fit, so score function fit generously across these and note which direction each role points
-- Build or scale a function at a high-growth company of about 100-1,000 people
+- VP-level leadership, or C-level (COO, Chief Customer Officer, Chief Transformation Officer, Chief AI Officer, C-level Chief of Staff), in engineering operations, technical program management, PMO, strategy & operations, customer success, product operations, AI enablement, business operations, delivery, engineering effectiveness, or fintech/payments operations. He is still narrowing the best fit, so score function fit generously across these and note which direction each role points
+- **Level gate:** VP and above always qualifies. Director / Sr Director qualifies only at a large company: public, or 5,000+ employees, or $1B+ revenue. Below that, a Director title is "below level" (the `skipReasons` rule on the dashboard)
+- Build or scale a function at a high-growth company of about 100-1,000 people, or own a function with real scope at a large public company (he leans public)
 - Work close to the executive team on strategy, cost, and AI enablement
 
 **Match signals (Casey, 2026-10-16), strongest first; they raise Behavioral/Culture Fit and Career Alignment:**
@@ -120,12 +121,13 @@ Does this role advance career goals and contain tasks that energize?
 
 **Motivation filter:** Evaluate not just whether you *can* do the tasks, but whether the tasks will *energize* you. Consider:
 - Tasks that energize: standing up new programs and teams, turning ambiguity into structure, finding cost and revenue upside, mentoring leaders
-- Tasks that drain: pure maintenance work ("not a maintainer"); more *(to confirm)*
+- Tasks that energize most: delivering a well-planned program and declaring success; owning and sponsoring the strategy
+- Tasks that drain: pure maintenance work ("not a maintainer"); only executing someone else's plan; politics, bickering, and backbiting
 - Non-task factors: leadership style, department culture, company values, degree of autonomy
 
 **Life situation alignment:** Consider personal constraints:
 - **Security**: currently employed. Base must be over $300K (ideally over $350K), plus bonus and equity. FLAG a posted range whose top is under $300K; note where $350K sits in the range
-- **Flexibility**: lives in Pacifica, CA, works in San Francisco today (~20-minute commute). Remote or hybrid; a few office days a week is fine; 5-day office is a deal-breaker
+- **Flexibility**: lives in Pacifica, CA, works in San Francisco today (~20-minute commute). Hybrid preferred (some in-person time), remote acceptable; a few office days a week is fine; 5-day office is a deal-breaker. Relocation only if the employer raises it
 - **Professional development**: *(to confirm)*
 
 ### 6. Salary Benchmark (Optional)

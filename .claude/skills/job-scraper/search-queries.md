@@ -20,11 +20,22 @@ Primary:
 - **builtin.com/jobs** (Built In San Francisco) - tech roles in the Bay Area
 
 Secondary (company career pages via Google):
-- Direct Google searches with `site:` filters for target companies *(target company list to confirm)*
+- Direct Google searches with `site:` filters for target companies. No target list yet (Casey, 2026-10-17); search broadly. Companies added on the dashboard's Settings later feed the finder agent
 
 ## Query Categories
 
-Target level is VP (confirmed 2026-10-16) across engineering operations, customer success, program management, and product management. Casey is still narrowing the best fit, so keep all four directions in the search. All queries are English only.
+Target level (refined 2026-10-17): **VP and C-level** everywhere; **Director / Sr Director only at large companies** (public, 5,000+ employees, or $1B+ revenue). Casey is still narrowing the best fit, so keep every direction below in the search. All queries are English only.
+
+Key skill terms to pair with titles: technical program management, engineering operations, PMO, AI enablement, cloud cost optimization, M&A integration.
+
+### Priority 0: C-level (rare; most are filled through retained search firms)
+
+```
+site:linkedin.com/jobs ("Chief Operating Officer" OR "Chief Customer Officer" OR "Chief Transformation Officer") (SaaS OR "cloud" OR "fintech")
+site:linkedin.com/jobs "Chief AI Officer" OR "Chief of Staff to the CEO" "San Francisco Bay Area"
+site:boards.greenhouse.io ("Chief Operating Officer" OR "Chief Customer Officer" OR "Chief AI Officer")
+site:jobs.ashbyhq.com ("Chief Operating Officer" OR "Chief Customer Officer")
+```
 
 ### Priority 1: Program management / engineering operations (VP)
 
@@ -35,6 +46,14 @@ site:boards.greenhouse.io "VP" ("Technical Program Management" OR "PMO") (Remote
 site:jobs.lever.co "VP" "Engineering Operations"
 site:jobs.ashbyhq.com "VP" ("Program Management" OR "Engineering Operations")
 site:myworkdayjobs.com "Vice President" "Program Management" "San Francisco"
+site:linkedin.com/jobs ("Head of Engineering Effectiveness" OR "VP, Developer Productivity" OR "VP, Engineering Effectiveness")
+```
+
+Large companies only (public, 5,000+ employees, or $1B+ revenue):
+
+```
+site:linkedin.com/jobs ("Senior Director" OR "Director") ("Technical Program Management" OR "Engineering Operations" OR "Program Management Office") "San Francisco Bay Area"
+site:myworkdayjobs.com ("Senior Director" OR "Director") ("Technical Program Management" OR "Engineering Operations")
 ```
 
 ### Priority 2: Customer success / delivery (VP)
@@ -44,6 +63,7 @@ site:linkedin.com/jobs "VP, Customer Success" OR "VP, Professional Services" "Sa
 site:boards.greenhouse.io "VP" ("Customer Success" OR "Implementation" OR "Delivery") (Remote OR "San Francisco")
 site:jobs.lever.co "VP, Customer Success"
 site:jobs.ashbyhq.com "VP" "Customer Success"
+site:linkedin.com/jobs ("VP, Delivery" OR "VP, Professional Services" OR "VP, Implementation") (SaaS OR cloud)
 ```
 
 ### Priority 3: Strategy & operations / chief of staff (VP)
@@ -52,6 +72,7 @@ site:jobs.ashbyhq.com "VP" "Customer Success"
 site:linkedin.com/jobs "VP, Strategy & Operations" OR "VP, Business Operations" "San Francisco Bay Area"
 site:boards.greenhouse.io "Chief of Staff" (CTO OR "Chief Product") (Remote OR "San Francisco")
 site:jobs.lever.co "VP" "Operations" "San Francisco"
+site:linkedin.com/jobs "VP, Operations" (fintech OR payments) "San Francisco Bay Area"
 ```
 
 ### Priority 4: Product management and AI/platform operations (VP)
@@ -60,15 +81,17 @@ site:jobs.lever.co "VP" "Operations" "San Francisco"
 site:linkedin.com/jobs "VP, Product" platform "San Francisco Bay Area"
 site:boards.greenhouse.io "VP" ("Product Operations" OR "AI Enablement" OR "Developer Productivity")
 site:jobs.ashbyhq.com "VP" "Product Operations"
+site:linkedin.com/jobs ("VP, AI Enablement" OR "Head of AI Operations" OR "VP, AI Operations" OR "Head of AI Enablement")
 ```
 
 ## Location Filter
 
 Home is Pacifica, CA; works in San Francisco today (~20-minute commute). Confirmed 2026-10-16:
-- Remote (US), or hybrid anywhere in the SF Bay Area / Peninsula - ideal
+- Hybrid anywhere in the SF Bay Area / Peninsula - ideal (he prefers some in-person time)
+- Remote (US) - acceptable
 - A few office days a week - fine
 - 5-day / fully onsite - exclude
-- Outside the Bay Area with no remote option - exclude
+- Outside the Bay Area with no remote option - exclude (he doesn't target relocation; consider only if a recruiter brings it)
 - Base salary range topping out under $300K - exclude when the posting states pay
 
 ## Language Filter

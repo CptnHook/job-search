@@ -4,7 +4,7 @@ framework_version: 1.1.1
 
 # Candidate Profile
 
-Sources: resume Google Doc "CASEY CASTER Resume_2026" and the Drive profile JSON (`PersonalCommandCenter/casey-caster-profile.json`, revision 6). Drive is the source of truth. Use only facts recorded here or in Drive; items marked *(to confirm)* must be asked about, never filled in.
+Sources: resume Google Doc "CASEY CASTER Resume_2026", the Drive profile JSON (`PersonalCommandCenter/casey-caster-profile.json`, revision 6), and Casey's answers in the /setup interview of 2026-10-17 (those answers win where they differ). Drive is the source of truth for documents. Use only facts recorded here or in Drive; items marked *(to confirm)* must be asked about, never filled in.
 
 ## Identity
 - **Name:** Casey Caster (legal name; the old cover letter header says "Casey R. Caster Jr." - use "Casey Caster" unless he says otherwise)
@@ -16,32 +16,38 @@ Sources: resume Google Doc "CASEY CASTER Resume_2026" and the Drive profile JSON
 - **GitHub:** none listed
 - **Status:** Employed at SingleStore. Available 4 weeks from an offer; "2 weeks notice" in free-text fields
 - **Work authorization:** US citizen; no sponsorship needed now or in the future
-- **Constraints:** works in San Francisco today (about a 20-minute commute). Open to anywhere in the SF Bay Area / Peninsula. Remote or hybrid; a few office days a week is fine; no 5-day office. Travel and relocation *(not discussed)*
+- **Constraints:** works in San Francisco today (about a 20-minute commute). Open to anywhere in the SF Bay Area / Peninsula. Hybrid preferred (some in-person time); a few office days a week is fine; no 5-day office. Travel as needed, preferably under 25%. Relocation: open for the right role, but he won't target roles that require a move; if an employer raises it, it's part of the negotiation
 
-### Target roles (confirmed 2026-10-16)
-- **Target level:** VP (confirmed 2026-10-16). Titles vary; functions of interest: engineering operations, customer success, program management (PMO/TPM), product management, and similar. Still narrowing where he fits best; treat this as open and revisit as applications come in
-- **Work arrangement:** remote or hybrid preferred; a few office days a week is fine. **No 5-day / fully onsite roles**
+### Target roles (confirmed 2026-10-16, refined 2026-10-17)
+- **Target level:** VP, and open to C-level (COO, Chief Customer Officer, Chief Transformation Officer, Chief AI Officer, C-level Chief of Staff). **Director / Sr Director** titles count only at large companies: public, or 5,000+ employees, or $1B+ revenue
+- **Functions:** engineering operations, technical program management, program management / PMO, strategy & operations, customer success, product operations, AI enablement / AI operations, business operations, delivery / professional services, engineering effectiveness / developer productivity, operations at fintech or payments companies, chief of staff to CTO/CPO. Still narrowing where he fits best; revisit as applications come in
+- **Company stage:** startups, late-stage private, and public all fine; leans public
+- **Work arrangement:** hybrid preferred, with some in-person time; remote acceptable. **No 5-day / fully onsite roles**
 - **Location:** anywhere in the SF Bay Area / Peninsula. Works in San Francisco today (about a 20-minute commute from Pacifica)
 - **Compensation:** base salary over $300K (ideally over $350K), plus bonus and equity
+- **Industries to avoid:** none yet; add as they come up
+- **C-level search:** mostly filled through retained search firms (Heidrick & Struggles, Spencer Stuart, Korn Ferry, True Search); Casey is following up on these himself
 
 
 ### Languages
 
 | Language | Level | Notes |
 |----------|-------|-------|
-| English | Native | *(to confirm; no other languages recorded)* |
+| English | Native | Only language (confirmed 2026-10-17) |
 
 ## Education
 
 | Degree | Period | Institution | Key Topics |
 |--------|--------|-------------|------------|
-| MBA | not on resume (LinkedIn: 2021-2023, unconfirmed) | Cornell Johnson Graduate School of Management, Ithaca, NY | Business administration |
-| BS, Electronic Engineering Technology | not on resume | DeVry University, Pomona, CA | Electronic engineering technology |
+| Executive MBA (dual degree) | 2021-2023 | Cornell University (Johnson Graduate School of Management) and Queen's University (Smith School of Business): the Cornell-Queen's Executive MBA Americas, taken while working at SingleStore | Business administration, leadership and high-performing teams |
+| BS, Electronic Engineering Technology | 1999 (leave off resumes) | DeVry University, Pomona, CA | Electronic engineering technology |
 
-Ask before giving any education dates on a form.
+Casey confirmed both (2026-10-17). Leave the BS year off resumes and cover letters; give it only when a form requires it.
+
+Also completed (2024, not listed by Casey's choice): three Cornell (eCornell) AI courses: Introduction to AI, Strategic Implementation of AI Systems, and The Future of AI. He found them too high-level to claim on a resume. Don't list them; they can come up in an interview as background for his AI governance work.
 
 ### Certifications
-- **Project Management Professional (PMP)** - Project Management Institute. Two LinkedIn entries show different IDs and issue dates (2013-01 and 2013-06, the latter expiring 2028-06). Ask before giving a license number or dates
+- **Project Management Professional (PMP)** - Project Management Institute. **Active** (Casey, 2026-10-17). List as "Project Management Professional (PMP)" with no year. Drive records: exam boot camp September 2012, PDU claims from 2014, renewal paid May 2016, and a 2020 resume giving number #1614200. LinkedIn issue dates differ (2013-01 and 2013-06, the latter expiring 2028-06), so ask before giving a number or dates on a form
 - **Scrum Master Certified (SMC)** - SCRUMstudy, December 2015. **Lapsed (Casey, 2026-10-16): do not list it.** He doesn't want scrum master roles, but can build and run a scrum/agile program
 
 ## Professional Experience
@@ -50,7 +56,7 @@ Dates are years only. Ask before giving months.
 
 ### Sr Director, Engineering - Internal Services & Technical Program Management (CTO Chief of Staff) - SingleStore (2021 - Present)
 San Francisco, CA
-- Architected strategy and operations for a cloud-native database company in hypergrowth, reporting to the CPO and then the CTO in a chief-of-staff role. Managed seven teams. Owned programs spanning cost optimization, M&A, governance, and AI platform operations
+- Architected strategy and operations for a cloud-native database company in hypergrowth, reporting to the CPO and then the CTO in a chief-of-staff role. Managed seven teams: 6 direct reports (a director, 2 managers, a TPM who runs QA, and 2 principal-engineer architects); the director runs two teams through managers; 32 people in total (28 FTEs and 4 contractors). Owned programs spanning cost optimization, M&A, governance, and AI platform operations
 - **Unlocked $30M+ in recurring ARR** by rescuing a failing strategic partner integration, leading a cross-functional realignment
 - **Cut internal cloud spend by 50%** through cross-team policy reform and usage modeling
 - **Increased engineering velocity 5x** through agile transformation and accountability systems
@@ -62,7 +68,8 @@ San Francisco, CA
 
 Confirmed by Casey 2026-10-16 (no metrics given yet; ask before quoting numbers):
 - Runs **engineering capacity planning** and **delivery dashboards** for engineering leadership
-- **Owns a P&L** and works with Finance on it
+- **Manages the engineering budget with Finance** (Casey, 2026-10-17: don't say he owns a P&L)
+- Has delivered **multi-million-dollar programs**
 - **Negotiates with vendors** and **analyzes mergers** (alongside the M&A due diligence above)
 
 Note: the old cover letter calls this role "Engineering Infrastructure & Internal Services". Use the resume title unless Casey says otherwise.
@@ -72,6 +79,8 @@ San Francisco, CA
 - Promoted to lead global delivery programs for RippleNet, architecting the implementation function; built global teams and infrastructure to scale network adoption
 - Created customer care and global infrastructure strategies for enterprise financial institutions, including SOW and MSA negotiation and fulfillment
 - **Delivered 800+ global implementations**; built a team of 25 project managers and 75+ indirect partners
+- **Cut customer delivery time 75%**, from eight months to eight weeks (earlier resumes also say 60%; use the eight-months-to-eight-weeks framing)
+- **Oversaw a joint venture in Japan** from formation to a strong market position, delivering implementations at 68+ additional Japanese banks
 - **Established the RippleNet Committee**, a global governance body, negotiating with C-suite executives of major banks; the network grew to hundreds of members handling millions of transactions
 
 ### Senior Program Manager - Wells Fargo Bank (2014 - 2015)
@@ -97,6 +106,11 @@ San Francisco, CA
 - Delivered CRM and communications transformations in utilities and healthcare
 - Created a healthcare recovery tracking system to reduce cardiac readmissions
 
+### Earlier roles (profile only; keep off the resume, use for interview stories)
+- **Product Manager, Global Services Track Lead - NetApp (2006 - 2010):** managed SAP CRM product development for call center operations in professional services delivery; direct cost savings of $5M+ a year
+- **Technical Customer Engineer - Hewlett Packard (1999 - 2004):** account management for Fortune 100 customers including HP Labs, Intel, McAfee, Lockheed Martin, IBM, and Cisco
+- **2020-2021:** independent consulting (Terraform Consulting LLC, project management for software delivery). Leave off the resume; Casey speaks to it if asked
+
 ### Selected accomplishments (resume, not tied to a single role)
 - Built a global team from 3 project managers to 25, plus 75 engineers and architects; delivered 250+ concurrent global projects and 800+ projects over three years
 - Established Ripple's blockchain payments network: membership scheme, governing body, and business rules; enrolled the first 12 banks and grew membership past 200
@@ -116,7 +130,8 @@ San Francisco, CA
 ### Domain Expertise
 - Engineering operations and technical program management
 - Strategy and operations, chief of staff to CTO/CPO
-- Cloud cost optimization (FinOps) and COGS analysis
+- Cloud cost optimization and COGS analysis
+- LLM vendor contracts: negotiating token pricing and usage commitments
 - GenAI adoption, AI governance, AI platform operations
 - M&A technical due diligence and integration
 - Fintech, payments networks, blockchain and digital assets
@@ -124,7 +139,12 @@ San Francisco, CA
 - CRM and digital transformation; agile transformation
 
 ### Software & Tools
-- Not listed on the resume *(to confirm)*
+Confirmed by Casey 2026-10-17. List only these:
+- **Planning and delivery:** Jira, Confluence (not Smartsheet, Asana, Monday, Linear, Aha!, or Productboard)
+- **Data and reporting:** Looker, Tableau, Power BI, SQL, Excel / Google Sheets modeling
+- **Cloud and engineering:** AWS, GCP, Azure, GitHub, CI/CD (no FinOps tools)
+- **AI:** Claude Code, Amazon Bedrock, Google Vertex AI, Cursor, ChatGPT / Copilot rollouts, internal LLM platforms
+- **Business systems:** Salesforce, Coupa (not NetSuite or Workday)
 
 ## Publications
 None.
