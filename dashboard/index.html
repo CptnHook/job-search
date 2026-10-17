@@ -1140,7 +1140,7 @@ render();
   db.collection("network").limit(200).onSnapshot(s=>{ network=s.docs.map(d=>({id:d.id,...d.data()})); render(); }, fail);
   db.collection("rules").limit(100).onSnapshot(s=>{ rules=s.docs.map(d=>({...d.data(),id:d.id})); render(); }, fail);
   db.collection("ruleProposals").limit(300).onSnapshot(s=>{ proposals=s.docs.map(d=>({...d.data(),id:d.id})); render(); }, fail);
-  db.collection("transitions").limit(2000).onSnapshot(s=>{ transitions=s.docs.map(d=>({...d.data(),id:d.id})); render(); }, fail);
+  db.collection("transitions").limit(1000).onSnapshot(s=>{ transitions=s.docs.map(d=>({...d.data(),id:d.id})); render(); }, fail);
   db.collection("requests").limit(300).onSnapshot(s=>{ requests=s.docs.map(d=>({...d.data(),id:d.id})); render(); }, fail);
 })();
 </script>
