@@ -144,7 +144,7 @@ When the role sits outside your home domain, **lead with the domain-transfer arg
 > Strategic operator and product-minded executive with 15+ years in fintech, blockchain, SaaS, and enterprise technology. Turns ambiguity into structured cross-functional programs that unlock efficiency and revenue, from launching Ripple's global payments network with its first 12 banks to building SingleStore's COGS intelligence engine with Finance. Works directly with executives on product, operations, and long-term roadmap strategy; most effective in high-growth companies of 100-1,000 people.
 
 **For customer success / global delivery leadership roles:**
-> Global delivery and customer success leader who built Ripple's implementation function: 800+ implementations, a team of 25 project managers and 75+ partners, and a governance body negotiated with bank C-suites. Earlier, raised revenue per account 20% with 85% retention at Engajer. Combines SOW/MSA negotiation, executive relationships, and program discipline (PMP).
+> Global delivery and customer success leader who built Ripple's implementation function: 800+ implementations, a team of 25 project managers and 75+ engineers and architects, and a governance body negotiated with bank C-suites. Earlier, raised revenue per account 20% with 85% retention at Engajer. Combines SOW/MSA negotiation, executive relationships, and program discipline (PMP).
 
 Statements labeled *[Used for: <company>_<role>]* were extracted from archived application drafts by `/setup` Path A. They are **phrasing references, never fact sources**: when drafting from one, every factual claim still comes from `01-candidate-profile.md` - a past tailored draft does not vouch for its own accuracy.
 
