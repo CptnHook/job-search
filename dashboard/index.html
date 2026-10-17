@@ -166,6 +166,15 @@ select{border:1px solid var(--line);background:var(--bg);border-radius:8px;paddi
 .lesson{background:var(--info-bg);color:var(--ink);border-radius:8px;padding:6px 10px;font-size:13.5px}
 .lesson b{color:var(--info);font-weight:600}
 .retro{display:flex;flex-direction:column;gap:10px}
+.comp{display:flex;flex-direction:column;gap:8px}
+.warnline{margin:0;background:var(--warn-bg);color:var(--warn);border-radius:8px;padding:6px 10px;font-size:13.5px}
+.debrief{border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:10px;margin:0;min-width:0}
+.debrief[hidden]{display:none}
+.debrief legend{font:700 14px var(--display);padding:0 4px}
+.qrow{display:grid;grid-template-columns:minmax(0,1fr) 110px;gap:8px}
+.qlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:13.5px}
+.quote{margin:0;border-left:3px solid var(--line);padding:2px 0 2px 10px;font-style:italic;white-space:pre-wrap}
+.bank{display:flex;flex-direction:column;gap:6px}
 .retro textarea{min-height:70px}
 .learncard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
 /* rules and suggested changes */
@@ -298,6 +307,11 @@ const AFTER_APPLY = ["submitted","recruiter","assessment","interviewing","interv
 // Timeline entry types. Everything except a note or Casey's own follow-up counts as the company reaching out.
 const KINDS = ["Call","Email","Interview","Feedback","Offer","Follow-up I sent","Note"];
 const INBOUND = ["Call","Email","Interview","Feedback","Offer"];
+const ROUNDS = ["Recruiter screen","Hiring manager","Peer","Panel","Executive","Case or presentation","Other"];
+const RATINGS = [["strong","Strong"],["solid","Solid"],["gap","Gap"]];
+// Pay figures, in the order they usually firm up. "ask" is what Casey told them.
+const COMP_KINDS = [["advertised","Advertised"],["ask","My ask"],["recruiter","Recruiter stated"],["offer","Offer"],["final","Final"]];
+const COMP_SOURCES = ["Posting","Recruiter (verbal)","Recruiter (email)","Offer letter","Contract","Me"];
 const ACTIVE = ["recruiter","assessment","interviewing","offer","negotiating","interview"];
 let db=null, canWrite=true, settings={autoApprove:false,minFitAuto:75}, jobs=[], actions=[], network=[], entries=[];
 let openJob = null;       // job id whose ticket is open
@@ -308,6 +322,8 @@ let deferApprove = false;  // a snapshot arrived while Casey was typing
 // Rules the agents follow, and the coach's suggested changes to them. Agents read only `rules`;
 // a suggestion changes nothing until Casey accepts it here.
 let rules = [], proposals = [], transitions = [], requests = [];
+let dqRows = 1;            // question rows open in the interview debrief form
+let renderedJob = null;    // ticket last drawn, so unsaved form values survive a redraw
 let ruleUi = null;         // {id, mode:"edit"|"reject"} for the open suggestion form
 let rulesDirty = false;    // a snapshot arrived while Casey was typing in the Rules tab
 const ruleDrafts = {};     // what Casey has typed in a suggestion's edit or reject box, by input id
@@ -369,6 +385,59 @@ function jobCard(j, mode){
 const today = () => new Date().toISOString().slice(0,10);
 const typingInTicket = () => { const a=document.activeElement; return !!(a && a.closest?.("#v-job") && a.matches?.("input,textarea,select")); };
 
+// Pay: every figure with where it came from, checked against the floor and goal rules and
+// against earlier figures (a lower number from the company, or a changed ask from Casey).
+function compChecks(j){
+  const list = (Array.isArray(j.comp)?j.comp:[]).map((c,i)=>({...c,i})).sort((a,b)=>String(a.date).localeCompare(String(b.date)) || a.i-b.i);
+  const floor = ruleVal("salaryFloor", 300000), goal = ruleVal("salaryGoal", 350000);
+  const warn = [];
+  const theirs = ["advertised","recruiter","offer","final"];
+  list.forEach((c,k)=>{
+    if(!(c.base>0)) return;
+    const earlier = list.slice(0,k).filter(x=>x.base>0);
+    if(c.kind==="ask"){
+      const prev = earlier.filter(x=>x.kind==="ask").pop();
+      if(prev && prev.base!==c.base) warn.push(`Your ask changed from ${money(prev.base)} (${day(prev.date+"T12:00:00Z")}) to ${money(c.base)} (${day(c.date+"T12:00:00Z")}). Keep one number unless the role changed.`);
+    } else if(theirs.includes(c.kind)){
+      const prev = earlier.filter(x=>theirs.includes(x.kind)).pop();
+      const said = {advertised:"advertised", recruiter:"the recruiter stated", offer:"offered", final:"agreed"};
+      if(prev && c.base < prev.base) warn.push(`${COMP_KINDS.find(x=>x[0]===c.kind)[1]} base ${money(c.base)} is below the ${money(prev.base)} ${said[prev.kind]||prev.kind} on ${day(prev.date+"T12:00:00Z")}.`);
+      const ask = earlier.filter(x=>x.kind==="ask").pop();
+      if(ask && ["offer","final"].includes(c.kind) && c.base < ask.base) warn.push(`${COMP_KINDS.find(x=>x[0]===c.kind)[1]} base ${money(c.base)} is below your ask of ${money(ask.base)}.`);
+    }
+  });
+  return {list, floor, goal, warn};
+}
+function compSection(j){
+  const {list, floor, goal, warn} = compChecks(j);
+  const band = b => !(b>0) ? "" : b < floor ? `<span class="chip crit">below floor</span>` : b < goal ? `<span class="chip warn">below goal</span>` : `<span class="chip ok">at or above goal</span>`;
+  return `<section class="comp"><h3>Pay</h3>
+    ${list.length?`<div class="tablewrap"><table style="min-width:560px"><thead><tr><th>Date</th><th>What</th><th class="num">Base</th><th>Bonus</th><th>Equity</th><th>Source</th><th></th></tr></thead><tbody>
+      ${list.map(c=>`<tr><td>${esc(day(c.date+"T12:00:00Z"))}</td><td>${esc((COMP_KINDS.find(x=>x[0]===c.kind)||[,c.kind])[1])}</td>
+        <td class="num">${c.base>0?esc("$"+Number(c.base).toLocaleString("en-US")):""} ${band(c.base)}</td><td>${esc(c.bonus||"")}</td><td>${esc(c.equity||"")}</td>
+        <td>${esc(c.source||"")}${c.note?`<div class="meta">${esc(c.note)}</div>`:""}</td>
+        <td><button class="btn" data-act="delComp" data-id="${esc(j.id)}" data-i="${c.i}" aria-label="Remove this figure">Remove</button></td></tr>`).join("")}</tbody></table></div>`
+      :`<p class="meta" style="margin:0">No figures yet. Log the posted range, what a recruiter says, and any offer, each with its source.</p>`}
+    ${warn.map(w=>`<p class="warnline">${esc(w)}</p>`).join("")}
+    <details class="compadd"><summary class="link" style="cursor:pointer">Add a figure</summary>
+      <div class="entryform" style="margin-top:8px">
+        <div class="row">
+          <label for="cKind">What <select id="cKind">${COMP_KINDS.map(([k,t])=>`<option value="${k}">${t}</option>`).join("")}</select></label>
+          <label for="cBase">Base (USD) <input id="cBase" type="number" min="0" step="1000" placeholder="e.g. 340000"></label>
+          <label for="cDate">Date <input id="cDate" type="date" value="${today()}"></label>
+        </div>
+        <div class="row">
+          <label for="cBonus">Bonus <input id="cBonus" placeholder="e.g. 25% target"></label>
+          <label for="cEquity">Equity <input id="cEquity" placeholder="e.g. 0.2%, 4-yr vest"></label>
+          <label for="cSource">Source <select id="cSource">${COMP_SOURCES.map(x=>`<option>${x}</option>`).join("")}</select></label>
+        </div>
+        <label for="cNote">Note <input id="cNote" placeholder="e.g. range given on the first call"></label>
+        <div class="acts" style="margin:0"><button class="btn primary" type="button" data-act="addComp" data-id="${esc(j.id)}">Save figure</button>
+          <span class="meta">Floor ${esc(money(floor))}, goal ${esc(money(goal))} (from Rules).</span></div>
+      </div></details>
+  </section>`;
+}
+
 function renderTicket(){
   const box = $("v-job");
   if(!openJob){ box.innerHTML=""; return; }
@@ -390,6 +459,10 @@ function renderTicket(){
     + `<span class="sep">·</span>` + CLOSERS.map(([k,t])=>`<button class="step ${j.stage===k?"closed":""}" data-act="stage" data-stage="${k}" data-id="${esc(j.id)}">${esc(t)}</button>`).join("");
   const ev = entries.filter(e=>e.jobId===j.id).sort((a,b)=>String(b.date||b.createdAt).localeCompare(String(a.date||a.createdAt)));
   const r = j.retro || {};
+  const keep = {};
+  let compOpen = false;
+  if(renderedJob===j.id){ box.querySelectorAll("input[id],textarea[id],select[id]").forEach(el=>{ keep[el.id]=el.value; }); compOpen = !!box.querySelector("details.compadd[open]"); }
+  renderedJob = j.id;
   box.innerHTML = `<div class="ticket">
     <button class="back" data-act="back">‹ Back to pipeline</button>
     <div class="head" style="align-items:flex-start">
@@ -407,6 +480,7 @@ function renderTicket(){
       ${spans.length?`<div class="facts">${spans.map(x=>`<span class="chip ${x.current?"info":""}">${esc(STAGE[x.stage]?.t||x.stage)} · ${esc(day(x.at.length>10?x.at:x.at+"T12:00:00Z"))} · <span class="num">${esc(x.days)}</span>d${x.source&&!["you","backfill"].includes(x.source)?" · "+esc(x.source):""}</span>`).join("")}</div>`:""}</div>
     <div class="lesson" style="background:var(--sunk)"><b style="color:var(--ink)">Follow-ups:</b> ${fu}
       ${j.contactEmail?`<span class="meta"> · Contact: ${esc(j.contactEmail)}</span>`:""}</div>
+    ${compSection(j)}
     <div class="split">
       <section>
         <h3>Log a contact or update</h3>
@@ -418,6 +492,21 @@ function renderTicket(){
           </div>
           <label for="eEmail">Their email <span class="hint">Optional. Adding it starts follow-up reminders for this application.</span>
             <input id="eEmail" type="email" placeholder="name@company.com" value="${esc(j.contactEmail||"")}"></label>
+          <fieldset id="debrief" class="debrief" hidden>
+            <legend>Interview debrief</legend>
+            <label for="dRound">Round <select id="dRound">${ROUNDS.map(r=>`<option>${r}</option>`).join("")}</select></label>
+            <div class="eyebrow">Questions they asked, and how you did</div>
+            ${Array.from({length:dqRows},(_,i)=>`<div class="qrow"><input id="dq-q-${i}" aria-label="Question ${i+1}" placeholder="e.g. How would you set up a PMO in your first 90 days?">
+              <select id="dq-r-${i}" aria-label="How you did on question ${i+1}">${RATINGS.map(([k,t])=>`<option value="${k}" ${k==="solid"?"selected":""}>${t}</option>`).join("")}</select></div>`).join("")}
+            <div><button class="btn" type="button" data-act="addQ">Add a question</button></div>
+            <div class="row">
+              <label for="dComp">Pay mentioned <input id="dComp" placeholder="e.g. $320-360K base"></label>
+              <label for="dTimeline">Timeline <input id="dTimeline" placeholder="e.g. decision in 2 weeks"></label>
+              <label for="dNext">Next steps <input id="dNext" placeholder="e.g. panel next week"></label>
+            </div>
+            <label for="dOthers">Other candidates <input id="dOthers" placeholder="e.g. two finalists, one internal"></label>
+            <label for="dFeedback">Their feedback, word for word <textarea id="dFeedback" placeholder="Quote what they said"></textarea></label>
+          </fieldset>
           <label for="eNotes">What happened <textarea id="eNotes" placeholder="Who reached out, what was discussed, next steps"></textarea></label>
           <label for="eLearn">What I learned <span class="hint">About them, the role, or how you came across. This feeds your Learnings.</span>
             <textarea id="eLearn" placeholder="e.g. They care more about release predictability than headcount"></textarea></label>
@@ -428,7 +517,12 @@ function renderTicket(){
         <h3>Timeline</h3>
         ${ev.length?`<ul class="timeline">${ev.map(e=>`<li class="${e.learning?"learned":""}">
           <span class="when">${esc(e.date||day(e.createdAt))} · ${esc(e.kind||"Note")}${e.who?" · "+esc(e.who):""}${e.stage&&STAGE[e.stage]?" · "+esc(STAGE[e.stage].t):""}</span>
-          ${e.notes?`<p>${esc(e.notes)}</p>`:""}${e.learning?`<div class="lesson"><b>Learned:</b> ${esc(e.learning)}</div>`:""}</li>`).join("")}</ul>`
+          ${e.round?`<span class="meta">${esc(e.round)}</span>`:""}
+          ${e.notes?`<p>${esc(e.notes)}</p>`:""}
+          ${(e.questions||[]).length?`<ul class="qlist">${e.questions.map(q=>`<li><span class="chip ${q.rating==="strong"?"ok":q.rating==="gap"?"crit":""}">${esc((RATINGS.find(r=>r[0]===q.rating)||[,q.rating])[1])}</span> ${esc(q.q)}</li>`).join("")}</ul>`:""}
+          ${e.intel&&Object.values(e.intel).some(Boolean)?`<p class="meta">${[["comp","Pay"],["timeline","Timeline"],["next","Next"],["others","Others"]].filter(([k])=>e.intel[k]).map(([k,t])=>`<strong>${t}:</strong> ${esc(e.intel[k])}`).join(" · ")}</p>`:""}
+          ${e.feedback?`<blockquote class="quote">${esc(e.feedback)}</blockquote>`:""}
+          ${e.learning?`<div class="lesson"><b>Learned:</b> ${esc(e.learning)}</div>`:""}</li>`).join("")}</ul>`
           :`<div class="empty">Nothing logged yet. Add calls, emails, interviews, and feedback as they happen.</div>`}
       </section>
     </div>
@@ -441,20 +535,39 @@ function renderTicket(){
         ${r.savedAt?`<span class="meta">Saved ${esc(day(r.savedAt))}</span>`:""}</div>
     </section>
   </div>`;
+  // put back anything typed but not saved (a live update redrew the ticket)
+  Object.entries(keep).forEach(([id,v])=>{ const el=$(id); if(el && el.value!==v) el.value=v; });
+  if(compOpen) box.querySelector("details.compadd")?.setAttribute("open","");
+  syncDebrief();
 }
+function syncDebrief(){ const d=$("debrief"); if(d) d.hidden = $("eKind")?.value!=="Interview"; }
 
+function questionBank(){
+  const qs = [];
+  entries.forEach(e=>(e.questions||[]).forEach(q=>qs.push({...q, company:e.company, round:e.round, date:e.date, jobId:e.jobId})));
+  if(!qs.length) return "";
+  const order = {gap:0, solid:1, strong:2};
+  qs.sort((a,b)=>(order[a.rating]??1)-(order[b.rating]??1) || String(b.date).localeCompare(String(a.date)));
+  const gaps = qs.filter(q=>q.rating==="gap").length;
+  return `<article class="learncard"><div class="head" style="align-items:baseline"><h3>Question bank</h3>
+      <span class="meta">${qs.length} questions · ${gaps} marked as gaps</span></div>
+    <p class="meta" style="margin:0">Every question from your interview debriefs, gaps first. Interview prep reads this.</p>
+    <ul class="qlist bank">${qs.map(q=>`<li><span class="chip ${q.rating==="strong"?"ok":q.rating==="gap"?"crit":""}">${esc((RATINGS.find(r=>r[0]===q.rating)||[,q.rating])[1])}</span>
+      ${esc(q.q)} <span class="meta">· ${esc(q.company||"")}${q.round?", "+esc(q.round):""}${q.date?", "+esc(q.date):""}</span></li>`).join("")}</ul></article>`;
+}
 function renderLearn(){
   const withLesson = entries.filter(e=>e.learning);
   const retros = jobs.filter(j=>j.retro && (j.retro.why||j.retro.marketable||j.retro.differently));
+  const bank = questionBank();
   $("pLearn").textContent = withLesson.length + retros.length;
-  if(!withLesson.length && !retros.length){
+  if(!withLesson.length && !retros.length && !bank){
     $("v-learn").innerHTML = `<div class="empty">No learnings yet. Each note's "What I learned" field and each closed application's retrospective collect here, so patterns across interviews show up in one place.</div>`;
     return;
   }
   const byJob = {};
   withLesson.forEach(e=>{ (byJob[e.jobId] ||= []).push(e); });
   const ids = [...new Set([...Object.keys(byJob), ...retros.map(j=>j.id)])];
-  $("v-learn").innerHTML = `<p class="sub">Everything you've learned across applications. The coaching agent reads this to suggest how to position yourself and what to build next.</p>` +
+  $("v-learn").innerHTML = `<p class="sub">Everything you've learned across applications. The coaching agent reads this to suggest how to position yourself and what to build next.</p>` + bank +
     ids.map(id=>{ const j = jobs.find(x=>x.id===id) || {}; const ls = (byJob[id]||[]).sort((a,b)=>String(b.date).localeCompare(String(a.date)));
       const r = j.retro || {};
       return `<article class="learncard">
@@ -806,8 +919,9 @@ async function ruleAction(act, id, b){
 document.addEventListener("click", async ev=>{
   const b = ev.target.closest("[data-act]"); if(!b) return;
   const id=b.dataset.id, act=b.dataset.act;
-  if(act==="open"){ openJob = id; show("job"); renderTicket(); window.scrollTo?.({top:$("v-job").offsetTop-20,behavior:"smooth"}); return; }
+  if(act==="open"){ dqRows = 1; openJob = id; show("job"); renderTicket(); window.scrollTo?.({top:$("v-job").offsetTop-20,behavior:"smooth"}); return; }
   if(act==="back"){ show("pipe"); return; }
+  if(act==="addQ"){ dqRows++; renderTicket(); $("dq-q-"+(dqRows-1))?.focus(); return; }
   if(!db) return;
   b.disabled=true;
   if(act==="stage"){
@@ -830,6 +944,22 @@ document.addEventListener("click", async ev=>{
       }catch(e){}
     }
     b.disabled=false; return;
+  }
+  if(act==="addComp" || act==="delComp"){
+    const j = jobs.find(x=>x.id===id); if(!j){ b.disabled=false; return; }
+    const cur = Array.isArray(j.comp) ? j.comp.slice() : [];
+    if(act==="addComp"){
+      const base = Number($("cBase").value);
+      if(!$("cBase").value.trim() || !isFinite(base) || base<0){ toast("Enter the base salary as a number."); b.disabled=false; return; }
+      cur.push({kind:$("cKind").value, base, bonus:$("cBonus").value.trim(), equity:$("cEquity").value.trim(),
+        source:$("cSource").value, date:$("cDate").value||today(), note:$("cNote").value.trim(), at:now()});
+      await write(db.doc("jobs/"+id), {comp:cur, updatedAt:now()}, "Figure saved.");
+      renderedJob = null;
+    } else {
+      cur.splice(Number(b.dataset.i), 1);
+      await write(db.doc("jobs/"+id), {comp:cur, updatedAt:now()}, "Removed.");
+    }
+    b.disabled=false; document.activeElement?.blur?.(); renderTicket(); return;
   }
   if(act==="draftFollowup" || act==="sentFollowup"){
     const j = jobs.find(x=>x.id===id); if(!j){ b.disabled=false; return; }
@@ -891,21 +1021,30 @@ document.addEventListener("focusout", ev=>{
   if(ticketDirty) setTimeout(()=>{ if(!typingInTicket()) renderTicket(); },0);
   if(rulesDirty) setTimeout(()=>{ if(!typingInRules()) renderRules(); },0);
 });
+document.addEventListener("change", ev=>{ if(ev.target.id==="eKind") syncDebrief(); });
 document.addEventListener("submit", async ev=>{
   const f = ev.target; if(f.id!=="entryForm") return;
   ev.preventDefault(); if(!db) return;
   const jobId = f.dataset.job, j = jobs.find(x=>x.id===jobId) || {};
   const notes=$("eNotes").value.trim(), learning=$("eLearn").value.trim(), kind=$("eKind").value;
   const email=($("eEmail")?.value||"").trim(), date=$("eDate").value||today();
-  if(!notes && !learning && kind!=="Follow-up I sent"){ toast("Add what happened or what you learned."); return; }
+  const hasDebrief = kind==="Interview" && ([...Array(dqRows).keys()].some(i=>($("dq-q-"+i)?.value||"").trim()) || ($("dFeedback")?.value||"").trim());
+  if(!notes && !learning && !hasDebrief && kind!=="Follow-up I sent"){ toast("Add what happened or what you learned."); return; }
   if(email && !validEmail(email)){ toast("That email doesn't look right."); return; }
   const btn = f.querySelector('button[type="submit"]'); btn.disabled = true;
   try{
+    const extra = {};
+    if(kind==="Interview"){
+      const qs = [];
+      for(let i=0;i<dqRows;i++){ const q=($("dq-q-"+i)?.value||"").trim(); if(q) qs.push({q, rating:$("dq-r-"+i)?.value||"solid"}); }
+      const intel = {comp:$("dComp").value.trim(), timeline:$("dTimeline").value.trim(), next:$("dNext").value.trim(), others:$("dOthers").value.trim()};
+      Object.assign(extra, {round:$("dRound").value, questions:qs, intel, feedback:$("dFeedback").value.trim()});
+    }
     await db.collection("entries").add({jobId, company:j.company||"", role:j.role||"", kind,
-      date, who:$("eWho").value.trim(), notes, learning, stage:j.stage||"", createdAt:now()});
+      date, who:$("eWho").value.trim(), notes, learning, stage:j.stage||"", ...extra, createdAt:now()});
     const fp = followupPatch(j, kind, date, email && email!==j.contactEmail ? email : "");
     await write(db.doc("jobs/"+jobId), {updatedAt:now(), ...(INBOUND.includes(kind)?{lastContactAt:date}:{}), ...fp});
-    toast("Added to the timeline."); document.activeElement?.blur?.(); ticketDirty=false; renderTicket();
+    toast("Added to the timeline."); document.activeElement?.blur?.(); ticketDirty=false; dqRows=1; renderedJob=null; renderTicket();
   }catch(e){ toast(e?.code==="invalid_argument"?"Only the owner can add notes.":"That didn't save. Try again."); }
   btn.disabled = false;
 });
