@@ -24,6 +24,7 @@
   --warn:#f0a94a; --warn-bg:#33261a; --crit:#f2867d; --crit-bg:#3a1f1d;
   --ok:#5cc4a5; --ok-bg:#16302a; --info:#8db8e3; --info-bg:#1a2a3a; color-scheme:dark}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--body)}
 .wrap{max-width:1080px;margin:0 auto;padding-block:28px 64px;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
@@ -169,7 +170,6 @@ select{border:1px solid var(--line);background:var(--bg);border-radius:8px;paddi
 .comp{display:flex;flex-direction:column;gap:8px}
 .warnline{margin:0;background:var(--warn-bg);color:var(--warn);border-radius:8px;padding:6px 10px;font-size:13.5px}
 .debrief{border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:10px;margin:0;min-width:0}
-.debrief[hidden]{display:none}
 .debrief legend{font:700 14px var(--display);padding:0 4px}
 .qrow{display:grid;grid-template-columns:minmax(0,1fr) 110px;gap:8px}
 .qlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:13.5px}
@@ -311,6 +311,21 @@ const ROUNDS = ["Recruiter screen","Hiring manager","Peer","Panel","Executive","
 const RATINGS = [["strong","Strong"],["solid","Solid"],["gap","Gap"]];
 // Pay figures, in the order they usually firm up. "ask" is what Casey told them.
 const COMP_KINDS = [["advertised","Advertised"],["ask","My ask"],["recruiter","Recruiter stated"],["offer","Offer"],["final","Final"]];
+// What Casey can ask the agents for from a ticket. Requests are picked up on their next run; nothing is sent.
+const ASKS = [["draft-followup","Draft a follow-up email"],["interview-prep","Prep me for the next interview"],["research","Research this company"],["question","Something else"]];
+const CONF = {high:{t:"High confidence",c:"ok"}, medium:{t:"Medium confidence",c:""}, low:{t:"Low confidence",c:"warn"}};
+// Fit confidence and the posting check come from the scorer. The posting check is informational only.
+function confChip(j){ const c = CONF[String(j.fitConfidence||"").toLowerCase()]; return c ? `<span class="chip ${c.c}">${c.t}</span>` : ""; }
+function legitLine(j){
+  const L = j.legitimacy; if(!L || typeof L!=="object") return "";
+  const bits = [];
+  if(L.postedAt){ const d = daysBetween(String(L.postedAt).slice(0,10), today()); bits.push(`posted ${day(String(L.postedAt).slice(0,10)+"T12:00:00Z")} (${d} days ago)`); }
+  if(L.reposts) bits.push(`reposted ${L.reposts}×`);
+  if(L.applyLive===true) bits.push("apply button live");
+  if(L.applyLive===false) bits.push("apply button not found");
+  if(L.note) bits.push(L.note);
+  return bits.length ? `<p class="meta" style="margin:0"><strong>Posting check:</strong> ${esc(bits.join(" · "))}${L.checkedAt?` <span>(checked ${esc(day(L.checkedAt))})</span>`:""}</p>` : "";
+}
 const COMP_SOURCES = ["Posting","Recruiter (verbal)","Recruiter (email)","Offer letter","Contract","Me"];
 const ACTIVE = ["recruiter","assessment","interviewing","offer","negotiating","interview"];
 let db=null, canWrite=true, settings={autoApprove:false,minFitAuto:75}, jobs=[], actions=[], network=[], entries=[];
@@ -374,8 +389,9 @@ function jobCard(j, mode){
   return `<article class="job">
     <div><div class="role">${esc(j.role||"Untitled role")}</div><div class="co">${esc(j.company||"Company pending")}</div>
       <div class="facts">${facts}</div></div>
-    <div class="fit">${j.fit!=null?esc(j.fit):"—"}<small>fit / 100</small></div>
+    <div class="fit">${j.fit!=null?esc(j.fit):"—"}<small>fit / 100</small>${confChip(j)?`<div style="margin-top:6px">${confChip(j)}</div>`:""}</div>
     ${j.summary?`<p class="why">${esc(j.summary)}</p>`:""}
+    ${legitLine(j)?`<div class="why">${legitLine(j)}</div>`:""}
     ${holds.length?`<div class="holds">${holds.map(h=>`<div>Held for you: ${esc(h)}</div>`).join("")}</div>`:""}
     <div class="acts">${btns}${links?`<span class="link">${links}</span>`:""}</div>
     ${mode==="approve"||mode==="approved"?docPanel(j):""}
@@ -407,6 +423,24 @@ function compChecks(j){
     }
   });
   return {list, floor, goal, warn};
+}
+function askSection(j){
+  const mine = requests.filter(r=>r.jobId===j.id).sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)));
+  const label = k => (ASKS.find(a=>a[0]===k)||[,k])[1];
+  return `<section class="comp"><h3>Ask Claude</h3>
+    <div class="entryform">
+      <div class="qrow" style="grid-template-columns:minmax(0,1fr) auto">
+        <select id="askKind" aria-label="What to ask">${ASKS.map(([k,t])=>`<option value="${k}">${t}</option>`).join("")}</select>
+        <button class="btn primary" type="button" data-act="ask" data-id="${esc(j.id)}">Ask</button></div>
+      <label for="askText">Anything to add <span class="hint">Optional, except for "Something else". Agents pick this up on their next run; results land here and nothing is sent without you.</span>
+        <textarea id="askText" style="min-height:60px" placeholder="e.g. focus on how they run their PMO today"></textarea></label>
+    </div>
+    ${mine.length?`<ul class="timeline">${mine.map(r=>`<li class="${r.status==="done"?"learned":""}">
+      <span class="when">${esc(day(r.createdAt))} · ${esc(label(r.kind))} · ${r.status==="done"?"Done":r.status==="cancelled"?"Cancelled":"Waiting for an agent"}</span>
+      ${r.prompt?`<p class="meta">${esc(r.prompt)}</p>`:""}
+      ${r.result?`<p>${esc(r.result)}</p>`:""}
+      ${r.status==="open"?`<div><button class="btn" data-act="cancelAsk" data-id="${esc(r.id)}">Cancel</button></div>`:""}</li>`).join("")}</ul>`:""}
+  </section>`;
 }
 function compSection(j){
   const {list, floor, goal, warn} = compChecks(j);
@@ -467,7 +501,7 @@ function renderTicket(){
     <button class="back" data-act="back">‹ Back to pipeline</button>
     <div class="head" style="align-items:flex-start">
       <div><div class="eyebrow">${esc(j.company||"")}</div><h2>${esc(j.role||"")}</h2>
-        <div class="facts"><span class="chip ${st.c}">${esc(st.t)}</span>${j.fit!=null?`<span class="chip num">fit ${esc(j.fit)}</span>`:""}
+        <div class="facts"><span class="chip ${st.c}">${esc(st.t)}</span>${j.fit!=null?`<span class="chip num">fit ${esc(j.fit)}</span>`:""}${confChip(j)}
         ${salary(j)?`<span class="chip num">${esc(salary(j))}</span>`:""}${j.submittedAt?`<span class="chip">applied ${esc(day(j.submittedAt))}</span>`:""}
         ${stall?`<span class="chip warn">stalled ${esc(stall)} days</span>`:""}</div></div>
       <div class="acts" style="margin:0">${safeUrl(j.url)?`<a class="link" href="${esc(j.url)}" target="_blank" rel="noopener">Posting</a>`:""}
@@ -480,6 +514,9 @@ function renderTicket(){
       ${spans.length?`<div class="facts">${spans.map(x=>`<span class="chip ${x.current?"info":""}">${esc(STAGE[x.stage]?.t||x.stage)} · ${esc(day(x.at.length>10?x.at:x.at+"T12:00:00Z"))} · <span class="num">${esc(x.days)}</span>d${x.source&&!["you","backfill"].includes(x.source)?" · "+esc(x.source):""}</span>`).join("")}</div>`:""}</div>
     <div class="lesson" style="background:var(--sunk)"><b style="color:var(--ink)">Follow-ups:</b> ${fu}
       ${j.contactEmail?`<span class="meta"> · Contact: ${esc(j.contactEmail)}</span>`:""}</div>
+    ${legitLine(j)}
+    ${Array.isArray(j.fitDims)&&j.fitDims.length?`<details><summary class="link" style="cursor:pointer">How the fit score was built</summary><ul class="qlist" style="margin-top:6px">${j.fitDims.map(d=>`<li><span class="chip ${d.evidence==="supported"?"ok":d.evidence==="unknown"?"warn":""}">${esc(d.evidence||"")}</span> ${esc(d.name||"")}${d.score!=null?` <span class="num">${esc(d.score)}</span>`:""}${d.note?` <span class="meta">· ${esc(d.note)}</span>`:""}</li>`).join("")}</ul></details>`:""}
+    ${askSection(j)}
     ${compSection(j)}
     <div class="split">
       <section>
@@ -817,7 +854,7 @@ function render(){
   renderLearn();
   renderRules();
 
-  const reqOpen = id => requests.some(r=>r.jobId===id && r.kind==="draft-followup" && r.status!=="done");
+  const reqOpen = id => requests.some(r=>r.jobId===id && r.kind==="draft-followup" && r.status==="open");
   const fuItem = (j, when) => `<div class="item ${when==="soon"?"net":""}">
       <div class="eyebrow">Follow-up ${when==="overdue"?"overdue":when==="today"?"due today":"coming up"} · ${esc(j.company||"")}</div>
       <p><strong>${esc(j.role||"")}</strong></p>
@@ -944,6 +981,19 @@ document.addEventListener("click", async ev=>{
       }catch(e){}
     }
     b.disabled=false; return;
+  }
+  if(act==="ask" || act==="cancelAsk"){
+    try{
+      if(act==="ask"){
+        const j = jobs.find(x=>x.id===id) || {}, kind = $("askKind").value, prompt = $("askText").value.trim();
+        if(kind==="question" && !prompt){ toast("Say what you'd like to know."); b.disabled=false; return; }
+        await db.collection("requests").add({kind, jobId:id, company:j.company||"", role:j.role||"", prompt, status:"open", createdAt:now()});
+        $("askText").value = ""; renderedJob = null; toast("Asked. The answer lands on this ticket.");
+      } else {
+        await write(db.doc("requests/"+id), {status:"cancelled", doneAt:now()}, "Cancelled.");
+      }
+    }catch(e){ toast(e?.code==="invalid_argument"?"Only the owner can do this.":"That didn't save. Try again."); }
+    b.disabled=false; document.activeElement?.blur?.(); renderTicket(); return;
   }
   if(act==="addComp" || act==="delComp"){
     const j = jobs.find(x=>x.id===id); if(!j){ b.disabled=false; return; }
