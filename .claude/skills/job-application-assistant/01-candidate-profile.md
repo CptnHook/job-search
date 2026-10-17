@@ -78,7 +78,7 @@ Note: the old cover letter calls this role "Engineering Infrastructure & Interna
 San Francisco, CA
 - Promoted to lead global delivery programs for RippleNet, architecting the implementation function; built global teams and infrastructure to scale network adoption
 - Created customer care and global infrastructure strategies for enterprise financial institutions, including SOW and MSA negotiation and fulfillment
-- **Delivered 800+ global implementations**; built a team of 25 project managers and 75+ indirect partners
+- **Delivered 800+ global implementations**; led 25 project managers directly and 75+ engineers and architects indirectly (one team; never "indirect partners", a rewrite error in the Nov 2025+ resumes, Casey 2026-10-17)
 - **Cut customer delivery time 75%**, from eight months to eight weeks (earlier resumes also say 60%; use the eight-months-to-eight-weeks framing)
 - **Oversaw a joint venture in Japan** from formation to a strong market position, delivering implementations at 68+ additional Japanese banks
 - **Established the RippleNet Committee**, a global governance body, negotiating with C-suite executives of major banks; the network grew to hundreds of members handling millions of transactions
