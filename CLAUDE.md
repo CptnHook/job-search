@@ -18,32 +18,32 @@ Sources: the resume Google Doc "CASEY CASTER Resume_2026" and the profile JSON i
 ### Identity
 - **Name:** Casey Caster (legal name, confirmed)
 - **Pronouns:** he/him
-- **Location:** Pacifica, CA, USA (San Francisco Bay Area). Works in San Francisco today, about a 20-minute commute. Relocation not considered *(not discussed)*
+- **Location:** Pacifica, CA, USA (San Francisco Bay Area). Works in San Francisco today, about a 20-minute commute. Open to relocating for the right role, but doesn't target roles that require a move; if an employer raises it, it's part of the negotiation
 - **Contact:** casey.caster@gmail.com | 650.799.9926 | linkedin.com/in/caster
 - **Work authorization:** US citizen; no sponsorship needed now or in the future
 - **Languages:**
   | Language | Level |
   |----------|-------|
-  | English | Native *(to confirm)* |
+  | English | Native (only language; confirmed 2026-10-17) |
 - **CV language:** English
 
 - **Status:** Employed. Sr Director, Engineering at SingleStore (2021 - present). Start date for a new role: 4 weeks from the offer, or "2 weeks notice" when a form asks for free text
 - **LinkedIn headline:** "Strategy & Operations | Tech-Forward Executive | Builder of High-Impact Programs" (resume headline; LinkedIn's own *(to confirm)*)
 
 ### Education
-- **MBA** - Cornell Johnson Graduate School of Management, Ithaca, NY (dates not on resume; LinkedIn shows attendance 2021-2023, unconfirmed)
-- **BS, Electronic Engineering Technology** - DeVry University, Pomona, CA (dates not on resume)
+- **Executive MBA (dual degree)** - Cornell University (Johnson) and Queen's University (Smith): Cornell-Queen's Executive MBA Americas, 2021-2023, taken alongside SingleStore
+- **BS, Electronic Engineering Technology** - DeVry University, Pomona, CA, 1999 (leave the year off resumes)
 
 ### Professional Experience
 - **Sr Director, Engineering - Internal Services & Technical Program Management (CTO Chief of Staff)** (2021 - Present) - **SingleStore** (San Francisco, CA)
-  - Strategy and operations for a cloud-native database company in hypergrowth; reported to the CPO, then the CTO, in a chief-of-staff role; managed seven teams
+  - Strategy and operations for a cloud-native database company in hypergrowth; reported to the CPO, then the CTO, in a chief-of-staff role; managed seven teams: 6 direct reports (a director, 2 managers, a TPM who runs QA, 2 principal architects), 32 people (28 FTEs + 4 contractors)
   - Owned cost optimization, M&A, governance, and AI platform operations programs
   - Unlocked $30M+ recurring ARR by rescuing a failing strategic partner integration; cut internal cloud spend 50%; increased engineering velocity 5x; internal development platform cut infrastructure bottlenecks 70%
   - Drove internal GenAI adoption (governance and ops program, internal platforms); built a COGS intelligence engine with Finance; led M&A technical due diligence and integration; leads tooling and AI enablement across the development stack
-  - Runs engineering capacity planning and delivery dashboards; owns a P&L with Finance; negotiates with vendors; analyzes mergers (confirmed 2026-10-16, no metrics yet)
+  - Runs engineering capacity planning and delivery dashboards; manages the engineering budget with Finance (don't say "owns a P&L"); negotiates with vendors, including LLM token pricing; analyzes mergers; delivered multi-million-dollar programs (confirmed 2026-10-16/17)
 - **Global Head of Program Management, Customer Success** (2016 - 2020) - **Ripple, Inc.** (San Francisco, CA)
   - Promoted to lead global delivery for RippleNet and built the implementation function
-  - Delivered 800+ global implementations; built a team of 25 project managers and 75+ indirect partners
+  - Delivered 800+ global implementations; built a team of 25 project managers and 75+ indirect partners; cut delivery time 75% (eight months to eight weeks); oversaw a Japan joint venture that implemented 68+ more banks
   - Established the RippleNet Committee governance body with bank C-suite executives; network grew to hundreds of members
 - **Senior Program Manager** (2014 - 2015) - **Wells Fargo Bank** (San Francisco, CA)
   - Delivered a $20M+ digital transformation initiative with 300+ testers; led a project-portfolio systems upgrade for 10,000+ vendors
@@ -58,10 +58,12 @@ Sources: the resume Google Doc "CASEY CASTER Resume_2026" and the profile JSON i
 - **Primary:** Technical program and portfolio management, engineering operations, strategy and operations, building and scaling teams, cross-functional delivery
 - **Secondary:** Cloud cost optimization and COGS analysis, GenAI adoption and governance, M&A technical due diligence and integration, agile transformation, customer success and global implementations, vendor and contract (SOW/MSA) management
 - **Domain:** Cloud databases and SaaS, fintech and payments, blockchain and digital assets, enterprise software, CRM and digital transformation
-- **Software:** Not listed on the resume *(to confirm)*. Uses **Claude Code** for agentic workflows
+- **Software (confirmed 2026-10-17):** Jira, Confluence; Looker, Tableau, Power BI, SQL, Excel/Sheets modeling; AWS, GCP, Azure, GitHub, CI/CD; **Claude Code**, Amazon Bedrock, Google Vertex AI, Cursor, ChatGPT/Copilot rollouts, internal LLM platforms; Salesforce, Coupa. Never list Smartsheet, NetSuite, Workday, or FinOps tools
+- **Earlier roles (profile only, off the resume):** NetApp, Product Manager, Global Services Track Lead (2006-2010); Hewlett Packard, Technical Customer Engineer (1999-2004); independent consulting 2020-2021 (leave off; Casey speaks to it)
 
 ### Certifications
-- **Project Management Professional (PMP)** - Project Management Institute (issue date and ID differ between two LinkedIn entries; confirm before quoting)
+- **Project Management Professional (PMP)** - Project Management Institute. Active (confirmed 2026-10-17); list without a year. Ask before giving a number or dates on a form
+- Cornell AI coursework (2024) completed but **not listed**, by Casey's choice
 - **Scrum Master Certified (SMC)** - lapsed; do not list (Casey, 2026-10-16). Not seeking scrum master roles, but can build a scrum/agile program
 
 ### Publications
@@ -71,22 +73,26 @@ Sources: the resume Google Doc "CASEY CASTER Resume_2026" and the profile JSON i
 - None listed
 
 ### Behavioral Profile
-No formal assessment on file. From the resume's own words:
+Assessments on file: **DiSC D** (2021), **CliftonStrengths** Achiever, Arranger, Futuristic, Significance, Self-Assurance (2022), **ENTJ** "Field General". Details in `02-behavioral-profile.md`.
 - **Builder, not a maintainer** - stands up new functions, global programs, and teams from scratch
-- **Systems thinker** - turns ambiguity into structured cross-functional programs
-- **Strengths:** data-driven decisions, hiring and developing leaders (mentored three future CEOs), executive alignment, cost and revenue focus
-- **Growth areas:** *(to confirm)*
-- **Thrives in:** high-growth companies of 100-1,000 people where clarity, speed, and structure matter
+- **Accountable, not just responsible** - creates and sponsors strategy rather than only executing others'
+- **Aligns people around common goals**; drained by politics, bickering, and backbiting
+- **Decides to fit the situation:** fast when the path is clear, data-driven when it isn't, course-corrects as he goes
+- **Leadership style:** supportive, encouraging, value-oriented; hires and develops leaders (mentored three future CEOs)
+- **Growth area:** not as technical as he could be; relies on and empowers deeply technical people (frame as a deliberate leadership choice)
+- **Thrives in:** high-growth companies of 100-1,000 people where clarity, speed, and structure matter; also open to large public companies
 
 ### What Excites You
 - Building capabilities and organizations from the ground up
 - Turning underused resources into revenue; bridging technology and business
 - AI enablement and engineering leverage
-- *(more to confirm)*
+- The moment a well-planned program lands and he declares success
 
 ### Target Roles & Preferences
-- **Target level:** VP (confirmed 2026-10-16). Titles vary; functions of interest: engineering operations, customer success, program management (PMO/TPM), product management, and similar. Still narrowing where he fits best; treat this as open and revisit as applications come in
-- **Work arrangement:** remote or hybrid preferred; a few office days a week is fine. **No 5-day / fully onsite roles**
+- **Target level:** VP or C-level (COO, Chief Customer Officer, Chief Transformation Officer, Chief AI Officer, C-level Chief of Staff). **Director / Sr Director only at large companies:** public, or 5,000+ employees, or $1B+ revenue (confirmed 2026-10-17)
+- **Functions:** engineering operations, TPM, PMO, strategy & operations, customer success, product operations, AI enablement/operations, business operations, delivery/professional services, engineering effectiveness/developer productivity, fintech/payments operations, chief of staff to CTO/CPO. Still narrowing; revisit as applications come in
+- **Company stage:** startups, late-stage private, and public all fine; leans public
+- **Work arrangement:** hybrid preferred (some in-person time); remote acceptable; a few office days a week is fine. **No 5-day / fully onsite roles**. Travel as needed, preferably under 25%
 - **Location:** anywhere in the SF Bay Area / Peninsula. Works in San Francisco today (about a 20-minute commute from Pacifica)
 - **Compensation:** base salary over $300K (ideally over $350K), plus bonus and equity
 - **Match signals, strongest first:** access to leadership (reports to or works with the C-suite); high-growth company; AI or developer tooling
@@ -97,7 +103,7 @@ No formal assessment on file. From the resume's own words:
 ### Deal-breakers
 - 5-day / fully onsite office roles
 - Base salary below $300K
-- Roles below VP level (consider only with a clear reason)
+- Below VP level, except Director / Sr Director at a large company (public, 5,000+ employees, or $1B+ revenue)
 - Never apply on Casey's behalf without his review and approval
 
 ## Repo Structure

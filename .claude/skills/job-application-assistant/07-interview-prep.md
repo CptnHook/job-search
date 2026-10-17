@@ -74,7 +74,7 @@ Built from the resume's results. The situation and outcome are documented; the s
 > *(To prepare with Casey.)* Tie it to building and leading a larger function at a high-growth company.
 
 ### "What's your biggest weakness?"
-> *(To prepare with Casey.)* Must be his own answer; don't invent one.
+> Casey's own answer (2026-10-17): "I'm not as technical as I could be. In many regards I have to trust the more technical people around me." Frame it as a deliberate choice: he hires deeply technical leaders (two principal-engineer architects report to him), relies on their depth, knows enough to ask the right questions, and owns the outcome. Close with what he does about it, such as staying hands-on with AI tools like Claude Code and Cursor; confirm the specifics with him before using them.
 
 ### "Why this company specifically?"
 > Customize per company. Must reference: specific projects, company values, market position, or team structure. Never give a generic answer.
