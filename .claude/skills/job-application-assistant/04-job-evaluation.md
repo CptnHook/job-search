@@ -123,6 +123,7 @@ Does this role advance career goals and contain tasks that energize?
 - Tasks that energize: standing up new programs and teams, turning ambiguity into structure, finding cost and revenue upside, mentoring leaders
 - Tasks that energize most: delivering a well-planned program and declaring success; owning and sponsoring the strategy
 - Tasks that drain: pure maintenance work ("not a maintainer"); only executing someone else's plan; politics, bickering, and backbiting
+- **Authority and strategy (Casey, 2026-10-20):** the role must give him real authority (a team, budget, or decision rights) and a part in creating the strategy. Execution-heavy is acceptable only with a seat in shaping the strategy. Score Career Alignment and Behavioral Fit low when a posting frames the role as executing a strategy owned above it ("execution arm of", "influence without authority" with no team), and name it in the gaps
 - Non-task factors: leadership style, department culture, company values, degree of autonomy
 
 **Life situation alignment:** Consider personal constraints:
