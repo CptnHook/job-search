@@ -99,7 +99,10 @@ Assessments on file: **DiSC D** (2021), **CliftonStrengths** Achiever, Arranger,
 - **Match signals, strongest first:** access to leadership (reports to or works with the C-suite); high-growth company; AI or developer tooling
 
 ### Target Sectors
-- Not restricted. Evidence points to: cloud infrastructure and databases, developer and AI tooling, cybersecurity and enterprise SaaS, fintech and payments
+- Excited by (Casey, 2026-10-20): AI and developer tools; fintech and payments (but not big banks); security and enterprise SaaS
+- Cloud infrastructure and data: his strongest experience and kept in scope for career strategy, but less exciting to him
+- Company size: all of high-growth (100-1,000), scale-up (1,000-5,000), and large public (5,000+)
+- Avoid: big banks (e.g. Capital One-, JPMorgan-, Wells Fargo-type banks)
 
 ### Deal-breakers
 - 5-day / fully onsite office roles

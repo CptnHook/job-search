@@ -26,7 +26,9 @@ Sources: resume Google Doc "CASEY CASTER Resume_2026", the Drive profile JSON (`
 - **Work arrangement:** hybrid preferred, with some in-person time; remote acceptable. **No 5-day / fully onsite roles**
 - **Location:** anywhere in the SF Bay Area / Peninsula. Works in San Francisco today (about a 20-minute commute from Pacifica)
 - **Compensation:** base salary over $300K (ideally over $350K), plus bonus and equity
-- **Industries to avoid:** none yet; add as they come up
+- **Sectors (Casey, 2026-10-20):** most excited by AI and developer tools; fintech and payments; security and enterprise SaaS. Cloud infrastructure and data is his strongest experience and stays in scope for career strategy, but it excites him less. All company sizes are in scope: high-growth (100-1,000), scale-up (1,000-5,000), and large public (5,000+)
+- **Industries to avoid:** big banks (Capital One-, JPMorgan-, Wells Fargo-type). Fintech is wanted; big banking is not (Casey, 2026-10-20)
+- **Feedback on the first search batch (Casey, 2026-10-20):** the program-office, TPM and customer-success roles found felt too narrow, the wrong function, and too low in level or pay. What function he wants next is still being narrowed
 - **C-level search:** mostly filled through retained search firms (Heidrick & Struggles, Spencer Stuart, Korn Ferry, True Search); Casey is following up on these himself
 
 
