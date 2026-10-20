@@ -27,7 +27,7 @@ Sources: resume Google Doc "CASEY CASTER Resume_2026", the Drive profile JSON (`
 - **Location:** anywhere in the SF Bay Area / Peninsula. Works in San Francisco today (about a 20-minute commute from Pacifica)
 - **Compensation:** base salary over $300K (ideally over $350K), plus bonus and equity
 - **Sectors (Casey, 2026-10-20):** most excited by AI and developer tools; fintech and payments; security and enterprise SaaS. Cloud infrastructure and data is his strongest experience and stays in scope for career strategy, but it excites him less. All company sizes are in scope: high-growth (100-1,000), scale-up (1,000-5,000), and large public (5,000+)
-- **Industries to avoid:** big banks (Capital One-, JPMorgan-, Wells Fargo-type). Fintech is wanted; big banking is not (Casey, 2026-10-20)
+- **Big banks:** not preferred (Capital One-, JPMorgan-, Wells Fargo-type); fintech is what he wants. A negative signal, not a deal-breaker: he kept the Capital One application after saying so (Casey, 2026-10-20)
 - **Feedback on the first search batch (Casey, 2026-10-20):** the program-office, TPM and customer-success roles found felt too narrow, the wrong function, and too low in level or pay. What function he wants next is still being narrowed
 - **C-level search:** mostly filled through retained search firms (Heidrick & Struggles, Spencer Stuart, Korn Ferry, True Search); Casey is following up on these himself
 
@@ -115,7 +115,7 @@ San Francisco, CA
 - **2020-2021:** independent consulting (Terraform Consulting LLC, project management for software delivery). Leave off the resume; Casey speaks to it if asked
 
 ### Selected accomplishments (resume, not tied to a single role)
-- Built a global team from 3 project managers to 25, plus 75 engineers and architects; delivered 250+ concurrent global projects and 800+ projects over three years
+- Built a global team from 3 project managers to 25, plus 75+ engineers and architects; delivered 250+ concurrent global projects and 800+ projects over three years. **This was at Ripple** (Casey confirmed 2026-10-20), so it can be stated in the Ripple entry
 - Established Ripple's blockchain payments network: membership scheme, governing body, and business rules; enrolled the first 12 banks and grew membership past 200
 - Oversaw a $4M virtual testing network program with teams in Bangalore and London, saving hundreds of person-hours per test cycle
 - Led design and deployment of Ford's North American CRM platform across headquarters and dealerships in the US and Canada
