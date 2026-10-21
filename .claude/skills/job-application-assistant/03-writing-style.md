@@ -17,6 +17,8 @@ framework_version: 1.2.0
    - **Never:** Claiming experience the candidate doesn't have; implying they worked in a domain they haven't.
    When a bullet falls in the "flag it" zone, present it to the user after drafting with: "This bullet is a stretch because X. Keep, soften, or drop?" If the evaluation experience match score is below 50, warn before proceeding to drafting that extensive reframing would be needed.
 
+7. **Run the Humanizer on every cover letter and free-text answer** (Casey's standing instruction) before presenting it: plain words, contractions, varied sentence length, no "not X but Y", no false ranges, nothing said twice. Keep cover letters to **about 250-300 words** (Casey, 2026-10-21: letters were running long). Facts and gaps stay exactly as grounded; the Humanizer changes wording only.
+
 ## Tone
 - **Warm but direct.** Friendly and approachable, but confident without arrogance.
 - **Conversational professional.** Not stiff corporate-speak, not casual chat. Think: how a confident person talks in a good job interview.
