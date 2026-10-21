@@ -134,9 +134,13 @@ Casey chose his "Casey_Caster_Executive_Cover_Letter" Google Doc as the letter t
 5. **What he'd do at [Company]:** align customer commitments with engineering priorities and business goals, set direction across teams and sites, weigh investment against delivery, risk, and cost. Make this specific to the posting.
 6. **Close:** welcome a conversation about the [Job Title] role; thank them. Closing word: "Best,".
 
-Rules for this letter:
-- Plain, simple, straightforward tone. Run the draft through the humanizer skill before showing it.
-- Keep to about one page (roughly 220-280 words of body text).
+Rules for this letter (Casey, 2026-10-21, after two letters drifted from it):
+- **Follow this structure exactly.** It overrides the generic "why this company / company-specific paragraph" advice in `03-writing-style.md` and the generic Document Structure above.
+- **Never describe the company** (their products, funding, AI tools, growth). They know who they are. In the opening, add one or two sentences on **why Casey is excited about the role**, grounded in his profile (building from the ground up, access to the C-suite, AI enablement), and flag them for him to confirm or replace.
+- **His voice:** formal, plain, full words ("I am", "I would"), no contractions, no short punchy fragments. The humanizer pass only removes AI patterns; it must not add contractions or change his register.
+- **Header:** Pacifica, CA | phone | email | linkedin.com/in/caster, then the date, then an address block ("Hiring Manager" or the named person, then the company name), then the salutation.
+- Name a real gap in the "At [Company], I would.." paragraph when the posting requires something he lacks.
+- Keep to about one page (roughly 250-300 words of body text).
 - Every career claim must be in `01-candidate-profile.md`. Choosing this letter doesn't confirm every claim in it.
 - Header name is "Casey Caster" (his legal name), not the "Casey R. Caster Jr." in the Google Doc, unless he says otherwise.
 - Use `\closing{Best,}` instead of "Kind regards,".

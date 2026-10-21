@@ -17,7 +17,7 @@ framework_version: 1.2.0
    - **Never:** Claiming experience the candidate doesn't have; implying they worked in a domain they haven't.
    When a bullet falls in the "flag it" zone, present it to the user after drafting with: "This bullet is a stretch because X. Keep, soften, or drop?" If the evaluation experience match score is below 50, warn before proceeding to drafting that extensive reframing would be needed.
 
-7. **Run the Humanizer on every cover letter and free-text answer** (Casey's standing instruction) before presenting it: plain words, contractions, varied sentence length, no "not X but Y", no false ranges, nothing said twice. Keep cover letters to **about 250-300 words** (Casey, 2026-10-21: letters were running long). Facts and gaps stay exactly as grounded; the Humanizer changes wording only.
+7. **Cover letters follow Casey's own template in `06-cover-letter-templates.md` ("Owner's Preferred Letter"), which overrides the generic structure below** (Casey, 2026-10-21). Never describe the company back to them; they know who they are. Say why Casey is excited about the role instead, in one or two sentences grounded in his profile. Keep his register: formal and plain, full words, no contractions, no punchy fragments. Use the Humanizer only to remove AI patterns (em dashes, "not X but Y", false ranges, flagged vocabulary, repetition), never to add contractions or change his voice. About 250-300 words.
 
 ## Tone
 - **Warm but direct.** Friendly and approachable, but confident without arrogance.
@@ -67,12 +67,14 @@ The cover letter is **not a CV repetition**. It should be forward-looking:
 - Include 1-2 brief examples of past success, but keep the focus forward-looking
 
 ### Motivation / Why This Company (place early)
+- **For Casey: one or two sentences on why the role excites him, not a description of the company (see rule 7).**
 - The **first section** after the opening should explain why you're applying to *this specific company*
 - Use language and themes from the job posting and company website
 - Focus on how you'll contribute to their goals, not what you gain from employment
 - If you spoke with someone at the company, reference the conversation naturally
 
 ### Company-Specific Paragraph
+- **Not used in Casey's letters (rule 7).** His template's "At [Company], I would..." paragraph takes its place.
 - Show you've researched the company (mention specific projects, values, or market position)
 - Explain why this company specifically, not just "a company like yours"
 - Connect domain knowledge to their business context
