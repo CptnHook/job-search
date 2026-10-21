@@ -189,6 +189,11 @@ select{border:1px solid var(--line);background:var(--bg);border-radius:8px;paddi
 .cohead .acts{grid-column:auto;margin:0}
 .cocard details summary{cursor:pointer;font-size:13.5px;color:var(--muted)}
 .cocard details[open]{display:flex;flex-direction:column;gap:6px}
+.viewer{position:fixed;inset:0;z-index:50;background:rgba(20,24,22,.72);display:flex;flex-direction:column}
+.viewer[hidden]{display:none!important}
+.viewer-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--line)}
+.viewer-pages{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.viewer-pages canvas{background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.25);max-width:100%;height:auto}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .cofilters select{width:auto}
 .btn[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
@@ -328,6 +333,16 @@ select{border:1px solid var(--line);background:var(--bg);border-radius:8px;paddi
   </section>
 </div>
 <div id="toast" class="toast" hidden></div>
+<div id="docViewer" class="viewer" role="dialog" aria-modal="true" aria-labelledby="dvTitle" hidden>
+  <div class="viewer-bar">
+    <strong id="dvTitle">Document</strong>
+    <span class="meta" id="dvStatus"></span>
+    <span style="flex:1"></span>
+    <button class="btn" id="dvDownload" type="button" hidden>Download PDF</button>
+    <button class="btn primary" id="dvClose" type="button">Close</button>
+  </div>
+  <div class="viewer-pages" id="dvPages"></div>
+</div>
 
 <script>
 const STAGE = {
@@ -419,8 +434,8 @@ function jobCard(j, mode){
   ].join("");
   const links = safeUrl(j.url) ? `<a class="link" href="${esc(j.url)}" target="_blank" rel="noopener">Posting</a>` : "";
   const docBtns = [
-    docUrl(j.cvUrl) ? `<a class="btn" href="${esc(j.cvUrl)}" target="_blank" rel="noopener">Open resume (PDF)</a>` : "",
-    docUrl(j.coverUrl) ? `<a class="btn" href="${esc(j.coverUrl)}" target="_blank" rel="noopener">Open cover letter (PDF)</a>` : "",
+    docUrl(j.cvUrl) ? `<button class="btn" data-act="viewDoc" data-id="${esc(j.id)}" data-doc="cv">View resume</button>` : "",
+    docUrl(j.coverUrl) ? `<button class="btn" data-act="viewDoc" data-id="${esc(j.id)}" data-doc="cover">View cover letter</button>` : "",
   ].filter(Boolean).join("");
   const missingDocs = (mode==="approve" && !hasDocs(j)) ? `<p class="warnline">The resume and cover letter aren't attached yet, so this can't be approved. Claude attaches them when drafting.</p>` : "";
   let btns = "";
@@ -926,7 +941,7 @@ function docPanel(j){
         <h3>Resume</h3>
         ${cvLink?`<a class="btn" href="${esc(j.cvDocUrl)}" target="_blank" rel="noopener">Edit this copy in Google Docs</a>
           <p class="meta">A copy of your own resume for this application. Whatever is in it when you approve is exported to PDF and submitted.</p>`
-          : docUrl(j.cvUrl) ? `<a class="btn" href="${esc(j.cvUrl)}" target="_blank" rel="noopener">Open the tailored resume (PDF)</a>
+          : docUrl(j.cvUrl) ? `<button class="btn" data-act="viewDoc" data-id="${esc(j.id)}" data-doc="cv">View the tailored resume</button>
           <p class="meta">Tell Claude what to change, and it updates the resume and attaches the new PDF here.</p>`
           :`<p class="meta">The drafter makes a copy of your resume for each application.</p>`}
         ${changes.length?`<div class="eyebrow">Changes from your resume</div><ul class="changes">${changes.map(c=>`<li>
@@ -1019,7 +1034,7 @@ function render(){
     : `<div class="empty">No contacts matched yet. The network agent checks each company against your LinkedIn connections and lists anyone worth a call about the role.</div>`;
   document.querySelectorAll("[data-act]").forEach(b=>{
     const act = b.dataset.act, id = b.dataset.id;
-    if(["open","back","coFilter","coSector"].includes(act)) return;   // navigation and filters work read-only
+    if(["open","back","coFilter","coSector","viewDoc"].includes(act)) return;   // navigation and filters work read-only
     const idle = (act==="saveCover" && (drafts[id]===undefined || drafts[id]===(jobs.find(x=>x.id===id)?.coverText??"")))
       || (act==="coNote" && (coNotes[id]===undefined || coNotes[id]===(companies.find(x=>x.id===id)?.notes??"")))
       || (act==="approve" && !hasDocs(jobs.find(x=>x.id===id)||{}));
@@ -1096,6 +1111,7 @@ document.addEventListener("click", async ev=>{
   if(act==="open"){ dqRows = 1; openJob = id; show("job"); renderTicket(); window.scrollTo?.({top:$("v-job").offsetTop-20,behavior:"smooth"}); return; }
   if(act==="back"){ show("pipe"); return; }
   if(act==="addQ"){ dqRows++; renderTicket(); $("dq-q-"+(dqRows-1))?.focus(); return; }
+  if(act==="viewDoc"){ const j = jobs.find(x=>x.id===id); if(j) openViewer(j, b.dataset.doc); return; }
   if(act==="coFilter" || act==="coSector"){
     if(act==="coFilter") coFilter.status = b.dataset.key; else coFilter.sector = b.dataset.key;
     try{ localStorage.setItem("jh-cofilter", JSON.stringify(coFilter)); }catch(e){}
@@ -1288,6 +1304,63 @@ $("addForm").addEventListener("submit", async ev=>{
     $("addForm").reset(); $("addMsg").textContent="Saved. The scorer will move it to the review queue.";
   }catch(e){ $("addMsg").textContent = e?.code==="quota_exceeded" ? "The store is full. Clear old declined listings first." : "That didn't save. Try again."; }
   $("addBtn").disabled=false;
+});
+
+// Document viewer. Uploaded PDFs are served only inside this page, so a new tab can't open them:
+// fetch the file here, render it with pdf.js, and offer a download through the downloads capability.
+const PDFJS = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/";
+let pdfjsLoad = null, dvBlob = null, dvName = "", dvToken = 0;
+function loadPdfjs(){
+  if(window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+  pdfjsLoad = pdfjsLoad || new Promise((res, rej)=>{
+    const s = document.createElement("script"); s.src = PDFJS+"pdf.min.js";
+    s.onload = ()=>{ window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS+"pdf.worker.min.js"; res(window.pdfjsLib); };
+    s.onerror = ()=>{ pdfjsLoad = null; rej(new Error("viewer")); };
+    document.head.appendChild(s);
+  });
+  return pdfjsLoad;
+}
+function closeViewer(){ dvToken++; $("docViewer").hidden = true; $("dvPages").innerHTML = ""; dvBlob = null; document.body.style.overflow = ""; }
+async function openViewer(j, kind){
+  const url = docUrl(kind==="cv" ? j.cvUrl : j.coverUrl); if(!url) return;
+  const label = kind==="cv" ? "Resume" : "Cover letter";
+  const my = ++dvToken;
+  dvName = `${label} - ${j.company||"application"}.pdf`.replace(/[\\/:*?"<>|]+/g," ");
+  $("dvTitle").textContent = `${label} · ${j.company||""}`;
+  $("dvStatus").textContent = "Loading…"; $("dvPages").innerHTML = ""; $("dvDownload").hidden = true;
+  $("docViewer").hidden = false; document.body.style.overflow = "hidden"; $("dvClose").focus();
+  try{
+    const r = await fetch(url); if(!r.ok) throw new Error("fetch "+r.status);
+    const blob = await r.blob(); if(my!==dvToken) return; dvBlob = blob;
+    const dl = await claude.use("downloads").catch(()=>null);
+    if(my!==dvToken) return; $("dvDownload").hidden = !dl;
+    const lib = await loadPdfjs();
+    const pdf = await lib.getDocument({data: new Uint8Array(await blob.arrayBuffer())}).promise;
+    if(my!==dvToken) return;
+    const width = Math.min($("dvPages").clientWidth - 32, 900);
+    for(let n=1; n<=pdf.numPages; n++){
+      const page = await pdf.getPage(n); if(my!==dvToken) return;
+      const base = page.getViewport({scale:1}), scale = width / base.width, dpr = window.devicePixelRatio || 1;
+      const vp = page.getViewport({scale: scale*dpr});
+      const c = document.createElement("canvas"); c.width = vp.width; c.height = vp.height;
+      c.style.width = Math.round(vp.width/dpr)+"px"; c.setAttribute("aria-label", `${label}, page ${n} of ${pdf.numPages}`);
+      $("dvPages").appendChild(c);
+      await page.render({canvasContext: c.getContext("2d"), viewport: vp}).promise;
+    }
+    $("dvStatus").textContent = `${pdf.numPages} page${pdf.numPages>1?"s":""}`;
+  }catch(e){
+    if(my!==dvToken) return;
+    $("dvStatus").textContent = "";
+    $("dvPages").innerHTML = `<div class="empty" style="background:var(--surface);max-width:520px">${dvBlob ? "The preview couldn't load here. Use Download PDF to open it on your device." : "This document couldn't be loaded. Ask Claude to re-attach it."}</div>`;
+  }
+}
+$("dvClose").addEventListener("click", closeViewer);
+$("docViewer").addEventListener("keydown", ev=>{ if(ev.key==="Escape") closeViewer(); });
+$("dvDownload").addEventListener("click", async ()=>{
+  if(!dvBlob) return;
+  try{ const dl = await claude.use("downloads"); if(!dl) return;
+       const r = await dl.save({filename: dvName, data: dvBlob}); if(r?.status==="saved") toast("Saved."); }
+  catch(e){ if(e?.code==="unavailable") $("dvDownload").hidden = true; else if(e?.code!=="cancelled" && e?.code!=="declined") toast("The download didn't start. Try again."); }
 });
 
 $("coSector").innerHTML = CO_SECTORS.map(s=>`<option>${esc(s)}</option>`).join("");
