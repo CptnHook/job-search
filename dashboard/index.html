@@ -181,6 +181,15 @@ select{border:1px solid var(--line);background:var(--bg);border-radius:8px;paddi
 .rulegrid{display:flex;flex-direction:column;gap:10px;max-width:860px}
 /* target companies */
 .cofilters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;max-width:860px}
+.cobar{position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0 10px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid var(--line);margin-bottom:10px}
+.cobar .entryform{max-width:860px}
+.cochips{display:flex;flex-wrap:wrap;gap:6px;max-width:860px}
+.cochips .btn{padding:5px 10px;font-size:13px}
+.cohead{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.cohead .acts{grid-column:auto;margin:0}
+.cocard details summary{cursor:pointer;font-size:13.5px;color:var(--muted)}
+.cocard details[open]{display:flex;flex-direction:column;gap:6px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .cofilters select{width:auto}
 .btn[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .cocard.cut{opacity:.65}
@@ -261,17 +270,28 @@ select{border:1px solid var(--line);background:var(--bg);border-radius:8px;paddi
     <div class="view" id="v-learn" role="tabpanel" aria-labelledby="t-learn" hidden></div>
 
     <div class="view" id="v-companies" role="tabpanel" aria-labelledby="t-companies" hidden>
-      <div id="companiesLive"></div>
-      <form id="coForm" class="entryform" style="max-width:860px">
-        <h3 style="margin:0">Add a company</h3>
-        <div class="row">
-          <label for="coName">Company <input id="coName" required placeholder="e.g. Plaid"></label>
-          <label for="coUrl">Careers page <input id="coUrl" type="url" placeholder="https://"></label>
-          <label for="coSector">Sector <select id="coSector"></select></label>
+      <div class="cobar">
+        <div class="cofilters">
+          <label for="coSearch" class="sr">Search companies</label>
+          <input id="coSearch" type="search" placeholder="Search companies, roles, notes" autocomplete="off" style="flex:1;min-width:180px">
+          <button class="btn primary" id="coAddToggle" type="button" aria-expanded="false" aria-controls="coForm">+ Add a company</button>
         </div>
-        <label for="coWhy">Why it interests you <input id="coWhy" placeholder="e.g. I know their COO; love the product"></label>
-        <div class="acts" style="margin:0"><button class="btn primary" id="coAdd" type="submit">Add company</button><span id="coMsg" class="meta">The agents fill in size, stage, and open roles on their next run.</span></div>
-      </form>
+        <form id="coForm" class="entryform" hidden>
+          <div class="row">
+            <label for="coName">Company <input id="coName" required placeholder="e.g. Plaid"></label>
+            <label for="coUrl">Careers page <input id="coUrl" type="url" placeholder="https://"></label>
+            <label for="coSector">Sector <select id="coSector"></select></label>
+          </div>
+          <fieldset class="cochips" style="border:0;padding:0;margin:0;align-items:center"><legend class="meta" style="padding:0;margin-bottom:4px">Add as</legend>
+            <label style="display:inline-flex;flex-direction:row;gap:6px;align-items:center;font-weight:600"><input type="radio" name="coStatusNew" value="target" checked style="width:auto"> Target</label>
+            <label style="display:inline-flex;flex-direction:row;gap:6px;align-items:center;font-weight:600;margin-left:12px"><input type="radio" name="coStatusNew" value="maybe" style="width:auto"> Maybe</label>
+          </fieldset>
+          <label for="coWhy">Notes <textarea id="coWhy" style="min-height:60px" placeholder="Why it interests you, people you know there, concerns"></textarea></label>
+          <div class="acts" style="margin:0"><button class="btn primary" id="coAdd" type="submit">Add company</button><button class="btn" id="coCancel" type="button">Close</button><span id="coMsg" class="meta">Claude fills in size, stage, and open roles on its next run.</span></div>
+        </form>
+        <div id="coChips"></div>
+      </div>
+      <div id="companiesLive"></div>
     </div>
 
     <div class="view" id="v-add" role="tabpanel" aria-labelledby="t-add" hidden>
@@ -369,6 +389,9 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",
 const money = n => n ? "$"+Math.round(n/1000)+"K" : "";
 const day = s => { if(!s) return ""; const d=new Date(s); return isNaN(d)?"":d.toLocaleDateString(undefined,{month:"short",day:"numeric"}); };
 const safeUrl = u => /^https:\/\//i.test(u||"") ? u : "";
+// Documents uploaded to this page's asset store are served at /_blob/<id>.
+const docUrl = u => /^https:\/\//i.test(u||"") || /^\/_blob\/[A-Za-z0-9_-]+$/.test(u||"") ? u : "";
+const hasDocs = j => !!((docUrl(j.cvUrl) || safeUrl(j.cvDocUrl)) && (docUrl(j.coverUrl) || j.coverText));
 function toast(msg){ const t=$("toast"); t.textContent=msg; t.hidden=false; clearTimeout(toast.h); toast.h=setTimeout(()=>t.hidden=true,2600); }
 function banner(msg,crit){ const b=$("banner"); b.textContent=msg; b.className="banner"+(crit?" crit":""); b.hidden=!msg; }
 
@@ -394,13 +417,14 @@ function jobCard(j, mode){
     j.ats ? `<span class="chip">${esc(j.ats)}</span>` : "",
     j.approval?.by ? `<span class="chip ok">Approved ${j.approval.by==="auto"?"automatically":"by you"} ${esc(day(j.approval.at))}</span>` : "",
   ].join("");
-  const links = [
-    safeUrl(j.url) ? `<a class="link" href="${esc(j.url)}" target="_blank" rel="noopener">Posting</a>` : "",
-    safeUrl(j.cvUrl) ? `<a class="link" href="${esc(j.cvUrl)}" target="_blank" rel="noopener">Resume</a>` : "",
-    safeUrl(j.coverUrl) ? `<a class="link" href="${esc(j.coverUrl)}" target="_blank" rel="noopener">Cover letter</a>` : "",
-  ].filter(Boolean).join(" · ");
+  const links = safeUrl(j.url) ? `<a class="link" href="${esc(j.url)}" target="_blank" rel="noopener">Posting</a>` : "";
+  const docBtns = [
+    docUrl(j.cvUrl) ? `<a class="btn" href="${esc(j.cvUrl)}" target="_blank" rel="noopener">Open resume (PDF)</a>` : "",
+    docUrl(j.coverUrl) ? `<a class="btn" href="${esc(j.coverUrl)}" target="_blank" rel="noopener">Open cover letter (PDF)</a>` : "",
+  ].filter(Boolean).join("");
+  const missingDocs = (mode==="approve" && !hasDocs(j)) ? `<p class="warnline">The resume and cover letter aren't attached yet, so this can't be approved. Claude attaches them when drafting.</p>` : "";
   let btns = "";
-  if(mode==="approve") btns = `<button class="btn primary" data-act="approve" data-id="${esc(j.id)}">Approve and submit</button>
+  if(mode==="approve") btns = `<button class="btn primary" data-act="approve" data-id="${esc(j.id)}" ${hasDocs(j)?"":"disabled"}>Approve and submit</button>
     <button class="btn" data-act="hold" data-id="${esc(j.id)}">Not now</button>
     <button class="btn danger" data-act="decline" data-id="${esc(j.id)}">Don't apply</button>`;
   if(mode==="approved") btns = `<span class="meta">Approved. You can still edit the documents until the submitter starts.</span>
@@ -415,6 +439,8 @@ function jobCard(j, mode){
     ${j.summary?`<p class="why">${esc(j.summary)}</p>`:""}
     ${legitLine(j)?`<div class="why">${legitLine(j)}</div>`:""}
     ${holds.length?`<div class="holds">${holds.map(h=>`<div>Held for you: ${esc(h)}</div>`).join("")}</div>`:""}
+    ${docBtns?`<div class="acts"><span class="meta">Review before approving:</span>${docBtns}</div>`:""}
+    ${missingDocs?`<div class="acts">${missingDocs}</div>`:""}
     <div class="acts">${btns}${links?`<span class="link">${links}</span>`:""}</div>
     ${mode==="approve"||mode==="approved"?docPanel(j):""}
   </article>`;
@@ -798,58 +824,79 @@ const CO_STATUS = [["new","To decide"],["target","Target"],["maybe","Maybe"],["c
 let companies = [];
 let coFilter = {status:"all", sector:"all"};
 try{ Object.assign(coFilter, JSON.parse(localStorage.getItem("jh-cofilter")||"{}")); }catch(e){}
+if(!["all","new","target","maybe","cut","recent"].includes(coFilter.status)) coFilter.status = "all";
+if(coFilter.sector!=="all" && !CO_SECTORS.includes(coFilter.sector)) coFilter.sector = "all";
 let coDirty = false;
 const coNotes = {};   // unsaved note text, by company id
 const typingInCompanies = () => { const a=document.activeElement; return !!(a && a.closest?.("#companiesLive") && a.matches?.("input,textarea,select")); };
 const coStatus = c => CO_STATUS.some(([k])=>k===c.status) ? c.status : "new";
+const CO_NEW_DAYS = 7;
+const coIsNew = c => c.createdAt && daysBetween(String(c.createdAt).slice(0,10), today()) <= CO_NEW_DAYS;
+const coOpen = new Set();   // company cards whose details are open (this browser only)
+let coQuery = "";
+const coText = c => [c.name,c.sector,c.stage,c.fit,c.concern,c.notes,c.why,...(c.openMatches||[]).map(r=>r.title)].join(" ").toLowerCase();
 function coCard(c){
   const st = coStatus(c), roles = Array.isArray(c.openMatches) ? c.openMatches : [];
   const saved = c.notes ?? "", val = coNotes[c.id] ?? saved, dirty = coNotes[c.id] !== undefined && coNotes[c.id] !== saved;
-  const facts = [c.sizeBand, c.employees, c.bayArea, c.ats?.system ? `${c.ats.system}${c.ats.verified?"":" (not verified)"}` : ""].filter(Boolean);
+  const facts = [c.employees, c.bayArea, c.ats?.system ? `${c.ats.system}${c.ats.verified?"":" (not verified)"}` : ""].filter(Boolean);
+  const size = String(c.sizeBand||"").replace(/\s*\(.*\)/,"");
   return `<article class="rulecard cocard ${st==="cut"?"cut":""}" aria-label="${esc(c.name)}">
-    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;justify-content:space-between">
-      <strong style="font-size:15px">${safeUrl(c.careersUrl)?`<a href="${esc(c.careersUrl)}" target="_blank" rel="noopener">${esc(c.name)}</a>`:esc(c.name)}</strong>
-      <span>${c.addedBy==="you"?`<span class="chip">Added by you</span> `:""}${c.needsResearch?`<span class="chip info">Research pending</span>`:""}</span>
+    <div class="cohead">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:baseline">
+        <strong style="font-size:15px">${safeUrl(c.careersUrl)?`<a href="${esc(c.careersUrl)}" target="_blank" rel="noopener">${esc(c.name)}</a>`:esc(c.name)}</strong>
+        ${size?`<span class="chip">${esc(size)}</span>`:""}
+        ${roles.length?`<span class="chip ok">${roles.length} open role${roles.length>1?"s":""}</span>`:""}
+        ${coIsNew(c)?`<span class="chip info">New</span>`:""}
+        ${c.addedBy==="you"?`<span class="chip">Added by you</span>`:""}${c.needsResearch?`<span class="chip warn">Research pending</span>`:""}
+        ${saved?`<span class="chip">Has notes</span>`:""}
+      </div>
+      <div class="acts">${CO_STATUS.filter(([k])=>k!=="new").map(([k,t])=>`<button class="btn" data-act="coStatus" data-id="${esc(c.id)}" data-status="${k}" aria-pressed="${st===k}">${t}</button>`).join("")}</div>
     </div>
-    ${facts.length?`<p class="meta" style="margin:0">${esc(facts.join(" · "))}</p>`:""}
-    ${c.stage?`<p class="meta" style="margin:0">${esc(c.stage)}</p>`:""}
     ${c.fit?`<p style="margin:0">${esc(c.fit)}</p>`:""}
-    ${c.why?`<p style="margin:0"><strong>Your note when adding:</strong> ${esc(c.why)}</p>`:""}
-    ${c.concern?`<p class="meta" style="margin:0"><strong>Research note:</strong> ${esc(c.concern)}</p>`:""}
-    ${roles.length?`<div class="eyebrow">Senior roles open now${c.matchesCheckedAt?` · checked ${esc(day(c.matchesCheckedAt))}`:""}</div>
-      <ul class="roles">${roles.map(r=>`<li>${safeUrl(r.url)?`<a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.title)}</a>`:esc(r.title)}${r.pay?` <span class="meta">${esc(r.pay)}</span>`:""}</li>`).join("")}</ul>`
-      : (c.ats?.verified?`<p class="meta" style="margin:0">No matching senior roles open right now.</p>`:"")}
-    <label for="co-note-${esc(c.id)}" class="meta">Your notes <textarea id="co-note-${esc(c.id)}" data-conote="${esc(c.id)}" placeholder="People you know there, what excites you, concerns">${esc(val)}</textarea></label>
-    <div class="acts" style="margin:0">
-      ${CO_STATUS.filter(([k])=>k!=="new").map(([k,t])=>`<button class="btn" data-act="coStatus" data-id="${esc(c.id)}" data-status="${k}" aria-pressed="${st===k}">${t}</button>`).join("")}
-      <button class="btn" data-act="coNote" data-id="${esc(c.id)}" ${dirty?"":"disabled"}>Save note</button>
-    </div>
+    <details data-co="${esc(c.id)}" ${coOpen.has(c.id)||dirty?"open":""}>
+      <summary>Details, open roles, and your notes</summary>
+      ${facts.length?`<p class="meta" style="margin:0">${esc(facts.join(" · "))}</p>`:""}
+      ${c.stage?`<p class="meta" style="margin:0">${esc(c.stage)}</p>`:""}
+      ${c.why?`<p style="margin:0"><strong>Your note when adding:</strong> ${esc(c.why)}</p>`:""}
+      ${c.concern?`<p class="meta" style="margin:0"><strong>Research note:</strong> ${esc(c.concern)}</p>`:""}
+      ${roles.length?`<div class="eyebrow">Senior roles open now${c.matchesCheckedAt?` · checked ${esc(day(c.matchesCheckedAt))}`:""}</div>
+        <ul class="roles">${roles.map(r=>`<li>${safeUrl(r.url)?`<a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.title)}</a>`:esc(r.title)}${r.pay?` <span class="meta">${esc(r.pay)}</span>`:""}</li>`).join("")}</ul>`
+        : (c.ats?.verified?`<p class="meta" style="margin:0">No matching senior roles open right now.</p>`:"")}
+      <label for="co-note-${esc(c.id)}" class="meta">Your notes <textarea id="co-note-${esc(c.id)}" data-conote="${esc(c.id)}" placeholder="People you know there, what excites you, concerns">${esc(val)}</textarea></label>
+      <div class="acts" style="margin:0"><button class="btn" data-act="coNote" data-id="${esc(c.id)}" ${dirty?"":"disabled"}>Save note</button></div>
+    </details>
   </article>`;
 }
 function renderCompanies(){
   const undecided = companies.filter(c=>coStatus(c)==="new").length;
   $("pCompanies").textContent = undecided;
+  const q = coQuery.trim().toLowerCase();
+  const byQuery = companies.filter(c => !q || coText(c).includes(q));
+  const stMatch = c => coFilter.status==="all" || (coFilter.status==="recent" ? coIsNew(c) : coStatus(c)===coFilter.status);
+  const secMatch = c => coFilter.sector==="all" || (c.sector||"Other")===coFilter.sector;
+  const nSt = k => byQuery.filter(c=>secMatch(c) && (k==="all" || (k==="recent" ? coIsNew(c) : coStatus(c)===k))).length;
+  const nSec = s => byQuery.filter(c=>stMatch(c) && (s==="all" || (c.sector||"Other")===s)).length;
+  const chip = (act,key,label,n,on) => `<button class="btn" data-act="${act}" data-key="${esc(key)}" aria-pressed="${on}">${esc(label)} <span class="num">${n}</span></button>`;
+  $("coChips").innerHTML = `<div class="cochips" role="group" aria-label="Filter by status">
+      ${[["all","All"],...CO_STATUS,["recent","New this week"]].map(([k,t])=>chip("coFilter",k,t,nSt(k),coFilter.status===k)).join("")}</div>
+    <div class="cochips" role="group" aria-label="Filter by sector" style="margin-top:6px">
+      ${chip("coSector","all","All sectors",nSec("all"),coFilter.sector==="all")}
+      ${CO_SECTORS.filter(s=>s!=="Other"||companies.some(c=>(c.sector||"Other")==="Other")).map(s=>chip("coSector",s,s,nSec(s),coFilter.sector===s)).join("")}</div>`;
   if(typingInCompanies()){ coDirty = true; return; }
   coDirty = false;
-  const count = s => companies.filter(c=>coStatus(c)===s).length;
-  const shown = companies.filter(c => (coFilter.status==="all" || coStatus(c)===coFilter.status) &&
-    (coFilter.sector==="all" || (c.sector||"Other")===coFilter.sector));
+  const shown = byQuery.filter(c=>stMatch(c) && secMatch(c));
   const secOrder = s => { const i = CO_SECTORS.indexOf(s||"Other"); return i<0 ? CO_SECTORS.length : i; };
   const stOrder = {target:0, new:1, maybe:2, cut:3};
-  shown.sort((a,b)=>secOrder(a.sector)-secOrder(b.sector) || stOrder[coStatus(a)]-stOrder[coStatus(b)] ||
+  if(coFilter.status==="recent") shown.sort((a,b)=>String(b.createdAt||"").localeCompare(String(a.createdAt||"")));
+  else shown.sort((a,b)=>secOrder(a.sector)-secOrder(b.sector) || stOrder[coStatus(a)]-stOrder[coStatus(b)] ||
     (b.openMatches?.length||0)-(a.openMatches?.length||0) || String(a.name).localeCompare(String(b.name)));
   const groups = [];
-  for(const c of shown){ const s = c.sector||"Other"; if(!groups.length || groups.at(-1).s!==s) groups.push({s, items:[]}); groups.at(-1).items.push(c); }
+  for(const c of shown){ const s = coFilter.status==="recent" ? "Newest first" : (c.sector||"Other"); if(!groups.length || groups.at(-1).s!==s) groups.push({s, items:[]}); groups.at(-1).items.push(c); }
   $("companiesLive").innerHTML = `<div class="rulegrid">
-    <div><h3>Target companies</h3><p class="sub">Keep the companies you'd be excited to join. The daily finder watches only Target and Maybe; Cut stays here so it isn't suggested again.</p></div>
-    <div class="cofilters" role="group" aria-label="Filter companies">
-      ${[["all","All",companies.length],...CO_STATUS.map(([k,t])=>[k,t,count(k)])].map(([k,t,n])=>`<button class="btn" data-act="coFilter" data-status="${k}" aria-pressed="${coFilter.status===k}">${t} <span class="num">${n}</span></button>`).join("")}
-      <label for="coSecFilter" class="meta" style="display:flex;gap:6px;align-items:center">Sector
-        <select id="coSecFilter"><option value="all">All sectors</option>${CO_SECTORS.map(s=>`<option ${coFilter.sector===s?"selected":""}>${esc(s)}</option>`).join("")}</select></label>
-    </div>
-    ${!companies.length ? `<div class="empty">No companies yet. Add one below, or ask Claude to draft a list.</div>`
-      : !shown.length ? `<div class="empty">Nothing matches this filter.</div>`
+    ${!companies.length ? `<div class="empty">No companies yet. Use "+ Add a company" above, or ask Claude to draft a list.</div>`
+      : !shown.length ? `<div class="empty">Nothing matches${q?` "${esc(coQuery.trim())}"`:""} with these filters.</div>`
       : groups.map(g=>`<h3 style="margin:10px 0 0">${esc(g.s)} <span class="meta num">${g.items.length}</span></h3>${g.items.map(coCard).join("")}`).join("")}
+    <p class="meta">The daily finder watches only Target and Maybe. Cut stays here so it isn't suggested again.</p>
   </div>`;
 }
 
@@ -879,6 +926,8 @@ function docPanel(j){
         <h3>Resume</h3>
         ${cvLink?`<a class="btn" href="${esc(j.cvDocUrl)}" target="_blank" rel="noopener">Edit this copy in Google Docs</a>
           <p class="meta">A copy of your own resume for this application. Whatever is in it when you approve is exported to PDF and submitted.</p>`
+          : docUrl(j.cvUrl) ? `<a class="btn" href="${esc(j.cvUrl)}" target="_blank" rel="noopener">Open the tailored resume (PDF)</a>
+          <p class="meta">Tell Claude what to change, and it updates the resume and attaches the new PDF here.</p>`
           :`<p class="meta">The drafter makes a copy of your resume for each application.</p>`}
         ${changes.length?`<div class="eyebrow">Changes from your resume</div><ul class="changes">${changes.map(c=>`<li>
             <div class="where">${esc(c.where||"")} · ${c.status==="applied"?"applied in the copy":"suggested, not yet applied"}</div>
@@ -969,8 +1018,11 @@ function render(){
       <button class="btn" data-act="dismiss" data-id="${esc(n.id)}">Dismiss</button></div></div>`).join("")
     : `<div class="empty">No contacts matched yet. The network agent checks each company against your LinkedIn connections and lists anyone worth a call about the role.</div>`;
   document.querySelectorAll("[data-act]").forEach(b=>{
-    if(b.dataset.act==="open" || b.dataset.act==="back") return;
-    const idle = b.dataset.act==="saveCover" && (drafts[b.dataset.id]===undefined || drafts[b.dataset.id]===(jobs.find(x=>x.id===b.dataset.id)?.coverText??""));
+    const act = b.dataset.act, id = b.dataset.id;
+    if(["open","back","coFilter","coSector"].includes(act)) return;   // navigation and filters work read-only
+    const idle = (act==="saveCover" && (drafts[id]===undefined || drafts[id]===(jobs.find(x=>x.id===id)?.coverText??"")))
+      || (act==="coNote" && (coNotes[id]===undefined || coNotes[id]===(companies.find(x=>x.id===id)?.notes??"")))
+      || (act==="approve" && !hasDocs(jobs.find(x=>x.id===id)||{}));
     b.disabled = !db || !canWrite || idle;
   });
 }
@@ -1044,7 +1096,10 @@ document.addEventListener("click", async ev=>{
   if(act==="open"){ dqRows = 1; openJob = id; show("job"); renderTicket(); window.scrollTo?.({top:$("v-job").offsetTop-20,behavior:"smooth"}); return; }
   if(act==="back"){ show("pipe"); return; }
   if(act==="addQ"){ dqRows++; renderTicket(); $("dq-q-"+(dqRows-1))?.focus(); return; }
-  if(act==="coFilter"){ coFilter.status = b.dataset.status; try{ localStorage.setItem("jh-cofilter", JSON.stringify(coFilter)); }catch(e){} renderCompanies(); return; }
+  if(act==="coFilter" || act==="coSector"){
+    if(act==="coFilter") coFilter.status = b.dataset.key; else coFilter.sector = b.dataset.key;
+    try{ localStorage.setItem("jh-cofilter", JSON.stringify(coFilter)); }catch(e){}
+    renderCompanies(); return; }
   if(!db) return;
   b.disabled=true;
   if(act==="stage"){
@@ -1134,6 +1189,7 @@ document.addEventListener("click", async ev=>{
   }
   const J = db.doc("jobs/"+id);
   const job = jobs.find(x=>x.id===id);
+  if(act==="approve" && job && !hasDocs(job)){ toast("Attach the resume and cover letter before approving."); b.disabled=false; return; }
   if(act==="approve" && drafts[id]!==undefined && drafts[id]!==(job?.coverText??"")){
     toast("Save or discard your cover letter edits before approving."); openDocs.add(id); render(); return;
   }
@@ -1160,6 +1216,7 @@ document.addEventListener("click", async ev=>{
 // cover-letter editing: keep drafts locally until Save
 document.addEventListener("input", ev=>{
   if(/^p[er]-/.test(ev.target.id||"") && ev.target.closest?.("#v-rules")) ruleDrafts[ev.target.id] = ev.target.value;
+  if(ev.target.id==="coSearch"){ coQuery = ev.target.value; renderCompanies(); return; }
   const cn = ev.target.closest?.("textarea[data-conote]");
   if(cn){ const id = cn.dataset.conote; coNotes[id] = cn.value;
     const save = cn.closest("article")?.querySelector('[data-act="coNote"]'); const c = companies.find(x=>x.id===id);
@@ -1177,7 +1234,6 @@ document.addEventListener("focusout", ev=>{
 });
 document.addEventListener("change", ev=>{
   if(ev.target.id==="eKind") syncDebrief();
-  if(ev.target.id==="coSecFilter"){ coFilter.sector = ev.target.value; try{ localStorage.setItem("jh-cofilter", JSON.stringify(coFilter)); }catch(e){} ev.target.blur(); renderCompanies(); }
 });
 document.addEventListener("submit", async ev=>{
   const f = ev.target; if(f.id!=="entryForm") return;
@@ -1206,6 +1262,7 @@ document.addEventListener("submit", async ev=>{
   btn.disabled = false;
 });
 document.addEventListener("toggle", ev=>{
+  const c = ev.target; if(c.matches?.("details[data-co]")){ c.open ? coOpen.add(c.dataset.co) : coOpen.delete(c.dataset.co); return; }
   const d = ev.target; if(!d.matches?.("details[data-docs]")) return;
   d.open ? openDocs.add(d.dataset.docs) : openDocs.delete(d.dataset.docs);
 }, true);
@@ -1234,6 +1291,9 @@ $("addForm").addEventListener("submit", async ev=>{
 });
 
 $("coSector").innerHTML = CO_SECTORS.map(s=>`<option>${esc(s)}</option>`).join("");
+const coFormShow = on => { $("coForm").hidden = !on; $("coAddToggle").setAttribute("aria-expanded", String(on)); if(on) $("coName").focus(); };
+$("coAddToggle").addEventListener("click", ()=>coFormShow($("coForm").hidden));
+$("coCancel").addEventListener("click", ()=>coFormShow(false));
 $("coForm").addEventListener("submit", async ev=>{
   ev.preventDefault(); if(!db) return;
   const name=$("coName").value.trim(), url=$("coUrl").value.trim();
@@ -1242,9 +1302,12 @@ $("coForm").addEventListener("submit", async ev=>{
   if(dup){ $("coMsg").textContent=`${dup.name} is already on the list.`; return; }
   $("coAdd").disabled=true;
   try{
-    await db.collection("companies").add({name, careersUrl:safeUrl(url), sector:$("coSector").value, why:$("coWhy").value.trim(),
-      status:"target", addedBy:"you", needsResearch:true, createdAt:now(), updatedAt:now()});
-    $("coForm").reset(); $("coMsg").textContent=`Added ${name}. The agents fill in size, stage, and open roles on their next run.`;
+    const status = document.querySelector('input[name="coStatusNew"]:checked')?.value==="maybe" ? "maybe" : "target";
+    const notes = $("coWhy").value.trim();
+    await db.collection("companies").add({name, careersUrl:safeUrl(url), sector:$("coSector").value, notes, ...(notes?{notesAt:now()}:{}),
+      status, decidedAt:now(), addedBy:"you", needsResearch:true, createdAt:now(), updatedAt:now()});
+    $("coForm").reset(); coFormShow(false); toast(`Added ${name}. Claude fills in the details on its next run.`);
+    coFilter = {status:"all", sector:"all"}; coQuery = ""; $("coSearch").value = ""; renderCompanies();
   }catch(e){ $("coMsg").textContent = e?.code==="invalid_argument" ? "Only the owner can add companies." : "That didn't save. Try again."; }
   $("coAdd").disabled=false;
 });
