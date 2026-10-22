@@ -20,7 +20,8 @@
       "Bash(python3 tools/verify_layout.py:*)",
       "Bash(pdftotext:*)",
       "Bash(python3 tools/submitter/greenhouse.py:*)",
-      "Edit(/dashboard/index.html)"
+      "Edit(/dashboard/index.html)",
+      "ArtifactData"
     ]
   }
 }
