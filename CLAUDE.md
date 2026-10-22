@@ -43,7 +43,7 @@ Sources: the resume Google Doc "CASEY CASTER Resume_2026" and the profile JSON i
   - Runs engineering capacity planning and delivery dashboards; manages the engineering budget with Finance (don't say "owns a P&L"); negotiates with vendors, including LLM token pricing; analyzes mergers; delivered multi-million-dollar programs (confirmed 2026-10-16/17)
 - **Global Head of Program Management, Customer Success** (2016 - 2020) - **Ripple, Inc.** (San Francisco, CA)
   - Promoted to lead global delivery for RippleNet and built the implementation function
-  - Delivered 800+ global implementations; led 25 project managers directly and 75+ engineers and architects indirectly (one team; "indirect partners" in the Nov 2025+ resumes was a rewrite error, Casey 2026-10-17); cut delivery time 75% (eight months to eight weeks); oversaw a Japan joint venture that implemented 68+ more banks
+  - Delivered 800+ global implementations; started with 4 project managers (ICs) and grew to three managers of project management, 25 project managers, and 75+ engineers and architects indirectly (one team; "indirect partners" in the Nov 2025+ resumes was a rewrite error, Casey 2026-10-17); cut delivery time 75% (eight months to eight weeks); oversaw a Japan joint venture that implemented 68+ more banks
   - Established the RippleNet Committee governance body with bank C-suite executives; network grew to hundreds of members
 - **Senior Program Manager** (2014 - 2015) - **Wells Fargo Bank** (San Francisco, CA)
   - Delivered a $20M+ digital transformation initiative with 300+ testers; led a project-portfolio systems upgrade for 10,000+ vendors

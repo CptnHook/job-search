@@ -42,7 +42,7 @@ Built from the resume's results. The situation and outcome are documented; the s
 ### 4. Building a global delivery team (scaling an organization)
 **S:** Ripple's global delivery organization had to scale fast as RippleNet grew (Casey confirmed the company 2026-10-20).
 **T:** Build the team and delivery model.
-**A:** Set the vision and recruited, growing from 3 project managers to 25, plus 75+ engineers and architects.
+**A:** Set the vision and recruited, starting with 4 project managers (ICs) and growing to three managers of project management, 25 project managers, and 75+ engineers and architects (indirect).
 **R:** 250+ concurrent global projects; 800+ delivered over three years.
 **Use for:** "How do you build and scale teams?", "Tell me about hiring leaders"
 

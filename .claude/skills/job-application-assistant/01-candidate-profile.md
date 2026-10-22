@@ -75,7 +75,7 @@ Confirmed by Casey 2026-10-16 (no metrics given yet; ask before quoting numbers)
 - Has delivered **multi-million-dollar programs**
 - **Negotiates with vendors** and **analyzes mergers** (alongside the M&A due diligence above)
 
-Title usage (Casey's cover letter brief, 2026-10-21): **cover letters say "Engineering Infrastructure & Internal Services"**; CVs keep the resume title. Cover letter header name is "Casey R. Caster Jr.", signed "Casey Caster"; CVs and forms use "Casey Caster". His brief says the Ripple team **started with four project managers** (the resume accomplishment says three); flagged for Casey to settle.
+Title usage (Casey's cover letter brief, 2026-10-21): **cover letters say "Engineering Infrastructure & Internal Services"**; CVs keep the resume title. Cover letter header name is "Casey R. Caster Jr.", signed "Casey Caster"; CVs and forms use "Casey Caster". Ripple: started with four project manager ICs; ended with three managers of project management reporting to him (settled 2026-10-22).
 
 ### Global Head of Program Management, Customer Success - Ripple, Inc. (2016 - 2020)
 San Francisco, CA
@@ -115,7 +115,7 @@ San Francisco, CA
 - **2020-2021:** independent consulting (Terraform Consulting LLC, project management for software delivery). Leave off the resume; Casey speaks to it if asked
 
 ### Selected accomplishments (resume, not tied to a single role)
-- Built a global team from 3 project managers to 25, plus 75+ engineers and architects; delivered 250+ concurrent global projects and 800+ projects over three years. **This was at Ripple** (Casey confirmed 2026-10-20), so it can be stated in the Ripple entry
+- Built a global team that **started with 4 project managers (individual contributors)** and grew to **three managers of project management reporting to Casey, 25 project managers, and 75+ engineers and architects indirectly** across four regions (Casey, 2026-10-22: "3" is the managers he ended with, not the starting team); delivered 250+ concurrent global projects and 800+ projects over three years. **This was at Ripple** (Casey confirmed 2026-10-20), so it can be stated in the Ripple entry
 - Established Ripple's blockchain payments network: membership scheme, governing body, and business rules; enrolled the first 12 banks and grew membership past 200
 - Oversaw a $4M virtual testing network program with teams in Bangalore and London, saving hundreds of person-hours per test cycle
 - Led design and deployment of Ford's North American CRM platform across headquarters and dealerships in the US and Canada
