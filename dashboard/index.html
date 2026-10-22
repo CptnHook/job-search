@@ -241,7 +241,7 @@ select{border:1px solid var(--line);background:var(--bg);border-radius:8px;paddi
       <div class="count"><b id="cReview" class="num">0</b><span>To review</span></div>
       <div class="count"><b id="cApprove" class="num">0</b><span>To approve</span></div>
       <div class="count" id="cNeedsBox"><b id="cNeeds" class="num">0</b><span>Needs you</span></div>
-      <div class="count"><b id="cSubmitted" class="num">0</b><span>Submitted</span></div>
+      <div class="count"><b id="cSubmitted" class="num">0</b><span>Applied</span></div>
       <div class="count"><b id="cInterview" class="num">0</b><span>Interviews</span></div>
     </div>
   </section>
@@ -347,9 +347,9 @@ select{border:1px solid var(--line);background:var(--bg);border-radius:8px;paddi
 <script>
 const STAGE = {
   new:{t:"Scoring",c:""}, review:{t:"To review",c:"info"}, backlog:{t:"Backlog",c:""}, declined:{t:"Declined",c:""},
-  queued:{t:"Queued to draft",c:"info"}, drafting:{t:"Drafting",c:"info"}, awaiting_approval:{t:"Awaiting approval",c:"warn"},
-  approved:{t:"Approved",c:"ok"}, submitting:{t:"Submitting",c:"ok"}, submitted:{t:"Submitted",c:"ok"},
-  needs_me:{t:"Needs you",c:"warn"}, failed:{t:"Error",c:"crit"},
+  queued:{t:"Queued to draft",c:"info"}, drafting:{t:"Drafting",c:"info"}, awaiting_approval:{t:"Ready for your review",c:"warn"},
+  approved:{t:"Approved, sending soon",c:"ok"}, submitting:{t:"Sending now",c:"ok"}, submitted:{t:"Applied",c:"ok"},
+  needs_me:{t:"Needs you",c:"warn"}, failed:{t:"Couldn't send",c:"crit"},
   recruiter:{t:"Recruiter called",c:"ok"}, interviewing:{t:"Interview cycle",c:"ok"}, negotiating:{t:"Negotiations",c:"ok"},
   assessment:{t:"Assessment",c:"ok"}, offer:{t:"Offer",c:"ok"},
   hired:{t:"Job achieved",c:"ok"}, rejected:{t:"Rejected",c:"crit"}, noresponse:{t:"No response",c:""}, withdrawn:{t:"Withdrawn",c:""},
@@ -407,6 +407,13 @@ const safeUrl = u => /^https:\/\//i.test(u||"") ? u : "";
 // Documents uploaded to this page's asset store are served at /_blob/<id>.
 const docUrl = u => /^https:\/\//i.test(u||"") || /^\/_blob\/[A-Za-z0-9_-]+$/.test(u||"") ? u : "";
 const hasDocs = j => !!((docUrl(j.cvUrl) || safeUrl(j.cvDocUrl)) && (docUrl(j.coverUrl) || j.coverText));
+// Form answers Claude prepared from the live application form. "auto": the submitter sends it
+// after Approve. "manual": the site needs a person (Workday account, CAPTCHA, LinkedIn), so Casey sends it.
+const sendMode = j => j.formAnswers?.mode === "manual" ? "manual" : "auto";
+const hasAnswers = j => !!(j.formAnswers && Array.isArray(j.formAnswers.answers) && j.formAnswers.answers.length && j.formAnswers.hash);
+// Letter text saved after its PDF was built: the PDF must be rebuilt before it can go out.
+const coverStale = j => !!(j.coverBuiltAt && j.coverEditedAt && j.coverEditedAt > j.coverBuiltAt);
+const canApprove = j => hasDocs(j) && !coverStale(j) && (sendMode(j)==="manual" || hasAnswers(j));
 function toast(msg){ const t=$("toast"); t.textContent=msg; t.hidden=false; clearTimeout(toast.h); toast.h=setTimeout(()=>t.hidden=true,2600); }
 function banner(msg,crit){ const b=$("banner"); b.textContent=msg; b.className="banner"+(crit?" crit":""); b.hidden=!msg; }
 
@@ -437,12 +444,16 @@ function jobCard(j, mode){
     docUrl(j.cvUrl) ? `<button class="btn" data-act="viewDoc" data-id="${esc(j.id)}" data-doc="cv">View resume</button>` : "",
     docUrl(j.coverUrl) ? `<button class="btn" data-act="viewDoc" data-id="${esc(j.id)}" data-doc="cover">View cover letter</button>` : "",
   ].filter(Boolean).join("");
-  const missingDocs = (mode==="approve" && !hasDocs(j)) ? `<p class="warnline">The resume and cover letter aren't attached yet, so this can't be approved. Claude attaches them when drafting.</p>` : "";
+  const missingDocs = mode!=="approve" ? ""
+    : !hasDocs(j) ? `<p class="warnline">The resume and cover letter aren't attached yet, so this can't be approved. Claude attaches them when drafting.</p>`
+    : coverStale(j) ? `<p class="warnline">You edited the cover letter after its PDF was made. Claude rebuilds the PDF from your text (no rewording); then you can approve.</p>`
+    : !canApprove(j) ? `<p class="warnline">Claude hasn't prepared the form answers yet, so this can't be approved. You'll see every answer here before anything is sent.</p>` : "";
+  const manual = sendMode(j)==="manual";
   let btns = "";
-  if(mode==="approve") btns = `<button class="btn primary" data-act="approve" data-id="${esc(j.id)}" ${hasDocs(j)?"":"disabled"}>Approve and submit</button>
+  if(mode==="approve") btns = `<button class="btn primary" data-act="approve" data-id="${esc(j.id)}" ${canApprove(j)?"":"disabled"}>${manual?"Approve, I'll send it":"Approve and send"}</button>
     <button class="btn" data-act="hold" data-id="${esc(j.id)}">Not now</button>
     <button class="btn danger" data-act="decline" data-id="${esc(j.id)}">Don't apply</button>`;
-  if(mode==="approved") btns = `<span class="meta">Approved. You can still edit the documents until the submitter starts.</span>
+  if(mode==="approved") btns = `<span class="meta">${j.sendRequestedAt?`Sending started ${esc(day(j.sendRequestedAt))}. `:"Goes out on the next sender run. "}You can undo until sending starts.</span>
     <button class="btn" data-act="unapprove" data-id="${esc(j.id)}">Undo approval</button>`;
   if(mode==="review") btns = `<button class="btn primary" data-act="yes" data-id="${esc(j.id)}">Yes, draft it</button>
     <button class="btn" data-act="backlog" data-id="${esc(j.id)}">Backlog</button>
@@ -454,10 +465,11 @@ function jobCard(j, mode){
     ${j.summary?`<p class="why">${esc(j.summary)}</p>`:""}
     ${legitLine(j)?`<div class="why">${legitLine(j)}</div>`:""}
     ${holds.length?`<div class="holds">${holds.map(h=>`<div>Held for you: ${esc(h)}</div>`).join("")}</div>`:""}
+    ${j.lastError && ["needs_me","failed","awaiting_approval"].includes(j.stage)?`<div class="holds"><div>Not sent: ${esc(j.lastError)}</div></div>`:""}
     ${docBtns?`<div class="acts"><span class="meta">Review before approving:</span>${docBtns}</div>`:""}
     ${missingDocs?`<div class="acts">${missingDocs}</div>`:""}
     <div class="acts">${btns}${links?`<span class="link">${links}</span>`:""}</div>
-    ${mode==="approve"||mode==="approved"?docPanel(j):""}
+    ${mode==="approve"||mode==="approved"?answersPanel(j, mode==="approve")+docPanel(j):""}
   </article>`;
 }
 
@@ -915,6 +927,30 @@ function renderCompanies(){
   </div>`;
 }
 
+// Every answer the submitter will type, shown before Approve. Approve records this exact set (its hash).
+function answersPanel(j, open){
+  const F = j.formAnswers;
+  if(!F) return "";
+  const manual = sendMode(j)==="manual";
+  const rows = Array.isArray(F.answers) ? F.answers : [];
+  const show = v => Array.isArray(v) ? v.join("; ") : v===true ? "Checked" : v==="cv" ? "Your tailored resume (PDF)" : v==="cover" ? "Your cover letter (PDF)" : String(v ?? "");
+  const table = list => `<div class="tablewrap"><table><thead><tr><th>Question</th><th>Answer</th><th>From</th></tr></thead><tbody>${
+    list.map(a=>`<tr><td>${esc(a.label)}${a.required?` <span class="meta">(required)</span>`:""}</td><td>${esc(show(a.value))}</td><td class="meta">${esc(a.source||"")}</td></tr>`).join("")}</tbody></table></div>`;
+  const main = rows.filter(a=>a.group!=="eeo"), eeo = rows.filter(a=>a.group==="eeo");
+  const blank = (Array.isArray(F.leftBlank) ? F.leftBlank : []).filter(Boolean);
+  return `<details class="docs" ${open?"open":""}>
+    <summary>Form answers${rows.length?` (${rows.length})`:""}${manual?` <span class="chip warn">You send this one</span>`:""}</summary>
+    <div style="display:flex;flex-direction:column;gap:8px;padding-top:6px">
+      ${manual?`<p class="warnline">${esc(F.manualReason||"This site needs a person to apply.")} After you approve, it moves to Needs you with these answers to copy.</p>`
+        :`<p class="meta">Approve sends exactly these answers with the resume and cover letter below. If the form changes before sending, nothing is sent and it comes back to you.</p>`}
+      ${main.length?table(main):""}
+      ${eeo.length?`<div class="eyebrow">Voluntary self-identification (your saved answers)</div>${table(eeo)}`:""}
+      ${blank.length?`<p class="meta">Left blank (optional): ${esc(blank.join(", "))}</p>`:""}
+      ${F.inspectedAt?`<p class="meta">Form read ${esc(day(F.inspectedAt))}${F.ats?` · ${esc(F.ats)}`:""}</p>`:""}
+    </div>
+  </details>`;
+}
+
 function docPanel(j){
   const saved = j.coverText ?? "";
   const val = drafts[j.id] ?? saved;
@@ -934,7 +970,7 @@ function docPanel(j){
             ${edited && j.coverDraft?`<button class="btn" data-act="revertCover" data-id="${esc(j.id)}">Restore agent draft</button>`:""}
             <span class="meta">${j.coverEditedAt?`Saved ${esc(day(j.coverEditedAt))}`:"Agent draft"}</span>
           </div>
-          <p class="meta">Your saved text is what gets submitted, laid out in your letter format.</p>`
+          <p class="meta">Your saved text is what gets sent. Claude lays it out in your letter format as a new PDF before you approve.</p>`
           : `<div class="empty">No cover letter yet. The drafter adds it here.</div>`}
       </section>
       <section aria-label="Resume">
@@ -987,7 +1023,7 @@ function render(){
     const approvedWaiting = by("approved");
     $("v-approve").innerHTML = (approve.length ? approve.sort(byFit).map(j=>jobCard(j,"approve")).join("")
       : `<div class="empty">No applications are waiting for approval. Drafted applications appear here with their resume and cover letter${on?", unless auto-approve sends them straight on":""}.</div>`)
-      + (approvedWaiting.length ? `<h3 style="margin-top:10px">Approved, waiting to submit</h3>` + approvedWaiting.sort(byFit).map(j=>jobCard(j,"approved")).join("") : "");
+      + (approvedWaiting.length ? `<h3 style="margin-top:10px">Approved, sending soon</h3>` + approvedWaiting.sort(byFit).map(j=>jobCard(j,"approved")).join("") : "");
   }
   $("v-review").innerHTML = review.length ? review.sort(byFit).map(j=>jobCard(j,"review")).join("")
     : `<div class="empty">The review queue is clear. Scored listings from the finder agent, and listings you add, show up here for a yes or no.</div>`;
@@ -1037,9 +1073,45 @@ function render(){
     if(["open","back","coFilter","coSector","viewDoc"].includes(act)) return;   // navigation and filters work read-only
     const idle = (act==="saveCover" && (drafts[id]===undefined || drafts[id]===(jobs.find(x=>x.id===id)?.coverText??"")))
       || (act==="coNote" && (coNotes[id]===undefined || coNotes[id]===(companies.find(x=>x.id===id)?.notes??"")))
-      || (act==="approve" && !hasDocs(jobs.find(x=>x.id===id)||{}));
+      || (act==="approve" && !canApprove(jobs.find(x=>x.id===id)||{}));
     b.disabled = !db || !canWrite || idle;
   });
+}
+
+// Approve records exactly which answers Casey saw (formAnswers.hash). Auto sites then start the
+// sender routine through Casey's Claude Code Remote connector; if that can't run here, the
+// scheduled sender run picks the approval up instead. Manual sites go straight to Needs you.
+async function approve(job, J){
+  if(!job) return;
+  const approval = {by:"manual", at:now(), answersHash: job.formAnswers?.hash || null};
+  if(sendMode(job)==="manual"){
+    try{
+      await J.update({stage:"needs_me", approval, updatedAt:now()});
+      await db.collection("actions").add({kind:"Send it yourself", jobId:job.id, company:job.company||"", status:"open",
+        title:`Send the ${job.role||"application"} application`,
+        detail:`${job.formAnswers?.manualReason||"This site needs a person to apply."} The answers and documents are on the ticket.`,
+        url:safeUrl(job.url), createdAt:now()});
+      toast("Approved. It's in Needs you, ready for you to send.");
+    }catch(e){ toast("That didn't save. Try again in a moment."); }
+    return;
+  }
+  try{ await J.update({stage:"approved", approval, updatedAt:now()}); }
+  catch(e){ toast("That didn't save. Try again in a moment."); return; }
+  const trig = settings.submitTriggerId;
+  const mcp = trig ? await claude.use("mcp").catch(()=>null) : null;
+  if(!mcp){ toast("Approved. It goes out on the next scheduled sender run."); return; }
+  try{
+    await mcp.callTool("Claude Code Remote", "fire_trigger", {trigger_id: trig, text: `Send approved application: jobs/${job.id}`});
+    await J.update({sendRequestedAt:now()}).catch(()=>{});
+    toast("Approved. Sending has started; you'll see Applied here when it's confirmed.");
+  }catch(e){
+    const why = {approval_required:"the dashboard needs your OK to use Claude Code Remote",
+      server_not_connected:"Claude Code Remote isn't connected for this account",
+      needs_reauth:"Claude Code Remote needs you to sign in again", not_granted:"the dashboard isn't allowed to start it"}[e?.code];
+    // A timeout or upstream error may still have started it; the sender never sends twice.
+    toast(why ? `Approved. Couldn't start sending now (${why}); the scheduled run will send it.`
+              : "Approved. The sender may already be running; if not, the scheduled run will send it.");
+  }
 }
 
 async function write(ref, data, okMsg){
@@ -1205,7 +1277,7 @@ document.addEventListener("click", async ev=>{
   }
   const J = db.doc("jobs/"+id);
   const job = jobs.find(x=>x.id===id);
-  if(act==="approve" && job && !hasDocs(job)){ toast("Attach the resume and cover letter before approving."); b.disabled=false; return; }
+  if(act==="approve" && job && !canApprove(job)){ toast(hasDocs(job)?"The form answers aren't ready yet.":"Attach the resume and cover letter before approving."); b.disabled=false; return; }
   if(act==="approve" && drafts[id]!==undefined && drafts[id]!==(job?.coverText??"")){
     toast("Save or discard your cover letter edits before approving."); openDocs.add(id); render(); return;
   }
@@ -1216,7 +1288,7 @@ document.addEventListener("click", async ev=>{
   if(act==="revertCover"){ delete drafts[id];
     await write(J,{coverText:job?.coverDraft??"",coverEditedByCasey:false,coverEditedAt:null,updatedAt:now()},"Agent draft restored.");
     render(); return; }
-  if(act==="approve") await write(J,{stage:"approved",approval:{by:"manual",at:now()},updatedAt:now()},"Approved. The submitter picks it up on its next run.");
+  if(act==="approve"){ await approve(job, J); b.disabled=false; return; }
   if(act==="unapprove") await write(J,{stage:"awaiting_approval",approval:null,updatedAt:now()},"Approval undone. It's back in your approvals.");
   if(act==="hold") await write(J,{stage:"backlog",updatedAt:now(),note:"Held by Casey"},"Moved to backlog.");
   if(act==="decline") await write(J,{stage:"declined",updatedAt:now()},"Marked don't apply.");

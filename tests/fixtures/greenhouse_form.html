@@ -1,0 +1,78 @@
+<!doctype html>
+<!-- Synthetic stand-in for a Greenhouse embed application form (test data only). -->
+<html><head><meta charset="utf-8"><title>Apply</title>
+<style>.opts{border:1px solid #999}.opts[hidden]{display:none}</style></head>
+<body>
+<h1>Synthetic Role at Example Co</h1>
+<form id="app" onsubmit="return false">
+  <div class="field"><label for="first_name">First Name*</label><input id="first_name" required></div>
+  <div class="field"><label for="last_name">Last Name*</label><input id="last_name" required></div>
+  <div class="field"><label for="email">Email*</label><input id="email" type="text" required></div>
+  <div class="field"><label for="phone">Phone*</label><input id="phone" type="tel" required></div>
+
+  <div class="select__container field">
+    <label for="question_1">Are you legally authorized to work in the United States?*</label>
+    <div class="select__single-value" id="question_1-value"></div>
+    <input id="question_1" role="combobox" aria-required="true" aria-controls="question_1-list" autocomplete="off">
+    <div id="question_1-list" role="listbox" class="opts" hidden>
+      <div role="option">Yes</div><div role="option">No</div>
+    </div>
+  </div>
+
+  <div class="select__container field">
+    <label for="gender">Gender</label>
+    <div class="select__single-value" id="gender-value"></div>
+    <input id="gender" role="combobox" aria-controls="gender-list" autocomplete="off">
+    <div id="gender-list" role="listbox" class="opts" hidden>
+      <div role="option">Male</div><div role="option">Female</div><div role="option">Decline To Self Identify</div>
+    </div>
+  </div>
+
+  <fieldset>
+    <legend>Which of these apply to you?*</legend>
+    <label><input type="checkbox" name="question_2[]" id="question_2[]_a" required> Option A</label>
+    <label><input type="checkbox" name="question_2[]" id="question_2[]_b" required> None of the above</label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Resume/CV*</legend>
+    <label for="resume">Attach</label><input id="resume" type="file" accept=".pdf,.doc,.docx" required>
+    <span id="resume-name"></span>
+  </fieldset>
+  <fieldset>
+    <legend>Cover Letter</legend>
+    <label for="cover_letter">Attach</label><input id="cover_letter" type="file" accept=".pdf,.doc,.docx">
+    <span id="cover_letter-name"></span>
+  </fieldset>
+
+  <div id="code" hidden>
+    <p>Enter the 8-character code we emailed you.</p>
+    <input id="security-input-0" maxlength="8" aria-label="Security code">
+  </div>
+  <button type="submit" id="submit">Submit application</button>
+</form>
+<script>
+  for (const box of document.querySelectorAll('.select__container')) {
+    const input = box.querySelector('[role=combobox]'), list = box.querySelector('[role=listbox]'),
+          shown = box.querySelector('.select__single-value');
+    input.addEventListener('click', () => { list.hidden = false; });
+    input.addEventListener('keydown', e => { if (e.key === 'Escape') list.hidden = true; });
+    for (const o of list.querySelectorAll('[role=option]')) o.addEventListener('click', () => {
+      shown.textContent = o.textContent; input.value = ''; list.hidden = true; });
+  }
+  for (const id of ['resume', 'cover_letter']) document.getElementById(id).addEventListener('change', e => {
+    document.getElementById(id + '-name').textContent = [...e.target.files].map(f => f.name).join(', '); });
+  const wantCode = new URLSearchParams(location.search).get('code') === '1';
+  let codeShown = false;
+  document.getElementById('submit').addEventListener('click', async () => {
+    if (wantCode && !codeShown) {
+      codeShown = true; document.getElementById('code').hidden = false;
+      document.getElementById('submit').textContent = 'Verify and submit';
+      return;
+    }
+    if (wantCode && document.getElementById('security-input-0').value !== 'AB12CD34') return;
+    await fetch('/submitted', {method: 'POST'});
+    location.href = '/embed/job_app/confirmation';
+  });
+</script>
+</body></html>

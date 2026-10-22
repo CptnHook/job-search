@@ -60,6 +60,8 @@ ALLOWED_PERMISSIONS = {
     "Bash(python tools/verify_layout.py:*)",
     "Bash(python3 tools/verify_layout.py:*)",
     "Bash(pdftotext:*)",
+    "Bash(python3 tools/submitter/greenhouse.py:*)",
+    "Edit(/dashboard/index.html)",
 }
 
 # Personal-data ignore rules that must never disappear from .gitignore.
