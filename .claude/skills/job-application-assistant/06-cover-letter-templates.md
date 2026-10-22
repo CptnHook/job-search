@@ -156,7 +156,10 @@ Source: Casey's Google Doc "cover-letter-brief.md" (https://docs.google.com/docu
 
 **Optional:** for customer-delivery roles, add the earlier-career line about driving hundreds of implementations and product upgrades for financial institutions worldwide. Never mention "TPMO"; describe the outcome instead.
 
-**Slots Casey still owes (flag until he confirms):** the Ripple outcome; one SingleStore result phrased as what the business can now do; optionally what the $20M program and $2M savings made possible. Proposed fills from the profile, pending his confirmation (2026-10-22): Ripple, "banks could go live on RippleNet in eight weeks instead of eight months, as the network grew past 200 members"; SingleStore, the $30M+ ARR partner-integration rescue, or 5x engineering velocity and internal cloud spend cut in half.
+**Confirmed fills (Casey, 2026-10-22):**
+- Ripple outcome: "banks could go live on RippleNet in eight weeks instead of eight months, as the network grew past 200 members." (The win was cutting implementation time.)
+- SingleStore results, pick the one that fits the role: "When a strategic partner program was falling apart, I stepped in and led it to successful delivery, and it now brings in more than $30M in recurring ARR." Or: "We multiplied engineering velocity by 5x and cut internal cloud spend in half."
+- Still open (optional): what the $20M program and the $2M savings made possible.
 
 **Layout:** one page; plain text structure only (no tables, text boxes, or columns); no leftover brackets in a final letter.
 

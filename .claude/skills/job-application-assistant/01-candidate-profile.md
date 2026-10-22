@@ -60,7 +60,7 @@ Dates are years only. Ask before giving months.
 ### Sr Director, Engineering - Internal Services & Technical Program Management (CTO Chief of Staff) - SingleStore (2021 - Present)
 San Francisco, CA
 - Architected strategy and operations for a cloud-native database company in hypergrowth, reporting to the CPO and then the CTO in a chief-of-staff role. Managed seven teams: 6 direct reports (a director, 2 managers, a TPM who runs QA, and 2 principal-engineer architects); the director runs two teams through managers; 32 people in total (28 FTEs and 4 contractors). Owned programs spanning cost optimization, M&A, governance, and AI platform operations
-- **Unlocked $30M+ in recurring ARR** by rescuing a failing strategic partner integration, leading a cross-functional realignment
+- **Unlocked $30M+ in recurring ARR** by rescuing a failing strategic partner integration, leading a cross-functional realignment. How it happened (Casey, 2026-10-22): the program was falling apart; he came in and, through leadership, brought it to successful delivery. Say he stepped in and led it to delivery, never that "we rebuilt it"
 - **Cut internal cloud spend by 50%** through cross-team policy reform and usage modeling
 - **Increased engineering velocity 5x** through agile transformation and accountability systems
 - **Drove internal GenAI adoption** through a governance and ops program, creating and launching internal platforms
