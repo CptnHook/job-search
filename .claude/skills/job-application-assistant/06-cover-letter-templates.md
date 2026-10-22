@@ -123,27 +123,42 @@ The font wrapper is mandatory — if you just move `\begin{itemize}` outside `\l
 | `\closing{text}` | Closing line |
 | `\signature{name}` | Printed name below signature |
 
-## Owner's Preferred Letter (use as the model)
+## Owner's Preferred Letter: Casey's brief (authoritative)
 
-Casey chose his "Casey_Caster_Executive_Cover_Letter" Google Doc as the letter to use for applications. Its bracketed fields ([Date], [Hiring Manager Name], [Company Name], [Job Title]) are filled per job. Follow its structure and tone in the cover.cls template above:
+Source: Casey's Google Doc "cover-letter-brief.md" (https://docs.google.com/document/d/1M86xaBFQCV2c-D454kKH2-R420A38MsbjzlgxSOKCTw), written 2026-10-21. **It overrides everything else in this file and in `03-writing-style.md` about letter structure, tone, and company content.** If the Doc changes, re-read it and update this section.
 
-1. **Opening:** interest in the [Job Title] role at [Company]; "experienced software executive" with customer-facing delivery, digital transformation, vendor management, and engineering leadership; connects customer needs and technical decisions to business priorities (delivery, operational performance, cost efficiency).
-2. **Current role:** one line on leading engineering internal services at SingleStore. Tailor with one SingleStore result that fits the posting (ARR rescue, cloud spend, velocity, GenAI adoption, M&A).
-3. **Bullets (3):** hundreds of large-scale implementations across the global financial industry (Ripple); a $20M program across sites and vendors with 300+ testers (Wells Fargo); $2M+ cost efficiency and engagement gains (Autodesk). Swap in the most relevant evidence from `01-candidate-profile.md`.
-4. **How he leads:** collaboration; strong relationships with customers, colleagues, and vendors; bringing technical and business priorities together.
-5. **What he'd do at [Company]:** align customer commitments with engineering priorities and business goals, set direction across teams and sites, weigh investment against delivery, risk, and cost. Make this specific to the posting.
-6. **Close:** welcome a conversation about the [Job Title] role; thank them. Closing word: "Best,".
+**Core idea:** Casey is motivated by expanding what a business is capable of achieving. He judges success by how much more the business can accomplish because of what he built, not by team size or activity. Lead with outcomes; headcount, programs, and tools are the means.
 
-Rules for this letter (Casey, 2026-10-21, after two letters drifted from it):
-- **Follow this structure exactly.** It overrides the generic "why this company / company-specific paragraph" advice in `03-writing-style.md` and the generic Document Structure above.
-- **Never describe the company** (their products, funding, AI tools, growth). They know who they are. In the opening, add one or two sentences on **why Casey is excited about the role**, grounded in his profile (building from the ground up, access to the C-suite, AI enablement), and flag them for him to confirm or replace.
-- **His voice:** formal, plain, full words ("I am", "I would"), no contractions, no short punchy fragments. The humanizer pass only removes AI patterns; it must not add contractions or change his register.
-- **Header:** Pacifica, CA | phone | email | linkedin.com/in/caster, then the date, then an address block ("Hiring Manager" or the named person, then the company name), then the salutation.
-- Name a real gap in the "At [Company], I would.." paragraph when the posting requires something he lacks.
-- Keep to about one page (roughly 250-300 words of body text).
-- Every career claim must be in `01-candidate-profile.md`. Choosing this letter doesn't confirm every claim in it.
-- Header name is "Casey Caster" (his legal name), not the "Casey R. Caster Jr." in the Google Doc, unless he says otherwise.
-- Use `\closing{Best,}` instead of "Kind regards,".
+**Voice:** first person, active verbs, contractions, conviction over hedging. No "I would be able to" hedges ("I'd go straight to" is fine). Plain, direct, a little dry is fine. At least one line showing his point of view on how organizations should work. No em dashes, no "not X, it's Y", no reflexive lists of three, no stock AI words, no chatbot sign-offs; vary sentence length. Run the humanizer checklist. Never invent facts; leave a bracketed slot and flag it.
+
+**Structure** (one page, about 200-280 words of body):
+1. Header: "Casey R. Caster Jr.", then: Pacifica, CA | 650-799-9926 | Casey.caster@gmail.com | www.linkedin.com/in/caster
+2. Date, then hiring manager name and company name. No name: salutation "Dear [Company] Hiring Team," and the company name alone in the address block. No company description.
+3. Opener (two sentences): conviction first, then why this role and company, with **one** specific connection to the company's ambitions or a recent release, tied to the operational challenge it creates (verify it independently).
+4. Ripple paragraph, 5. SingleStore paragraph, 6. scale line, 7. close, 8. "Best," / "Casey Caster", per the template below.
+
+**Template:**
+
+> Dear [Hiring Manager Name],
+>
+> What excites me most is helping a business do what it didn't think it could. That's what draws me to the [VP Title] role at [Company Name], and in particular [specific connection to the company's ambitions].
+>
+> At Ripple, I started with four project managers who couldn't keep up with customer demand. That team grew into a global organization, and the result I point to is [business outcome: what Ripple or its customers could do afterward]. Along the way we built programs and tools that met customer needs without continually adding headcount.
+>
+> Today I lead Engineering Infrastructure & Internal Services at SingleStore with the same mindset. I give people clear direction, build what the business needs, and change course when a better opportunity shows up. I'll retire a structure I built the day it stops paying for itself. [SingleStore result.]
+>
+> The pattern holds at other scales. I led a $20M program across multiple sites and vendors, and I delivered more than $2M in cost efficiencies at a multinational software company.
+>
+> I'd like to hear where you want to take [Company Name] and talk about how I can help you get there faster.
+>
+> Best,
+> Casey Caster
+
+**Optional:** for customer-delivery roles, add the earlier-career line about driving hundreds of implementations and product upgrades for financial institutions worldwide. Never mention "TPMO"; describe the outcome instead.
+
+**Slots Casey still owes (flag until he confirms):** the Ripple outcome; one SingleStore result phrased as what the business can now do; optionally what the $20M program and $2M savings made possible. Proposed fills from the profile, pending his confirmation (2026-10-22): Ripple, "banks could go live on RippleNet in eight weeks instead of eight months, as the network grew past 200 members"; SingleStore, the $30M+ ARR partner-integration rescue, or 5x engineering velocity and internal cloud spend cut in half.
+
+**Layout:** one page; plain text structure only (no tables, text boxes, or columns); no leftover brackets in a final letter.
 
 ## Tailoring Guidelines
 

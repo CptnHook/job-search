@@ -75,7 +75,7 @@ Confirmed by Casey 2026-10-16 (no metrics given yet; ask before quoting numbers)
 - Has delivered **multi-million-dollar programs**
 - **Negotiates with vendors** and **analyzes mergers** (alongside the M&A due diligence above)
 
-Note: the old cover letter calls this role "Engineering Infrastructure & Internal Services". Use the resume title unless Casey says otherwise.
+Title usage (Casey's cover letter brief, 2026-10-21): **cover letters say "Engineering Infrastructure & Internal Services"**; CVs keep the resume title. Cover letter header name is "Casey R. Caster Jr.", signed "Casey Caster"; CVs and forms use "Casey Caster". His brief says the Ripple team **started with four project managers** (the resume accomplishment says three); flagged for Casey to settle.
 
 ### Global Head of Program Management, Customer Success - Ripple, Inc. (2016 - 2020)
 San Francisco, CA
