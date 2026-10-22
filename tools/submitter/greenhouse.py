@@ -14,6 +14,7 @@ dashboard ticket, and approved there. This tool never decides an answer: it
 replays the plan exactly and stops when the live form no longer matches it.
 
 Stops without submitting (status `blocked`) when:
+  - the plan's hash isn't the one Casey approved (--approved-hash)
   - a planned question changed (label, type, required, or choices)
   - a required question has no planned answer
   - a planned value doesn't stick, or an upload doesn't show
@@ -27,8 +28,10 @@ in --code-file. Anything else after the click is `uncertain`, never retried.
 
 Usage:
   python3 tools/submitter/greenhouse.py inspect --url URL [--board B] [--out form.json]
+  python3 tools/submitter/greenhouse.py hash --plan form_answers.json
   python3 tools/submitter/greenhouse.py submit --plan form_answers.json \
-      --cv cv.pdf --cover cover.pdf --evidence DIR [--submit] [--code-file F]
+      --cv cv.pdf --cover cover.pdf --evidence DIR \
+      [--submit --approved-hash H] [--code-file F]
 
 Prints one JSON object on stdout. Exit 0 when the run did what was asked
 (including a clean `blocked` stop), 1 on usage errors or `uncertain`.
@@ -311,6 +314,12 @@ def launch(pw):
     return pw.chromium.launch(**kwargs)
 
 
+def plan_hash(plan):
+    """The hash shown on the dashboard and recorded by Approve: what gets typed and uploaded."""
+    return sha({"url": plan.get("url"), "files": plan.get("files") or {},
+                "answers": [{k: a.get(k) for k in ("key", "value", "query", "signature")} for a in plan["answers"]]})[:20]
+
+
 def check_plan(snap, plan):
     """Compare the live form with the approved plan. Returns (pairs, problems)."""
     live = {q["key"]: q for q in snap["questions"]}
@@ -340,6 +349,9 @@ def evidence_shot(page, folder, name):
 
 def run_submit(args):
     plan = json.loads(Path(args.plan).read_text(encoding="utf-8"))
+    if args.submit and args.approved_hash != plan_hash(plan):
+        Path(args.evidence).mkdir(parents=True, exist_ok=True)
+        return {"status": "blocked", "reasons": ["The answer plan doesn't match what was approved on the dashboard."]}
     files = {"cv": Path(args.cv).resolve() if args.cv else None,
              "cover": Path(args.cover).resolve() if args.cover else None}
     files = {k: v for k, v in files.items() if v}
@@ -488,7 +500,13 @@ def main(argv=None):
     s.add_argument("--evidence", required=True)
     s.add_argument("--submit", action="store_true", help="click Submit (otherwise fill and check only)")
     s.add_argument("--code-file")
+    s.add_argument("--approved-hash", help="formAnswers.hash Casey approved; required with --submit")
+    h = sub.add_parser("hash", help="print the plan hash to put on the dashboard ticket")
+    h.add_argument("--plan", required=True)
     args = ap.parse_args(argv)
+    if args.cmd == "hash":
+        print(plan_hash(json.loads(Path(args.plan).read_text(encoding="utf-8"))))
+        return 0
     if args.cmd == "inspect":
         out = run_inspect(args)
         text = json.dumps(out, indent=1, ensure_ascii=False)

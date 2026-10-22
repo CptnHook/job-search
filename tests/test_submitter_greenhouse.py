@@ -100,7 +100,12 @@ class SubmitterTest(unittest.TestCase):
         path.write_text(json.dumps(plan))
         return path
 
+    def plan_hash(self, plan):
+        return self.run_tool("hash", "--plan", str(plan)).stdout.strip()
+
     def submit(self, plan, *extra):
+        if "--submit" in extra and "--approved-hash" not in extra:
+            extra = (*extra, "--approved-hash", self.plan_hash(plan))
         out = self.run_tool("submit", "--plan", str(plan), "--cv", str(self.cv), "--cover", str(self.cover),
                             "--evidence", str(self.dir / "evidence"), *extra)
         return json.loads(out.stdout), out
@@ -129,6 +134,13 @@ class SubmitterTest(unittest.TestCase):
         self.assertEqual(again["status"], "blocked")
         self.assertIn("one attempt", again["reasons"][0])
         self.assertEqual(Handler.posts, 1)
+
+    def test_unapproved_plan_blocks(self):
+        plan = self.plan()
+        res, _ = self.submit(plan, "--submit", "--approved-hash", "not-the-approved-one")
+        self.assertEqual(res["status"], "blocked")
+        self.assertIn("doesn't match what was approved", res["reasons"][0])
+        self.assertEqual(Handler.posts, 0)
 
     def test_changed_question_blocks(self):
         def tweak(answers):
@@ -164,6 +176,7 @@ class SubmitterTest(unittest.TestCase):
         proc = subprocess.Popen([sys.executable, str(TOOL), "submit", "--plan", str(self.plan("?code=1")),
                                  "--cv", str(self.cv), "--cover", str(self.cover),
                                  "--evidence", str(self.dir / "evidence"), "--submit",
+                                 "--approved-hash", self.plan_hash(self.dir / "plan.json"),
                                  "--code-file", str(code_file)],
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=self.env)
         line = proc.stderr.readline()
