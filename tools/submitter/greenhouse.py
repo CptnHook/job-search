@@ -173,7 +173,10 @@ def questions_from(raw):
 
 
 def signature(q):
-    return sha({k: q.get(k) for k in ("key", "label", "type", "required", "options")})[:16]
+    # Dropdown (combobox) choices load lazily and unreliably, so they stay out of the
+    # signature; a planned choice that no longer exists still stops the run at fill time.
+    keys = ("key", "label", "type", "required") + (() if q.get("type") == "combobox" else ("options",))
+    return sha({k: q.get(k) for k in keys})[:16]
 
 
 class Form:
@@ -184,6 +187,12 @@ class Form:
     def open(self):
         self.page.goto(self.url, wait_until="domcontentloaded", timeout=45000)
         self.page.locator("input,textarea,select").first.wait_for(state="attached", timeout=20000)
+        # Let the page finish loading; text typed before the form's scripts start gets wiped.
+        try:
+            self.page.wait_for_load_state("networkidle", timeout=15000)
+        except Exception:
+            pass
+        self.page.wait_for_timeout(1500)
 
     def loc(self, control_id):
         return self.page.locator('[id="%s"]' % control_id.replace('"', '\\"'))
@@ -206,15 +215,34 @@ class Form:
     def combobox_options(self, control_id):
         loc = self.loc(control_id)
         try:
+            opts = []
+            for open_menu in (loc.click, lambda: loc.press("ArrowDown")):
+                open_menu()
+                try:
+                    self.page.get_by_role("option").first.wait_for(state="visible", timeout=3000)
+                except Exception:
+                    continue
+                opts = [o.inner_text().strip() for o in self.page.get_by_role("option").all()]
+                break
+        finally:
+            loc.press("Escape")
+        # Async-search fields (city) list nothing until typed; keep them empty.
+        return [o for o in opts if o and not re.fullmatch(r"(no options|loading\.*)", o, re.I)]
+
+    def search_options(self, control_id, query):
+        """Choices a search-as-you-type field (e.g. city) offers for `query`. Clears the field after."""
+        loc = self.loc(control_id)
+        try:
             loc.click()
+            loc.fill(query)
             try:
-                self.page.get_by_role("option").first.wait_for(state="visible", timeout=2000)
+                self.page.get_by_role("option").first.wait_for(state="visible", timeout=8000)
             except Exception:
                 pass
             opts = [o.inner_text().strip() for o in self.page.get_by_role("option").all()]
         finally:
+            loc.fill("")
             loc.press("Escape")
-        # Async-search fields (city) list nothing until typed; keep them empty.
         return [o for o in opts if o and not re.fullmatch(r"(no options|loading\.*)", o, re.I)]
 
     def captcha_challenge(self):
@@ -246,16 +274,7 @@ class Form:
             values = value if isinstance(value, list) else [value]
             loc = self.loc(q["controls"][0])
             for text in values:
-                loc.click()
-                if answer.get("query"):
-                    loc.fill(answer["query"])
-                option = self.page.get_by_role("option", name=text, exact=True)
-                try:
-                    option.first.wait_for(state="visible", timeout=10000)
-                except Exception:
-                    loc.press("Escape")
-                    raise Stop(f"'{q['label']}' has no choice '{text}'.")
-                option.first.click()
+                self.choose(loc, text, answer.get("query"), q["label"])
         elif kind in ("checkboxes", "radio"):
             values = value if isinstance(value, list) else [value]
             for text in values:
@@ -278,6 +297,31 @@ class Form:
         else:
             raise Stop(f"'{q['label']}' is a {kind} control the submitter can't fill.")
 
+    def choose(self, loc, text, query, label):
+        """Open a dropdown and click the choice whose visible text is exactly `text`."""
+        options = self.page.get_by_role("option")
+        for attempt in range(2):
+            loc.click()
+            if query:
+                loc.fill(query)
+            elif attempt:
+                loc.fill(text.split(" +")[0])  # long lists (country) filter as you type
+            try:
+                options.first.wait_for(state="visible", timeout=4000)
+            except Exception:
+                loc.press("ArrowDown")  # some menus open only from the keyboard
+                try:
+                    options.first.wait_for(state="visible", timeout=8000)
+                except Exception:
+                    loc.press("Escape")
+                    continue
+            for o in options.all():
+                if o.inner_text().strip() == text:
+                    o.click()
+                    return
+            loc.press("Escape")
+        raise Stop(f"'{label}' has no choice '{text}'.")
+
     def kept(self, q, answer, files):
         """True when the live form shows the planned value."""
         kind, value = q["type"], answer["value"]
@@ -292,7 +336,7 @@ class Form:
             return got == [value]
         want = value if isinstance(value, list) else [value]
         if kind == "combobox":
-            return all(any(w == g or w.startswith(g) or g.startswith(w) for g in got) for w in want) and bool(got)
+            return all(any(w == g or g in w or w in g for g in got) for w in want) and bool(got)
         return sorted(got) == sorted(want)
 
     def click_submit(self, verify=False):
@@ -327,6 +371,8 @@ def check_plan(snap, plan):
     problems, pairs = [], []
     for key, a in planned.items():
         q = live.get(key)
+        if q is None and a.get("conditional"):
+            continue  # appears only after an earlier answer; filled in the second pass
         if q is None:
             problems.append(f"Planned question is gone: '{a.get('label', key)}'.")
         elif a.get("signature") and a["signature"] != q["signature"]:
@@ -375,7 +421,7 @@ def run_submit(args):
         form = Form(page, embed_url(plan["url"], plan.get("board"), os.environ.get("SUBMITTER_TEST_ORIGIN")))
         try:
             form.open()
-            snap = form.snapshot()
+            snap = form.snapshot(choices=False)
             if snap["password"]:
                 raise Stop("The form asks for a password or account; that stays manual.")
             if snap["challenge"]:
@@ -388,7 +434,24 @@ def run_submit(args):
                 form.fill(q, a, files)
             snap = form.snapshot(choices=False)
             live = {q["key"]: q for q in snap["questions"]}
-            off = [q["label"] for q, a in pairs if not form.kept(live[q["key"]], a, files)]
+            for a in plan["answers"]:
+                if not a.get("conditional") or any(q["key"] == a["key"] for q, _ in pairs):
+                    continue
+                q = live.get(a["key"])
+                if q is None:
+                    raise Stop(f"Planned follow-up question never appeared: '{a.get('label', a['key'])}'.")
+                if a.get("signature") and a["signature"] != q["signature"]:
+                    raise Stop(f"Question changed since approval: '{q['label']}'.")
+                form.fill(q, a, files)
+                pairs.append((q, a))
+            snap = form.snapshot(choices=False)
+            live = {q["key"]: q for q in snap["questions"]}
+            def kept(q, a):
+                if q["key"] in live:
+                    return form.kept(live[q["key"]], a, files)
+                # Greenhouse swaps an upload field for the attached file's name and a remove button.
+                return q["type"] == "file" and form.page.get_by_text(Path(files[a["value"]]).name).count() > 0
+            off = [q["label"] for q, a in pairs if not kept(q, a)]
             if off:
                 result["reasons"] = [f"Form didn't keep: '{x}'." for x in off]
                 raise Stop(result["reasons"][0])
@@ -477,10 +540,14 @@ def run_inspect(args):
             form = Form(browser.new_page(), embed_url(args.url, args.board, os.environ.get("SUBMITTER_TEST_ORIGIN")))
             form.open()
             snap = form.snapshot()
+            searched = {}
+            for item in args.search or []:
+                key, _, query = item.partition("=")
+                searched[key] = form.search_options(key, query)
         finally:
             browser.close()
     out = {"url": args.url, "board": args.board, "form_url": form.url, "inspected_at": now(),
-           "password": snap["password"], "challenge": snap["challenge"],
+           "password": snap["password"], "challenge": snap["challenge"], "searched": searched,
            "questions": [{k: q.get(k) for k in ("key", "label", "type", "required", "multiple", "accept", "options", "signature")}
                          for q in snap["questions"]]}
     return out
@@ -493,6 +560,8 @@ def main(argv=None):
     i.add_argument("--url", required=True)
     i.add_argument("--board")
     i.add_argument("--out")
+    i.add_argument("--search", action="append", metavar="KEY=QUERY",
+                   help="list a search-as-you-type field's choices for QUERY (read-only)")
     s = sub.add_parser("submit")
     s.add_argument("--plan", required=True)
     s.add_argument("--cv")
