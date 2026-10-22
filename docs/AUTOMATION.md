@@ -46,9 +46,12 @@ Rules the drafter and submitter enforce:
 | `requests/<id>` | `kind` (`draft-followup`, `interview-prep`, `research`, `question`), `prompt` (Casey's added detail), `jobId`, `company`, `role`, `status` (`open`/`done`), `result`, `createdAt`, `doneAt`. Agents pick these up; nothing outbound happens without Casey |
 | `actions/<id>` | `kind`, `title`, `detail`, `url`, `company`, `jobId`, `status` (`open`/`done`), `createdAt`, `doneAt` |
 | `entries/<id>` | `jobId`, `company`, `role`, `kind` (`Call`/`Email`/`Interview`/`Feedback`/`Offer`/`Note`/`Stage`), `date`, `who`, `notes`, `learning`, `stage` (ticket stage when logged), `createdAt`; interview debriefs add `round`, `questions[]{q,rating (strong/solid/gap)}`, `intel{comp,timeline,next,others}`, `feedback` (verbatim) |
+| `companies/<id>` | `name`, `sector`, `sizeBand`, `employees`, `stage`, `bayArea`, `careersUrl`, `ats{system,token,apiUrl,verified}`, `openMatches[]{title,url,pay}`, `openMatchCount`, `matchesCheckedAt`, `fit`, `concern` (research note), `sources[]`, `status` (`new` = to decide, `target`, `maybe`, `cut`), `notes` (Casey's), `why` (Casey's reason when he added it), `addedBy` (`agent`/`you`), `needsResearch`, `decidedAt`, `createdAt`, `updatedAt`. The finder watches only `target` and `maybe`; `cut` stays so the company isn't suggested again |
 | `network/<id>` | `company`, `forRole`, `jobId`, `name`, `title`, `how` (how Casey knows them), `suggestion`, `profileUrl`, `status` (`new`/`contacted`/`dismissed`) |
 
 Stages: `new` → `review` → `queued` → `drafting` → `awaiting_approval` → `approved` → `submitting` → `submitted` (Applied) → `recruiter` (Recruiter called) → `assessment` (Assessment) → `interviewing` (Interview cycle) → `offer` (Offer) → `negotiating` (Negotiations) → `hired` (Job achieved). Closers: `rejected`, `noresponse` (No response), `withdrawn`. Side exits: `backlog`, `declined`, `needs_me`, `failed`. An older `interview` value reads as Interview cycle.
+
+**Companies tab** (2026-10-20): agents seed and refresh company facts and open senior roles; Casey sorts each company into Target, Maybe or Cut, keeps notes, and adds his own (marked research pending until an agent fills in the facts). Agents never change `status` or `notes`.
 
 Every stage move writes a `transitions` doc with the date it happened, so the ticket shows days in each stage. An open application that sits in one stage longer than the `stalledAfterDays` rule is flagged as stalled.
 

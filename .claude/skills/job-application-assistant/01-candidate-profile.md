@@ -21,11 +21,14 @@ Sources: resume Google Doc "CASEY CASTER Resume_2026", the Drive profile JSON (`
 ### Target roles (confirmed 2026-10-16, refined 2026-10-17)
 - **Target level:** VP, and open to C-level (COO, Chief Customer Officer, Chief Transformation Officer, Chief AI Officer, C-level Chief of Staff). **Director / Sr Director** titles count only at large companies: public, or 5,000+ employees, or $1B+ revenue
 - **Functions:** engineering operations, technical program management, program management / PMO, strategy & operations, customer success, product operations, AI enablement / AI operations, business operations, delivery / professional services, engineering effectiveness / developer productivity, operations at fintech or payments companies, chief of staff to CTO/CPO. Still narrowing where he fits best; revisit as applications come in
+- **Authority and strategy (Casey, 2026-10-20):** wants real authority and a seat in creating the strategy. He will accept a role weighted toward executing strategy over creating it, but it must involve him in shaping it. Roles that only execute a strategy owned above him, or lead mainly through "influence without authority" with no team or decision rights, are a poor fit. **Exception (Casey, 2026-10-20):** at a large company (the Director / Sr Director exception: public, 5,000+ employees, or $1B+ revenue) he doesn't expect to be involved in company strategy, so an execution-focused role is fine there
 - **Company stage:** startups, late-stage private, and public all fine; leans public
 - **Work arrangement:** hybrid preferred, with some in-person time; remote acceptable. **No 5-day / fully onsite roles**
 - **Location:** anywhere in the SF Bay Area / Peninsula. Works in San Francisco today (about a 20-minute commute from Pacifica)
 - **Compensation:** base salary over $300K (ideally over $350K), plus bonus and equity
-- **Industries to avoid:** none yet; add as they come up
+- **Sectors (Casey, 2026-10-20):** most excited by AI and developer tools; fintech and payments; security and enterprise SaaS. Cloud infrastructure and data is his strongest experience and stays in scope for career strategy, but it excites him less. All company sizes are in scope: high-growth (100-1,000), scale-up (1,000-5,000), and large public (5,000+)
+- **Big banks:** not preferred (Capital One-, JPMorgan-, Wells Fargo-type); fintech is what he wants. A negative signal, not a deal-breaker: he kept the Capital One application after saying so (Casey, 2026-10-20)
+- **Feedback on the first search batch (Casey, 2026-10-20):** the program-office, TPM and customer-success roles found felt too narrow, the wrong function, and too low in level or pay. What function he wants next is still being narrowed
 - **C-level search:** mostly filled through retained search firms (Heidrick & Struggles, Spencer Stuart, Korn Ferry, True Search); Casey is following up on these himself
 
 
@@ -57,7 +60,7 @@ Dates are years only. Ask before giving months.
 ### Sr Director, Engineering - Internal Services & Technical Program Management (CTO Chief of Staff) - SingleStore (2021 - Present)
 San Francisco, CA
 - Architected strategy and operations for a cloud-native database company in hypergrowth, reporting to the CPO and then the CTO in a chief-of-staff role. Managed seven teams: 6 direct reports (a director, 2 managers, a TPM who runs QA, and 2 principal-engineer architects); the director runs two teams through managers; 32 people in total (28 FTEs and 4 contractors). Owned programs spanning cost optimization, M&A, governance, and AI platform operations
-- **Unlocked $30M+ in recurring ARR** by rescuing a failing strategic partner integration, leading a cross-functional realignment
+- **Unlocked $30M+ in recurring ARR** by rescuing a failing strategic partner integration, leading a cross-functional realignment. How it happened (Casey, 2026-10-22): the program was falling apart; he came in and, through leadership, brought it to successful delivery. Say he stepped in and led it to delivery, never that "we rebuilt it"
 - **Cut internal cloud spend by 50%** through cross-team policy reform and usage modeling
 - **Increased engineering velocity 5x** through agile transformation and accountability systems
 - **Drove internal GenAI adoption** through a governance and ops program, creating and launching internal platforms
@@ -72,13 +75,13 @@ Confirmed by Casey 2026-10-16 (no metrics given yet; ask before quoting numbers)
 - Has delivered **multi-million-dollar programs**
 - **Negotiates with vendors** and **analyzes mergers** (alongside the M&A due diligence above)
 
-Note: the old cover letter calls this role "Engineering Infrastructure & Internal Services". Use the resume title unless Casey says otherwise.
+Title usage (Casey's cover letter brief, 2026-10-21): **cover letters say "Engineering Infrastructure & Internal Services"**; CVs keep the resume title. Cover letter header name is "Casey R. Caster Jr.", signed "Casey Caster"; CVs and forms use "Casey Caster". Ripple: started with four project manager ICs; ended with three managers of project management reporting to him (settled 2026-10-22).
 
 ### Global Head of Program Management, Customer Success - Ripple, Inc. (2016 - 2020)
 San Francisco, CA
 - Promoted to lead global delivery programs for RippleNet, architecting the implementation function; built global teams and infrastructure to scale network adoption
 - Created customer care and global infrastructure strategies for enterprise financial institutions, including SOW and MSA negotiation and fulfillment
-- **Delivered 800+ global implementations**; built a team of 25 project managers and 75+ indirect partners
+- **Delivered 800+ global implementations**; led 25 project managers directly and 75+ engineers and architects indirectly (one team; never "indirect partners", a rewrite error in the Nov 2025+ resumes, Casey 2026-10-17)
 - **Cut customer delivery time 75%**, from eight months to eight weeks (earlier resumes also say 60%; use the eight-months-to-eight-weeks framing)
 - **Oversaw a joint venture in Japan** from formation to a strong market position, delivering implementations at 68+ additional Japanese banks
 - **Established the RippleNet Committee**, a global governance body, negotiating with C-suite executives of major banks; the network grew to hundreds of members handling millions of transactions
@@ -112,7 +115,7 @@ San Francisco, CA
 - **2020-2021:** independent consulting (Terraform Consulting LLC, project management for software delivery). Leave off the resume; Casey speaks to it if asked
 
 ### Selected accomplishments (resume, not tied to a single role)
-- Built a global team from 3 project managers to 25, plus 75 engineers and architects; delivered 250+ concurrent global projects and 800+ projects over three years
+- Built a global team that **started with 4 project managers (individual contributors)** and grew to **three managers of project management reporting to Casey, 25 project managers, and 75+ engineers and architects indirectly** across four regions (Casey, 2026-10-22: "3" is the managers he ended with, not the starting team); delivered 250+ concurrent global projects and 800+ projects over three years. **This was at Ripple** (Casey confirmed 2026-10-20), so it can be stated in the Ripple entry
 - Established Ripple's blockchain payments network: membership scheme, governing body, and business rules; enrolled the first 12 banks and grew membership past 200
 - Oversaw a $4M virtual testing network program with teams in Bangalore and London, saving hundreds of person-hours per test cycle
 - Led design and deployment of Ford's North American CRM platform across headquarters and dealerships in the US and Canada

@@ -43,7 +43,7 @@ Sources: the resume Google Doc "CASEY CASTER Resume_2026" and the profile JSON i
   - Runs engineering capacity planning and delivery dashboards; manages the engineering budget with Finance (don't say "owns a P&L"); negotiates with vendors, including LLM token pricing; analyzes mergers; delivered multi-million-dollar programs (confirmed 2026-10-16/17)
 - **Global Head of Program Management, Customer Success** (2016 - 2020) - **Ripple, Inc.** (San Francisco, CA)
   - Promoted to lead global delivery for RippleNet and built the implementation function
-  - Delivered 800+ global implementations; built a team of 25 project managers and 75+ indirect partners; cut delivery time 75% (eight months to eight weeks); oversaw a Japan joint venture that implemented 68+ more banks
+  - Delivered 800+ global implementations; started with 4 project managers (ICs) and grew to three managers of project management, 25 project managers, and 75+ engineers and architects indirectly (one team; "indirect partners" in the Nov 2025+ resumes was a rewrite error, Casey 2026-10-17); cut delivery time 75% (eight months to eight weeks); oversaw a Japan joint venture that implemented 68+ more banks
   - Established the RippleNet Committee governance body with bank C-suite executives; network grew to hundreds of members
 - **Senior Program Manager** (2014 - 2015) - **Wells Fargo Bank** (San Francisco, CA)
   - Delivered a $20M+ digital transformation initiative with 300+ testers; led a project-portfolio systems upgrade for 10,000+ vendors
@@ -91,6 +91,7 @@ Assessments on file: **DiSC D** (2021), **CliftonStrengths** Achiever, Arranger,
 ### Target Roles & Preferences
 - **Target level:** VP or C-level (COO, Chief Customer Officer, Chief Transformation Officer, Chief AI Officer, C-level Chief of Staff). **Director / Sr Director only at large companies:** public, or 5,000+ employees, or $1B+ revenue (confirmed 2026-10-17)
 - **Functions:** engineering operations, TPM, PMO, strategy & operations, customer success, product operations, AI enablement/operations, business operations, delivery/professional services, engineering effectiveness/developer productivity, fintech/payments operations, chief of staff to CTO/CPO. Still narrowing; revisit as applications come in
+- **Authority and strategy:** needs real authority and involvement in creating the strategy; a role weighted toward execution is fine only if he helps shape the strategy. Pure execution of a strategy owned above him, or influence-without-authority roles with no team or decision rights, are a poor fit (Casey, 2026-10-20). At a large company (public, 5,000+ employees, or $1B+ revenue) he doesn't expect a part in company strategy, so execution-focused roles are fine there
 - **Company stage:** startups, late-stage private, and public all fine; leans public
 - **Work arrangement:** hybrid preferred (some in-person time); remote acceptable; a few office days a week is fine. **No 5-day / fully onsite roles**. Travel as needed, preferably under 25%
 - **Location:** anywhere in the SF Bay Area / Peninsula. Works in San Francisco today (about a 20-minute commute from Pacifica)
@@ -98,7 +99,10 @@ Assessments on file: **DiSC D** (2021), **CliftonStrengths** Achiever, Arranger,
 - **Match signals, strongest first:** access to leadership (reports to or works with the C-suite); high-growth company; AI or developer tooling
 
 ### Target Sectors
-- Not restricted. Evidence points to: cloud infrastructure and databases, developer and AI tooling, cybersecurity and enterprise SaaS, fintech and payments
+- Excited by (Casey, 2026-10-20): AI and developer tools; fintech and payments (but not big banks); security and enterprise SaaS
+- Cloud infrastructure and data: his strongest experience and kept in scope for career strategy, but less exciting to him
+- Company size: all of high-growth (100-1,000), scale-up (1,000-5,000), and large public (5,000+)
+- Big banks (e.g. Capital One-, JPMorgan-, Wells Fargo-type): not preferred, but not a deal-breaker; he kept the Capital One application (2026-10-20)
 
 ### Deal-breakers
 - 5-day / fully onsite office roles
