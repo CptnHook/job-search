@@ -62,6 +62,7 @@ ALLOWED_PERMISSIONS = {
     "Bash(pdftotext:*)",
     "Bash(python3 tools/submitter/greenhouse.py:*)",
     "Edit(/dashboard/index.html)",
+    "ArtifactData"
 }
 
 # Personal-data ignore rules that must never disappear from .gitignore.
