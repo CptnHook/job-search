@@ -84,6 +84,31 @@ site:jobs.ashbyhq.com "VP" "Product Operations"
 site:linkedin.com/jobs ("VP, AI Enablement" OR "Head of AI Operations" OR "VP, AI Operations" OR "Head of AI Enablement")
 ```
 
+### Every run: Bay Area tech boards and VC portfolio boards (added 2026-10-23)
+
+These run on every `/scrape`, on top of the priority categories. They catch roles at funded startups and scale-ups that often never reach LinkedIn.
+
+**Built In SF.** Its robots.txt bars automated reading of the search pages, but allows individual job pages. Find postings through web search, then fetch only the `/job/...` pages:
+
+```
+site:builtinsf.com/job ("Vice President" OR "VP") ("Operations" OR "Program Management" OR "Customer Success" OR "Engineering Operations")
+site:builtinsf.com/job ("Chief Operating Officer" OR "Chief of Staff" OR "Head of Engineering Operations" OR "Head of AI")
+site:builtin.com/job ("Vice President" OR "VP") ("Program Management" OR "Engineering Operations") (Remote OR "San Francisco")
+```
+
+**VC portfolio job boards.** Each lists open roles across that firm's portfolio companies, which are mostly funded and growing, the 100-1,000 person range Casey likes. Their robots.txt allows reading (checked 2026-10-23):
+
+```
+site:jobs.a16z.com ("VP" OR "Vice President" OR "Head of" OR "Chief") (Operations OR "Program Management" OR "Customer Success")
+site:jobs.accel.com ("VP" OR "Vice President" OR "Head of") (Operations OR "Program Management" OR "Customer Success")
+site:jobs.sequoiacap.com ("VP" OR "Head of" OR "Chief") (Operations OR "Program Management")
+site:ycombinator.com/companies ("VP" OR "Head of" OR "Chief of Staff") (Operations OR "Customer Success") jobs
+site:wellfound.com/jobs ("VP" OR "Head of") (Operations OR "Program Management" OR "Customer Success") "San Francisco"
+site:venturecapitalcareers.com ("VP" OR "Head of" OR "Chief of Staff") (Operations OR "Program Management") "San Francisco"
+```
+
+**Not scraped, by design.** Most VP and C-level hiring goes through retained search firms, VC talent partners, and executive networks such as ExecThread and BlueSteps. Those roles aren't posted publicly; you reach them through relationships, so they belong in the dashboard's Needs you tasks, not in `/scrape`.
+
 ## Location Filter
 
 Home is Pacifica, CA; works in San Francisco today (~20-minute commute). Confirmed 2026-10-16:
