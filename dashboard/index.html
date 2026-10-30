@@ -427,6 +427,29 @@ function show(view){
 document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>show(b.dataset.view)));
 try{ const t=localStorage.getItem("jh-tab"); if(t && $("v-"+t)) show(t); }catch(e){}
 
+// Download buttons for the PDFs, named the way employers should see them, for uploading to Workday or another ATS.
+const DL_NAMES = {cv:"Casey_Caster_Resume.pdf", cover:"Casey_Caster_Cover_Letter.pdf"};
+function dlBtns(j){
+  return [
+    docUrl(j.cvUrl) ? `<button class="btn" data-act="dlDoc" data-id="${esc(j.id)}" data-doc="cv">Download resume</button>` : "",
+    docUrl(j.coverUrl) ? `<button class="btn" data-act="dlDoc" data-id="${esc(j.id)}" data-doc="cover">Download cover letter</button>` : "",
+  ].filter(Boolean).join("");
+}
+async function saveBlob(blob, filename){
+  const dl = await claude.use("downloads").catch(()=>null);
+  if(dl){
+    try{ const r = await dl.save({filename, data: blob}); if(r?.status==="saved") toast(`Saved ${filename}.`); return; }
+    catch(e){ if(e?.code==="cancelled" || e?.code==="declined") return; if(e?.code!=="unavailable") { toast("The download didn't start. Try again."); return; } }
+  }
+  // Fallback when the downloads capability isn't available in this view.
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+}
+async function downloadDoc(j, kind){
+  const url = docUrl(kind==="cv" ? j.cvUrl : j.coverUrl); if(!url) return;
+  try{ const r = await fetch(url); if(!r.ok) throw new Error("fetch "+r.status); await saveBlob(await r.blob(), DL_NAMES[kind]); }
+  catch(e){ toast("That file couldn't be loaded. Ask Claude to re-attach it."); }
+}
 function salary(j){ return (j.salaryMin||j.salaryMax) ? `${money(j.salaryMin)}–${money(j.salaryMax)}` : ""; }
 function jobCard(j, mode){
   const st = STAGE[j.stage] || {t:j.stage,c:""};
@@ -443,6 +466,7 @@ function jobCard(j, mode){
   const docBtns = [
     docUrl(j.cvUrl) ? `<button class="btn" data-act="viewDoc" data-id="${esc(j.id)}" data-doc="cv">View resume</button>` : "",
     docUrl(j.coverUrl) ? `<button class="btn" data-act="viewDoc" data-id="${esc(j.id)}" data-doc="cover">View cover letter</button>` : "",
+    dlBtns(j),
   ].filter(Boolean).join("");
   const missingDocs = mode!=="approve" ? ""
     : !hasDocs(j) ? `<p class="warnline">The resume and cover letter aren't attached yet, so this can't be approved. Claude attaches them when drafting.</p>`
@@ -582,6 +606,10 @@ function renderTicket(){
       <div class="acts" style="margin:0">${safeUrl(j.url)?`<a class="link" href="${esc(j.url)}" target="_blank" rel="noopener">Posting</a>`:""}
         ${safeUrl(j.cvDocUrl)?`<a class="link" href="${esc(j.cvDocUrl)}" target="_blank" rel="noopener">Resume</a>`:""}</div>
     </div>
+    ${docUrl(j.cvUrl)||docUrl(j.coverUrl)?`<div class="acts" style="margin:0"><span class="meta">Documents to upload:</span>
+      ${docUrl(j.cvUrl)?`<button class="btn" data-act="viewDoc" data-id="${esc(j.id)}" data-doc="cv">View resume</button>`:""}
+      ${docUrl(j.coverUrl)?`<button class="btn" data-act="viewDoc" data-id="${esc(j.id)}" data-doc="cover">View cover letter</button>`:""}
+      ${dlBtns(j)}</div>`:""}
     <div><div class="eyebrow" style="margin-bottom:8px">Where you are</div><div class="steps">${steps}</div>
       <div class="acts" style="margin-top:8px"><label for="sDate" style="flex-direction:row;align-items:center;gap:8px;font-weight:500">Date of the move
         <input id="sDate" type="date" value="${today()}" max="${today()}" style="width:auto"></label>
@@ -1070,7 +1098,7 @@ function render(){
     : `<div class="empty">No contacts matched yet. The network agent checks each company against your LinkedIn connections and lists anyone worth a call about the role.</div>`;
   document.querySelectorAll("[data-act]").forEach(b=>{
     const act = b.dataset.act, id = b.dataset.id;
-    if(["open","back","coFilter","coSector","viewDoc"].includes(act)) return;   // navigation and filters work read-only
+    if(["open","back","coFilter","coSector","viewDoc","dlDoc"].includes(act)) return;   // navigation and filters work read-only
     const idle = (act==="saveCover" && (drafts[id]===undefined || drafts[id]===(jobs.find(x=>x.id===id)?.coverText??"")))
       || (act==="coNote" && (coNotes[id]===undefined || coNotes[id]===(companies.find(x=>x.id===id)?.notes??"")))
       || (act==="approve" && !canApprove(jobs.find(x=>x.id===id)||{}));
@@ -1184,6 +1212,7 @@ document.addEventListener("click", async ev=>{
   if(act==="back"){ show("pipe"); return; }
   if(act==="addQ"){ dqRows++; renderTicket(); $("dq-q-"+(dqRows-1))?.focus(); return; }
   if(act==="viewDoc"){ const j = jobs.find(x=>x.id===id); if(j) openViewer(j, b.dataset.doc); return; }
+  if(act==="dlDoc"){ const j = jobs.find(x=>x.id===id); if(j) downloadDoc(j, b.dataset.doc); return; }
   if(act==="coFilter" || act==="coSector"){
     if(act==="coFilter") coFilter.status = b.dataset.key; else coFilter.sector = b.dataset.key;
     try{ localStorage.setItem("jh-cofilter", JSON.stringify(coFilter)); }catch(e){}
@@ -1397,15 +1426,14 @@ async function openViewer(j, kind){
   const url = docUrl(kind==="cv" ? j.cvUrl : j.coverUrl); if(!url) return;
   const label = kind==="cv" ? "Resume" : "Cover letter";
   const my = ++dvToken;
-  dvName = `${label} - ${j.company||"application"}.pdf`.replace(/[\\/:*?"<>|]+/g," ");
+  dvName = DL_NAMES[kind];
   $("dvTitle").textContent = `${label} · ${j.company||""}`;
   $("dvStatus").textContent = "Loading…"; $("dvPages").innerHTML = ""; $("dvDownload").hidden = true;
   $("docViewer").hidden = false; document.body.style.overflow = "hidden"; $("dvClose").focus();
   try{
     const r = await fetch(url); if(!r.ok) throw new Error("fetch "+r.status);
     const blob = await r.blob(); if(my!==dvToken) return; dvBlob = blob;
-    const dl = await claude.use("downloads").catch(()=>null);
-    if(my!==dvToken) return; $("dvDownload").hidden = !dl;
+    $("dvDownload").hidden = false;
     const lib = await loadPdfjs();
     const pdf = await lib.getDocument({data: new Uint8Array(await blob.arrayBuffer())}).promise;
     if(my!==dvToken) return;
@@ -1430,9 +1458,7 @@ $("dvClose").addEventListener("click", closeViewer);
 $("docViewer").addEventListener("keydown", ev=>{ if(ev.key==="Escape") closeViewer(); });
 $("dvDownload").addEventListener("click", async ()=>{
   if(!dvBlob) return;
-  try{ const dl = await claude.use("downloads"); if(!dl) return;
-       const r = await dl.save({filename: dvName, data: dvBlob}); if(r?.status==="saved") toast("Saved."); }
-  catch(e){ if(e?.code==="unavailable") $("dvDownload").hidden = true; else if(e?.code!=="cancelled" && e?.code!=="declined") toast("The download didn't start. Try again."); }
+  await saveBlob(dvBlob, dvName);
 });
 
 $("coSector").innerHTML = CO_SECTORS.map(s=>`<option>${esc(s)}</option>`).join("");
