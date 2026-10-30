@@ -7,7 +7,7 @@ framework_version: 1.1.1
 Sources: resume Google Doc "CASEY CASTER Resume_2026", the Drive profile JSON (`PersonalCommandCenter/casey-caster-profile.json`, revision 6), and Casey's answers in the /setup interview of 2026-10-17 (those answers win where they differ). Drive is the source of truth for documents. Use only facts recorded here or in Drive; items marked *(to confirm)* must be asked about, never filled in.
 
 ## Identity
-- **Name:** Casey Caster (legal name; the old cover letter header says "Casey R. Caster Jr." - use "Casey Caster" unless he says otherwise)
+- **Name:** Casey Caster (legal name). CVs and forms use "Casey Caster"; cover letter headers use "Casey R. Caster Jr." per his 2026-10-21 brief (see Title usage below)
 - **Pronouns:** he/him
 - **Location:** Pacifica, CA 94044, USA (San Francisco Bay Area). Street address not recorded
 - **Phone:** 650.799.9926 (+1 650 799 9926)
@@ -75,7 +75,7 @@ Confirmed by Casey 2026-10-16 (no metrics given yet; ask before quoting numbers)
 - Has delivered **multi-million-dollar programs**
 - **Negotiates with vendors** and **analyzes mergers** (alongside the M&A due diligence above)
 
-Title usage (Casey's cover letter brief, 2026-10-21): **cover letters say "Engineering Infrastructure & Internal Services"**; CVs keep the resume title. Cover letter header name is "Casey R. Caster Jr.", signed "Casey Caster"; CVs and forms use "Casey Caster". Ripple: started with four project manager ICs; ended with three managers of project management reporting to him (settled 2026-10-22).
+Title usage (Casey's cover letter brief, 2026-10-21): **cover letters say "Engineering Infrastructure & Internal Services"**; CVs keep the resume title. Cover letter header name is "Casey R. Caster Jr.", signed "Casey Caster"; CVs and forms use "Casey Caster". Ripple: started with four project manager ICs; ended with three managers of project management reporting to him (settled 2026-10-22). The fixed sentences in his cover letter brief (`06-cover-letter-templates.md`) are his own statements and count as sourced: the Ripple team "couldn't keep up with customer demand" at the start and later "built programs and tools that met customer needs without continually adding headcount"; "I give people clear direction, build what the business needs, and change course when a better opportunity shows up"; "I'll retire a structure I built the day it stops paying for itself"; "I led a $20M program across multiple sites and vendors" (the Wells Fargo $20M+ transformation); "more than $2M in cost efficiencies at a multinational software company" (Autodesk).
 
 ### Global Head of Program Management, Customer Success - Ripple, Inc. (2016 - 2020)
 San Francisco, CA
