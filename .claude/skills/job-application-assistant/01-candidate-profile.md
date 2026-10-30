@@ -110,7 +110,7 @@ San Francisco, CA
 - Created a healthcare recovery tracking system to reduce cardiac readmissions
 
 ### Earlier roles (profile only; keep off the resume, use for interview stories)
-- **Product Manager, Global Services Track Lead - NetApp (2006 - 2010):** managed SAP CRM product development for call center operations in professional services delivery; direct cost savings of $5M+ a year
+- **Product Manager, Global Services Track Lead - NetApp (2006 - 2010):** managed SAP CRM product development for call center operations in professional services delivery; direct cost savings of $5M+ a year. His SAP experience is SAP CRM, not ERP (Casey, 2026-10-30): use it as adjacent enterprise-systems experience, never as an ERP implementation
 - **Technical Customer Engineer - Hewlett Packard (1999 - 2004):** account management for Fortune 100 customers including HP Labs, Intel, McAfee, Lockheed Martin, IBM, and Cisco
 - **2020-2021:** independent consulting (Terraform Consulting LLC, project management for software delivery). Leave off the resume; Casey speaks to it if asked
 
