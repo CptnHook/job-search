@@ -119,7 +119,7 @@ Assessments on file: **DiSC D** (2021), **CliftonStrengths** Achiever, Arranger,
 ## Workflow for New Job Applications
 1. User provides a job posting (URL or text)
 2. **Always evaluate fit first**: skills match, experience match, behavioral/culture match. Present this assessment to the user before proceeding.
-3. If good fit: create targeted CV (`cv/main_<company>_<role>.tex`) and cover letter (`cover_letters/cover_<company>_<role>.tex`)
+3. If good fit: use Casey's own resume in its original Google Doc format (see "Casey's resume format" in `05-cv-templates.md`; never the moderncv template, by Casey's instruction 2026-10-30) and write a cover letter (`cover_letters/cover_<company>_<role>.tex`)
 4. **Verify both documents** (see Verification Checklist below)
 5. Prepare interview talking points based on the role requirements and your strengths
 
