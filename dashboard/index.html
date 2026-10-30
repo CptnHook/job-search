@@ -76,7 +76,11 @@ button{cursor:pointer}
 .empty{border:1.5px dashed var(--line);border-radius:10px;padding:18px;color:var(--muted);text-align:center;font-size:14px}
 
 /* tabs */
-.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);overflow-x:auto;position:sticky;top:0;z-index:10;background:var(--bg)}
+.head .switchbox{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;max-width:340px}
+.stats b{font-family:var(--mono);color:var(--ink)}
+#cNeedsBox.hot{color:var(--warn);font-weight:600} #cNeedsBox.hot b{color:var(--warn)}
+.tab .pill.hot{background:var(--warn-bg);color:var(--warn)}
 .tab{background:none;border:0;border-bottom:3px solid transparent;padding:10px 12px;color:var(--muted);
   font-weight:600;white-space:nowrap;display:flex;gap:6px;align-items:center}
 .tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
@@ -181,7 +185,7 @@ select{border:1px solid var(--line);background:var(--bg);border-radius:8px;paddi
 .rulegrid{display:flex;flex-direction:column;gap:10px;max-width:860px}
 /* target companies */
 .cofilters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;max-width:860px}
-.cobar{position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0 10px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid var(--line);margin-bottom:10px}
+.cobar{position:sticky;top:44px;z-index:5;background:var(--bg);padding:8px 0 10px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid var(--line);margin-bottom:10px}
 .cobar .entryform{max-width:860px}
 .cochips{display:flex;flex-wrap:wrap;gap:6px;max-width:860px}
 .cochips .btn{padding:5px 10px;font-size:13px}
@@ -240,51 +244,41 @@ button.chip:hover{filter:brightness(1.1)}
     <div>
       <div class="eyebrow">Casey Caster · VP search</div>
       <h1>Job Hunt Command Center</h1>
-      <p class="sub">Approve applications, clear the items only you can do, and see who you know at each company. Agents fill this page; nothing here is sent anywhere until a listing is approved.</p>
+      <p class="sub stats"><span id="cNeedsBox"><b id="cNeeds" class="num">0</b> need you</span> · <b id="cApprove" class="num">0</b> to approve · <b id="cReview" class="num">0</b> to review · <b id="cSubmitted" class="num">0</b> applied · <b id="cInterview" class="num">0</b> interviewing</p>
+    </div>
+    <div class="switchbox" title="Off: every application waits for your Approve click. On: drafted applications are approved and submitted automatically, unless a rule holds one for you.">
+      <button id="autoToggle" class="toggle" role="switch" aria-checked="false" aria-labelledby="autoLabel" aria-describedby="autoHelp" disabled></button>
+      <div class="switchtext">
+        <strong id="autoLabel">Auto-approve: <span id="autoState">Off</span></strong>
+        <p id="autoHelp">Off: each application waits for your Approve click.</p>
+      </div>
     </div>
   </header>
 
   <div id="banner" class="banner" hidden></div>
 
-  <section class="strip" aria-label="Controls and status">
-    <div class="switchbox">
-      <button id="autoToggle" class="toggle" role="switch" aria-checked="false" aria-labelledby="autoLabel" disabled></button>
-      <div class="switchtext">
-        <strong id="autoLabel">Auto-approve: <span id="autoState">Off</span></strong>
-        <p id="autoHelp">Off: every application waits for your Approve click. On: drafted applications are approved and submitted automatically, unless a rule below holds one for you.</p>
-      </div>
-    </div>
-    <div class="counts">
-      <div class="count"><b id="cReview" class="num">0</b><span>To review</span></div>
-      <div class="count"><b id="cApprove" class="num">0</b><span>To approve</span></div>
-      <div class="count" id="cNeedsBox"><b id="cNeeds" class="num">0</b><span>Needs you</span></div>
-      <div class="count"><b id="cSubmitted" class="num">0</b><span>Applied</span></div>
-      <div class="count"><b id="cInterview" class="num">0</b><span>Interviews</span></div>
-    </div>
-  </section>
-
-  <section class="duo">
-    <div class="panel" aria-labelledby="needsH">
-      <div class="panel-h"><h2 id="needsH">Needs you</h2><span class="eyebrow">Follow-ups, manual-only sites, errors, limits</span></div>
-      <div id="needsList"><div class="empty">Nothing needs you right now. Follow-ups that are due, and submissions an agent couldn't finish, land here.</div></div>
-    </div>
-    <div class="panel" aria-labelledby="netH">
-      <div class="panel-h"><h2 id="netH">People to call</h2><span class="eyebrow">Your network at these companies</span></div>
-      <div id="netList"><div class="empty">No contacts matched yet. The network agent checks each company against your LinkedIn connections and lists anyone worth a call about the role.</div></div>
-    </div>
-  </section>
-
   <section class="panel">
-    <nav class="tabs" role="tablist" aria-label="Queues">
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button class="tab" role="tab" id="t-needs" aria-selected="false" data-view="needs">Needs you <span class="pill num" id="pNeeds">0</span></button>
       <button class="tab" role="tab" id="t-approve" aria-selected="true" data-view="approve">Approvals <span class="pill num" id="pApprove">0</span></button>
       <button class="tab" role="tab" id="t-review" aria-selected="false" data-view="review">Review queue <span class="pill num" id="pReview">0</span></button>
       <button class="tab" role="tab" id="t-pipe" aria-selected="false" data-view="pipe">Pipeline <span class="pill num" id="pPipe">0</span> <span class="chip new" id="pNewAns" hidden></span></button>
-      <button class="tab" role="tab" id="t-learn" aria-selected="false" data-view="learn">Learnings <span class="pill num" id="pLearn">0</span></button>
       <button class="tab" role="tab" id="t-companies" aria-selected="false" data-view="companies">Companies <span class="pill num" id="pCompanies">0</span></button>
-      <button class="tab" role="tab" id="t-add" aria-selected="false" data-view="add">Add a listing</button>
+      <button class="tab" role="tab" id="t-learn" aria-selected="false" data-view="learn">Learnings <span class="pill num" id="pLearn">0</span></button>
       <button class="tab" role="tab" id="t-rules" aria-selected="false" data-view="rules">Rules <span class="pill num" id="pRules">0</span></button>
+      <button class="tab" role="tab" id="t-add" aria-selected="false" data-view="add">+ Add a listing</button>
     </nav>
 
+    <div class="view" id="v-needs" role="tabpanel" aria-labelledby="t-needs" hidden>
+      <div class="panel" aria-labelledby="needsH">
+        <div class="panel-h"><h2 id="needsH">Needs you</h2><span class="eyebrow">Follow-ups, send-it-yourself, errors</span></div>
+        <div id="needsList"><div class="empty">Nothing needs you right now. Follow-ups that are due, and submissions an agent couldn't finish, land here.</div></div>
+      </div>
+      <div class="panel" aria-labelledby="netH" style="margin-top:14px">
+        <div class="panel-h"><h2 id="netH">People to call</h2><span class="eyebrow">Your network at these companies</span></div>
+        <div id="netList"><div class="empty">No contacts matched yet. The network agent checks each company against your LinkedIn connections and lists anyone worth a call about the role.</div></div>
+      </div>
+    </div>
     <div class="view" id="v-approve" role="tabpanel" aria-labelledby="t-approve"></div>
     <div class="view" id="v-review" role="tabpanel" aria-labelledby="t-review" hidden></div>
     <div class="view" id="v-pipe" role="tabpanel" aria-labelledby="t-pipe" hidden></div>
@@ -1080,6 +1074,7 @@ function render(){
   const quiet = jobs.filter(goneQuiet);
   const needN = openActions.length + fuDue.length + quiet.length;
   $("cNeeds").textContent = needN; $("cNeedsBox").classList.toggle("hot", needN>0);
+  $("pNeeds").textContent = needN; $("pNeeds").classList.toggle("hot", needN>0);
   $("cSubmitted").textContent = jobs.filter(j=>[...AFTER_APPLY,"hired","rejected","noresponse"].includes(j.stage)).length;
   $("cInterview").textContent = jobs.filter(j=>ACTIVE.includes(j.stage)).length;
   $("pPipe").textContent = pipe.length;
