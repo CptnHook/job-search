@@ -7,7 +7,7 @@ framework_version: 1.1.1
 Sources: resume Google Doc "CASEY CASTER Resume_2026", the Drive profile JSON (`PersonalCommandCenter/casey-caster-profile.json`, revision 6), and Casey's answers in the /setup interview of 2026-10-17 (those answers win where they differ). Drive is the source of truth for documents. Use only facts recorded here or in Drive; items marked *(to confirm)* must be asked about, never filled in.
 
 ## Identity
-- **Name:** Casey Caster (legal name; the old cover letter header says "Casey R. Caster Jr." - use "Casey Caster" unless he says otherwise)
+- **Name:** Casey Caster (legal name). CVs and forms use "Casey Caster"; cover letter headers use "Casey R. Caster Jr." per his 2026-10-21 brief (see Title usage below)
 - **Pronouns:** he/him
 - **Location:** Pacifica, CA 94044, USA (San Francisco Bay Area). Street address not recorded
 - **Phone:** 650.799.9926 (+1 650 799 9926)
