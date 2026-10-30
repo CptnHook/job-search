@@ -213,6 +213,20 @@ select{border:1px solid var(--line);background:var(--bg);border-radius:8px;paddi
 .hist li{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline}
 .editbox{display:flex;flex-direction:column;gap:8px;background:var(--sunk);border-radius:8px;padding:10px}
 .editbox textarea{min-height:80px}
+/* condensed approvals */
+.arow{background:var(--surface);border:1px solid var(--line);border-radius:12px;min-width:0}
+.arow > summary{display:grid;grid-template-columns:18px 48px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 14px;cursor:pointer;list-style:none}
+.arow > summary::-webkit-details-marker{display:none}
+.arow > summary .caret{color:var(--muted);transition:transform .15s}
+.arow[open] > summary .caret{transform:rotate(90deg)}
+.arow[open] > summary{border-bottom:1px solid var(--line)}
+.arow .fitn{font:600 18px/1 var(--mono);font-variant-numeric:tabular-nums}
+.arow .who{display:flex;flex-direction:column;min-width:0}
+.arow .who strong{font-family:var(--display);overflow:hidden;text-overflow:ellipsis}
+.arow .facts{margin:0;justify-content:flex-end}
+.arow > .job{border:0;border-radius:0 0 12px 12px}
+@media (max-width:620px){.arow > summary{grid-template-columns:18px 40px minmax(0,1fr)} .arow > summary .facts{grid-column:1/-1;justify-content:flex-start}}
+.chip.new{background:var(--accent);color:var(--accent-ink)}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));
   background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:8px;font-size:14px;z-index:20}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -261,7 +275,7 @@ select{border:1px solid var(--line);background:var(--bg);border-radius:8px;paddi
     <nav class="tabs" role="tablist" aria-label="Queues">
       <button class="tab" role="tab" id="t-approve" aria-selected="true" data-view="approve">Approvals <span class="pill num" id="pApprove">0</span></button>
       <button class="tab" role="tab" id="t-review" aria-selected="false" data-view="review">Review queue <span class="pill num" id="pReview">0</span></button>
-      <button class="tab" role="tab" id="t-pipe" aria-selected="false" data-view="pipe">Pipeline <span class="pill num" id="pPipe">0</span></button>
+      <button class="tab" role="tab" id="t-pipe" aria-selected="false" data-view="pipe">Pipeline <span class="pill num" id="pPipe">0</span> <span class="chip new" id="pNewAns" hidden></span></button>
       <button class="tab" role="tab" id="t-learn" aria-selected="false" data-view="learn">Learnings <span class="pill num" id="pLearn">0</span></button>
       <button class="tab" role="tab" id="t-companies" aria-selected="false" data-view="companies">Companies <span class="pill num" id="pCompanies">0</span></button>
       <button class="tab" role="tab" id="t-add" aria-selected="false" data-view="add">Add a listing</button>
@@ -427,6 +441,25 @@ function show(view){
 document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>show(b.dataset.view)));
 try{ const t=localStorage.getItem("jh-tab"); if(t && $("v-"+t)) show(t); }catch(e){}
 
+// Answers from the requests routine that Casey hasn't opened yet.
+const unreadFor = id => requests.filter(r=>r.jobId===id && r.status==="done" && r.unread).length;
+const newChip = n => n ? `<span class="chip new">${n} new answer${n>1?"s":""}</span>` : "";
+// Approvals list: one condensed row per application; expand to see the full card.
+const openApprovals = new Set();
+function approvalRow(j){
+  const holds = (j.holds||[]).filter(Boolean).length;
+  return `<details class="arow" data-arow="${esc(j.id)}" ${openApprovals.has(j.id)?"open":""}>
+    <summary><span class="caret" aria-hidden="true">▸</span><span class="fitn" title="fit / 100">${j.fit!=null?esc(j.fit):"—"}</span>
+      <span class="who"><strong>${esc(j.role||"Untitled role")}</strong><span class="meta">${esc(j.company||"")}${j.location?` · ${esc(j.location)}`:""}</span></span>
+      <span class="facts">${salary(j)?`<span class="chip num">${esc(salary(j))}</span>`:""}
+        <span class="chip">${sendMode(j)==="manual"?"You send":"Auto-send"}</span>
+        ${holds?`<span class="chip warn">${holds} to check</span>`:""}
+        ${canApprove(j)?"":`<span class="chip">Not ready</span>`}${newChip(unreadFor(j.id))}</span>
+    </summary>
+    ${jobCard(j,"approve")}
+  </details>`;
+}
+document.addEventListener("toggle", ev=>{ const d = ev.target; if(d.matches?.("details.arow")) d.open ? openApprovals.add(d.dataset.arow) : openApprovals.delete(d.dataset.arow); }, true);
 // Download buttons for the PDFs, named the way employers should see them, for uploading to Workday or another ATS.
 const DL_NAMES = {cv:"Casey_Caster_Resume.pdf", cover:"Casey_Caster_Cover_Letter.pdf"};
 function dlBtns(j){
@@ -462,7 +495,8 @@ function jobCard(j, mode){
     j.ats ? `<span class="chip">${esc(j.ats)}</span>` : "",
     j.approval?.by ? `<span class="chip ok">Approved ${j.approval.by==="auto"?"automatically":"by you"} ${esc(day(j.approval.at))}</span>` : "",
   ].join("");
-  const links = safeUrl(j.url) ? `<a class="link" href="${esc(j.url)}" target="_blank" rel="noopener">Posting</a>` : "";
+  const links = (safeUrl(j.url) ? `<a class="link" href="${esc(j.url)}" target="_blank" rel="noopener">Posting</a>` : "")
+    + (mode==="approve"||mode==="approved" ? ` <button class="btn" data-act="open" data-id="${esc(j.id)}">Open ticket</button>` : "");
   const docBtns = [
     docUrl(j.cvUrl) ? `<button class="btn" data-act="viewDoc" data-id="${esc(j.id)}" data-doc="cv">View resume</button>` : "",
     docUrl(j.coverUrl) ? `<button class="btn" data-act="viewDoc" data-id="${esc(j.id)}" data-doc="cover">View cover letter</button>` : "",
@@ -531,11 +565,11 @@ function askSection(j){
       <div class="qrow" style="grid-template-columns:minmax(0,1fr) auto">
         <select id="askKind" aria-label="What to ask">${ASKS.map(([k,t])=>`<option value="${k}">${t}</option>`).join("")}</select>
         <button class="btn primary" type="button" data-act="ask" data-id="${esc(j.id)}">Ask</button></div>
-      <label for="askText">Anything to add <span class="hint">Optional, except for "Something else". Agents pick this up on their next run; results land here and nothing is sent without you.</span>
+      <label for="askText">Anything to add <span class="hint">Optional, except for "Something else". Asking starts Claude right away; the answer lands here, usually within a few minutes. Nothing is sent without you.</span>
         <textarea id="askText" style="min-height:60px" placeholder="e.g. focus on how they run their PMO today"></textarea></label>
     </div>
     ${mine.length?`<ul class="timeline">${mine.map(r=>`<li class="${r.status==="done"?"learned":""}">
-      <span class="when">${esc(day(r.createdAt))} · ${esc(label(r.kind))} · ${r.status==="done"?"Done":r.status==="cancelled"?"Cancelled":"Waiting for an agent"}</span>
+      <span class="when">${esc(day(r.createdAt))} · ${esc(label(r.kind))} · ${r.status==="done"?"Answered":r.status==="cancelled"?"Cancelled":"Claude is working on it"}${r.unread&&r.status==="done"?` <span class="chip new">New</span>`:""}</span>
       ${r.prompt?`<p class="meta">${esc(r.prompt)}</p>`:""}
       ${r.result?`<p>${esc(r.result)}</p>`:""}
       ${r.status==="open"?`<div><button class="btn" data-act="cancelAsk" data-id="${esc(r.id)}">Cancel</button></div>`:""}</li>`).join("")}</ul>`:""}
@@ -588,8 +622,12 @@ function renderTicket(){
     : goneQuiet(j) ? `${esc(j.followupCount)} follow-ups sent with no reply. <button class="btn" data-act="stage" data-stage="noresponse" data-id="${esc(j.id)}">Mark no response</button>`
     : ruleVal("followupNeedsContactEmail", true) && !j.contactEmail ? "Follow-ups start when a recruiter or other contact reaches out and you add their email."
     : "Follow-ups start from the next contact you log.";
-  const steps = STEPS.map(([k,t],i)=>`<button class="step ${i<cur?"done":i===cur?"now":""}" data-act="stage" data-stage="${k}" data-id="${esc(j.id)}" ${i===cur?'aria-current="step"':""}>${esc(t)}</button>`).join(`<span class="sep">›</span>`)
-    + `<span class="sep">·</span>` + CLOSERS.map(([k,t])=>`<button class="step ${j.stage===k?"closed":""}" data-act="stage" data-stage="${k}" data-id="${esc(j.id)}">${esc(t)}</button>`).join("");
+  const curKey = j.stage==="interview" ? "interviewing" : j.stage;
+  const stageOpts = [...STEPS, ...CLOSERS];
+  const steps = `<label for="stageSel" class="sr">Status</label><select id="stageSel" data-id="${esc(j.id)}" style="width:auto;min-width:240px">
+    ${stageOpts.some(([k])=>k===curKey)?"":`<option value="${esc(curKey)}" selected>${esc(STAGE[curKey]?.t||curKey)} (current)</option>`}
+    <optgroup label="Progress">${STEPS.map(([k,t])=>`<option value="${k}" ${k===curKey?"selected":""}>${esc(t)}</option>`).join("")}</optgroup>
+    <optgroup label="Closed">${CLOSERS.map(([k,t])=>`<option value="${k}" ${k===curKey?"selected":""}>${esc(t)}</option>`).join("")}</optgroup></select>`;
   const ev = entries.filter(e=>e.jobId===j.id).sort((a,b)=>String(b.date||b.createdAt).localeCompare(String(a.date||a.createdAt)));
   const r = j.retro || {};
   const keep = {};
@@ -610,10 +648,10 @@ function renderTicket(){
       ${docUrl(j.cvUrl)?`<button class="btn" data-act="viewDoc" data-id="${esc(j.id)}" data-doc="cv">View resume</button>`:""}
       ${docUrl(j.coverUrl)?`<button class="btn" data-act="viewDoc" data-id="${esc(j.id)}" data-doc="cover">View cover letter</button>`:""}
       ${dlBtns(j)}</div>`:""}
-    <div><div class="eyebrow" style="margin-bottom:8px">Where you are</div><div class="steps">${steps}</div>
+    <div><div class="eyebrow" style="margin-bottom:8px">Status</div><div class="steps">${steps}</div>
       <div class="acts" style="margin-top:8px"><label for="sDate" style="flex-direction:row;align-items:center;gap:8px;font-weight:500">Date of the move
         <input id="sDate" type="date" value="${today()}" max="${today()}" style="width:auto"></label>
-        <span class="meta">Click a step to move the ticket. Set the date first if it happened earlier.</span></div>
+        <span class="meta">Pick a status to move the ticket. Set the date first if it happened earlier.</span></div>
       ${spans.length?`<div class="facts">${spans.map(x=>`<span class="chip ${x.current?"info":""}">${esc(STAGE[x.stage]?.t||x.stage)} · ${esc(day(x.at.length>10?x.at:x.at+"T12:00:00Z"))} · <span class="num">${esc(x.days)}</span>d${x.source&&!["you","backfill"].includes(x.source)?" · "+esc(x.source):""}</span>`).join("")}</div>`:""}</div>
     <div class="lesson" style="background:var(--sunk)"><b style="color:var(--ink)">Follow-ups:</b> ${fu}
       ${j.contactEmail?`<span class="meta"> · Contact: ${esc(j.contactEmail)}</span>`:""}</div>
@@ -1041,6 +1079,8 @@ function render(){
   $("cSubmitted").textContent = jobs.filter(j=>[...AFTER_APPLY,"hired","rejected","noresponse"].includes(j.stage)).length;
   $("cInterview").textContent = jobs.filter(j=>ACTIVE.includes(j.stage)).length;
   $("pPipe").textContent = pipe.length;
+  const newAns = requests.filter(r=>r.status==="done" && r.unread).length;
+  $("pNewAns").hidden = !newAns; $("pNewAns").textContent = newAns ? `${newAns} new` : "";
 
   const byFit = (a,b)=>(b.fit??-1)-(a.fit??-1);
   // Don't rebuild the approvals list under Casey's cursor; catch up when he leaves the editor.
@@ -1049,7 +1089,7 @@ function render(){
   else {
     deferApprove = false;
     const approvedWaiting = by("approved");
-    $("v-approve").innerHTML = (approve.length ? approve.sort(byFit).map(j=>jobCard(j,"approve")).join("")
+    $("v-approve").innerHTML = (approve.length ? `<p class="meta" style="margin:0">Click a row to see the documents, answers, and Approve button.</p>` + approve.sort(byFit).map(approvalRow).join("")
       : `<div class="empty">No applications are waiting for approval. Drafted applications appear here with their resume and cover letter${on?", unless auto-approve sends them straight on":""}.</div>`)
       + (approvedWaiting.length ? `<h3 style="margin-top:10px">Approved, sending soon</h3>` + approvedWaiting.sort(byFit).map(j=>jobCard(j,"approved")).join("") : "");
   }
@@ -1059,7 +1099,7 @@ function render(){
       pipe.sort((a,b)=>String(b.updatedAt||"").localeCompare(String(a.updatedAt||""))).map(j=>{const st=STAGE[j.stage]||{t:j.stage,c:""};
         return `<tr><td>${esc(j.company)}</td><td>${safeUrl(j.url)?`<a href="${esc(j.url)}" target="_blank" rel="noopener">${esc(j.role)}</a>`:esc(j.role)}</td>
         <td><span class="chip ${st.c}">${esc(st.t)}</span>${stalled(j)?` <span class="chip warn">stalled ${esc(stalled(j))}d</span>`:""}${j.nextFollowupAt&&j.nextFollowupAt<=today()&&!CLOSED.includes(j.stage)?` <span class="chip warn">follow up</span>`:""}</td><td class="num">${esc(j.fit??"")}</td><td>${esc(day(j.updatedAt))}</td>
-        <td>${esc(j.note||"")}${entries.some(e=>e.jobId===j.id)?` <span class="chip">${entries.filter(e=>e.jobId===j.id).length} notes</span>`:""}</td>
+        <td>${newChip(unreadFor(j.id))}${esc(j.note||"")}${entries.some(e=>e.jobId===j.id)?` <span class="chip">${entries.filter(e=>e.jobId===j.id).length} notes</span>`:""}</td>
         <td><button class="btn" data-act="open" data-id="${esc(j.id)}">Open</button></td></tr>`}).join("")
     }</tbody></table></div>` : `<div class="empty">No applications yet.</div>`;
   renderTicket();
@@ -1142,6 +1182,14 @@ async function approve(job, J){
   }
 }
 
+// Start the "Dashboard requests" routine for a new question, the same way Approve starts the sender.
+async function startRequests(reqId){
+  const trig = settings.requestTriggerId;
+  const mcp = trig ? await claude.use("mcp").catch(()=>null) : null;
+  if(!mcp) return false;
+  try{ await mcp.callTool("Claude Code Remote", "fire_trigger", {trigger_id: trig, text: reqId ? `Answer dashboard request: requests/${reqId}` : "Answer open dashboard requests"}); return true; }
+  catch(e){ return false; }
+}
 async function write(ref, data, okMsg){
   try{ await ref.update(data); if(okMsg) toast(okMsg); }
   catch(e){
@@ -1205,22 +1253,15 @@ async function ruleAction(act, id, b){
   }
   renderRules();
 }
-document.addEventListener("click", async ev=>{
-  const b = ev.target.closest("[data-act]"); if(!b) return;
-  const id=b.dataset.id, act=b.dataset.act;
-  if(act==="open"){ dqRows = 1; openJob = id; show("job"); renderTicket(); window.scrollTo?.({top:$("v-job").offsetTop-20,behavior:"smooth"}); return; }
-  if(act==="back"){ show("pipe"); return; }
-  if(act==="addQ"){ dqRows++; renderTicket(); $("dq-q-"+(dqRows-1))?.focus(); return; }
-  if(act==="viewDoc"){ const j = jobs.find(x=>x.id===id); if(j) openViewer(j, b.dataset.doc); return; }
-  if(act==="dlDoc"){ const j = jobs.find(x=>x.id===id); if(j) downloadDoc(j, b.dataset.doc); return; }
-  if(act==="coFilter" || act==="coSector"){
-    if(act==="coFilter") coFilter.status = b.dataset.key; else coFilter.sector = b.dataset.key;
-    try{ localStorage.setItem("jh-cofilter", JSON.stringify(coFilter)); }catch(e){}
-    renderCompanies(); return; }
-  if(!db) return;
-  b.disabled=true;
-  if(act==="stage"){
-    const j = jobs.find(x=>x.id===id), to = b.dataset.stage;
+// Opening a ticket counts as reading its new answers. The "New" tag stays on screen until the next redraw.
+function markRead(jobId){
+  if(!db || !canWrite) return;
+  requests.filter(r=>r.jobId===jobId && r.status==="done" && r.unread)
+    .forEach(r=>db.doc("requests/"+r.id).update({unread:false, readAt:now()}).catch(()=>{}));
+}
+// Move a ticket to a new stage and record the transition (from the status dropdown or a quick action).
+async function moveStage(id, to){
+    const j = jobs.find(x=>x.id===id);
     const when = ($("sDate")?.value || today()) > today() ? today() : ($("sDate")?.value || today());
     if(j && j.stage!==to){
       const patch = {stage:to, stageSince:when, updatedAt:now()};
@@ -1238,15 +1279,34 @@ document.addEventListener("click", async ev=>{
           notes:`Moved from ${STAGE[j.stage]?.t||j.stage} to ${STAGE[to]?.t||to}`, stage:to, createdAt:now()});
       }catch(e){}
     }
-    b.disabled=false; return;
-  }
+}
+document.addEventListener("change", async ev=>{
+  const t = ev.target; if(t.id!=="stageSel" || !db) return;
+  t.disabled = true; await moveStage(t.dataset.id, t.value); t.disabled = false; t.blur(); renderTicket();
+});
+document.addEventListener("click", async ev=>{
+  const b = ev.target.closest("[data-act]"); if(!b) return;
+  const id=b.dataset.id, act=b.dataset.act;
+  if(act==="open"){ dqRows = 1; openJob = id; show("job"); renderTicket(); window.scrollTo?.({top:$("v-job").offsetTop-20,behavior:"smooth"}); markRead(id); return; }
+  if(act==="back"){ show("pipe"); return; }
+  if(act==="addQ"){ dqRows++; renderTicket(); $("dq-q-"+(dqRows-1))?.focus(); return; }
+  if(act==="viewDoc"){ const j = jobs.find(x=>x.id===id); if(j) openViewer(j, b.dataset.doc); return; }
+  if(act==="dlDoc"){ const j = jobs.find(x=>x.id===id); if(j) downloadDoc(j, b.dataset.doc); return; }
+  if(act==="coFilter" || act==="coSector"){
+    if(act==="coFilter") coFilter.status = b.dataset.key; else coFilter.sector = b.dataset.key;
+    try{ localStorage.setItem("jh-cofilter", JSON.stringify(coFilter)); }catch(e){}
+    renderCompanies(); return; }
+  if(!db) return;
+  b.disabled=true;
+  if(act==="stage"){ await moveStage(id, b.dataset.stage); b.disabled=false; return; }
   if(act==="ask" || act==="cancelAsk"){
     try{
       if(act==="ask"){
         const j = jobs.find(x=>x.id===id) || {}, kind = $("askKind").value, prompt = $("askText").value.trim();
         if(kind==="question" && !prompt){ toast("Say what you'd like to know."); b.disabled=false; return; }
-        await db.collection("requests").add({kind, jobId:id, company:j.company||"", role:j.role||"", prompt, status:"open", createdAt:now()});
-        $("askText").value = ""; renderedJob = null; toast("Asked. The answer lands on this ticket.");
+        const ref = await db.collection("requests").add({kind, jobId:id, company:j.company||"", role:j.role||"", prompt, status:"open", createdAt:now()});
+        $("askText").value = ""; renderedJob = null;
+        toast(await startRequests(ref?.id) ? "Asked. Claude is on it; the answer lands on this ticket." : "Asked. Claude couldn't be started from here, so it waits for the next run.");
       } else {
         await write(db.doc("requests/"+id), {status:"cancelled", doneAt:now()}, "Cancelled.");
       }
