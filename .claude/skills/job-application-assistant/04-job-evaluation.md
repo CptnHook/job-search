@@ -109,7 +109,7 @@ Does this role advance career goals and contain tasks that energize?
 | 0-39 | Dead end or backwards step |
 
 **Career goals:**
-- VP-level leadership, or C-level (COO, Chief Customer Officer, Chief Transformation Officer, Chief AI Officer, C-level Chief of Staff), in engineering operations, technical program management, PMO, strategy & operations, customer success, product operations, AI enablement, business operations, delivery, engineering effectiveness, or fintech/payments operations. He is still narrowing the best fit, so score function fit generously across these and note which direction each role points
+- VP-level leadership, or C-level (COO, Chief Customer Officer, Chief Transformation Officer, Chief AI Officer, Chief Information Officer / Chief Information and Technology Officer, C-level Chief of Staff), in engineering operations, platform operations & integration, technology leadership (VP of Technology), workforce/internal technology engineering, technical program management, PMO, strategy & operations, customer success, product operations, AI enablement, business operations, delivery, engineering effectiveness, or fintech/payments operations. He is still narrowing the best fit, so score function fit generously across these and note which direction each role points
 - **Level gate:** VP and above always qualifies. Director / Sr Director qualifies only at a large company: public, or 5,000+ employees, or $1B+ revenue. Below that, a Director title is "below level" (the `skipReasons` rule on the dashboard)
 - Build or scale a function at a high-growth company of about 100-1,000 people, or own a function with real scope at a large public company (he leans public)
 - Work close to the executive team on strategy, cost, and AI enablement

@@ -75,6 +75,18 @@ site:jobs.lever.co "VP" "Operations" "San Francisco"
 site:linkedin.com/jobs "VP, Operations" (fintech OR payments) "San Francisco Bay Area"
 ```
 
+### Priority 3b: Platform operations, technology leadership, workforce technology (added 2026-10-24)
+
+```
+site:linkedin.com/jobs ("VP of Platform Operations" OR "VP, Platform Operations" OR "Platform Operations & Integration") (SaaS OR cloud OR fintech)
+site:linkedin.com/jobs ("VP of Technology" OR "Vice President of Technology") "San Francisco Bay Area"
+site:linkedin.com/jobs ("Chief Information Officer" OR "Chief Information and Technology Officer" OR "CIO") (SaaS OR "high-growth" OR fintech) "San Francisco Bay Area"
+site:boards.greenhouse.io ("VP" OR "Head of") ("Platform Operations" OR "Business Technology" OR "Enterprise Technology" OR "Workplace Technology")
+site:myworkdayjobs.com ("Director" OR "Senior Director") ("Workforce Technology" OR "Employee Technology" OR "Workplace Technology" OR "Enterprise Technology") "San Francisco"
+```
+
+LinkedIn CLI query terms for these: "VP Platform Operations", "VP of Technology", "Chief Information Officer", "Workforce Technology" (Director only at large companies).
+
 ### Priority 4: Product management and AI/platform operations (VP)
 
 ```
