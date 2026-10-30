@@ -227,6 +227,9 @@ select{border:1px solid var(--line);background:var(--bg);border-radius:8px;paddi
 .arow > .job{border:0;border-radius:0 0 12px 12px}
 @media (max-width:620px){.arow > summary{grid-template-columns:18px 40px minmax(0,1fr)} .arow > summary .facts{grid-column:1/-1;justify-content:flex-start}}
 .chip.new{background:var(--accent);color:var(--accent-ink)}
+button.chip{border:0;cursor:pointer;font-family:inherit;font-weight:600}
+button.chip:hover{filter:brightness(1.1)}
+.timeline li.flash{outline:2px solid var(--accent);outline-offset:4px;border-radius:6px;background:var(--ok-bg)}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));
   background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:8px;font-size:14px;z-index:20}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -443,7 +446,8 @@ try{ const t=localStorage.getItem("jh-tab"); if(t && $("v-"+t)) show(t); }catch(
 
 // Answers from the requests routine that Casey hasn't opened yet.
 const unreadFor = id => requests.filter(r=>r.jobId===id && r.status==="done" && r.unread).length;
-const newChip = n => n ? `<span class="chip new">${n} new answer${n>1?"s":""}</span>` : "";
+// Clicking it opens the ticket at the newest unread answer.
+const newChip = (n, jobId) => n ? `<button type="button" class="chip new" data-act="openAnswer" data-id="${esc(jobId)}" title="Open the ticket at this answer">${n} new answer${n>1?"s":""} ›</button>` : "";
 // Approvals list: one condensed row per application; expand to see the full card.
 const openApprovals = new Set();
 function approvalRow(j){
@@ -454,7 +458,7 @@ function approvalRow(j){
       <span class="facts">${salary(j)?`<span class="chip num">${esc(salary(j))}</span>`:""}
         <span class="chip">${sendMode(j)==="manual"?"You send":"Auto-send"}</span>
         ${holds?`<span class="chip warn">${holds} to check</span>`:""}
-        ${canApprove(j)?"":`<span class="chip">Not ready</span>`}${newChip(unreadFor(j.id))}</span>
+        ${canApprove(j)?"":`<span class="chip">Not ready</span>`}${newChip(unreadFor(j.id), j.id)}</span>
     </summary>
     ${jobCard(j,"approve")}
   </details>`;
@@ -568,7 +572,7 @@ function askSection(j){
       <label for="askText">Anything to add <span class="hint">Optional, except for "Something else". Asking starts Claude right away; the answer lands here, usually within a few minutes. Nothing is sent without you.</span>
         <textarea id="askText" style="min-height:60px" placeholder="e.g. focus on how they run their PMO today"></textarea></label>
     </div>
-    ${mine.length?`<ul class="timeline">${mine.map(r=>`<li class="${r.status==="done"?"learned":""}">
+    ${mine.length?`<ul class="timeline">${mine.map(r=>`<li id="ans-${esc(r.id)}" class="${r.status==="done"?"learned":""}">
       <span class="when">${esc(day(r.createdAt))} · ${esc(label(r.kind))} · ${r.status==="done"?"Answered":r.status==="cancelled"?"Cancelled":"Claude is working on it"}${r.unread&&r.status==="done"?` <span class="chip new">New</span>`:""}</span>
       ${r.prompt?`<p class="meta">${esc(r.prompt)}</p>`:""}
       ${r.result?`<p>${esc(r.result)}</p>`:""}
@@ -1099,7 +1103,7 @@ function render(){
       pipe.sort((a,b)=>String(b.updatedAt||"").localeCompare(String(a.updatedAt||""))).map(j=>{const st=STAGE[j.stage]||{t:j.stage,c:""};
         return `<tr><td>${esc(j.company)}</td><td>${safeUrl(j.url)?`<a href="${esc(j.url)}" target="_blank" rel="noopener">${esc(j.role)}</a>`:esc(j.role)}</td>
         <td><span class="chip ${st.c}">${esc(st.t)}</span>${stalled(j)?` <span class="chip warn">stalled ${esc(stalled(j))}d</span>`:""}${j.nextFollowupAt&&j.nextFollowupAt<=today()&&!CLOSED.includes(j.stage)?` <span class="chip warn">follow up</span>`:""}</td><td class="num">${esc(j.fit??"")}</td><td>${esc(day(j.updatedAt))}</td>
-        <td>${newChip(unreadFor(j.id))}${esc(j.note||"")}${entries.some(e=>e.jobId===j.id)?` <span class="chip">${entries.filter(e=>e.jobId===j.id).length} notes</span>`:""}</td>
+        <td>${newChip(unreadFor(j.id), j.id)}${esc(j.note||"")}${entries.some(e=>e.jobId===j.id)?` <span class="chip">${entries.filter(e=>e.jobId===j.id).length} notes</span>`:""}</td>
         <td><button class="btn" data-act="open" data-id="${esc(j.id)}">Open</button></td></tr>`}).join("")
     }</tbody></table></div>` : `<div class="empty">No applications yet.</div>`;
   renderTicket();
@@ -1154,7 +1158,7 @@ async function approve(job, J){
   const approval = {by:"manual", at:now(), answersHash: job.formAnswers?.hash || null};
   if(sendMode(job)==="manual"){
     try{
-      await J.update({stage:"needs_me", approval, updatedAt:now()});
+      await J.update({stage:"needs_me", approval, updatedAt:now(), note:stageNote("needs_me", today())});
       await db.collection("actions").add({kind:"Send it yourself", jobId:job.id, company:job.company||"", status:"open",
         title:`Send the ${job.role||"application"} application`,
         detail:`${job.formAnswers?.manualReason||"This site needs a person to apply."} The answers and documents are on the ticket.`,
@@ -1163,7 +1167,7 @@ async function approve(job, J){
     }catch(e){ toast("That didn't save. Try again in a moment."); }
     return;
   }
-  try{ await J.update({stage:"approved", approval, updatedAt:now()}); }
+  try{ await J.update({stage:"approved", approval, updatedAt:now(), note:stageNote("approved", today())}); }
   catch(e){ toast("That didn't save. Try again in a moment."); return; }
   const trig = settings.submitTriggerId;
   const mcp = trig ? await claude.use("mcp").catch(()=>null) : null;
@@ -1253,6 +1257,24 @@ async function ruleAction(act, id, b){
   }
   renderRules();
 }
+// The Pipeline "Note" column follows the ticket: every stage move rewrites it.
+function stageNote(to, when){
+  const d = day(String(when).length>10 ? when : when+"T12:00:00Z");
+  return ({
+    approved:"Approved. Claude is sending it.",
+    needs_me:"Approved. Send it yourself, then set the status to Applied.",
+    submitted:`Applied ${d}. Waiting to hear back.`,
+    recruiter:`Recruiter called ${d}.`,
+    assessment:`In assessment since ${d}.`,
+    interviewing:`Interviewing since ${d}.`,
+    offer:`Offer received ${d}.`,
+    negotiating:`Negotiating since ${d}.`,
+    hired:`Job achieved ${d}.`,
+    rejected:`Rejected ${d}.`,
+    noresponse:`No response; closed ${d}.`,
+    withdrawn:`Withdrew ${d}.`,
+  })[to] || `${STAGE[to]?.t||to} since ${d}.`;
+}
 // Opening a ticket counts as reading its new answers. The "New" tag stays on screen until the next redraw.
 function markRead(jobId){
   if(!db || !canWrite) return;
@@ -1264,7 +1286,7 @@ async function moveStage(id, to){
     const j = jobs.find(x=>x.id===id);
     const when = ($("sDate")?.value || today()) > today() ? today() : ($("sDate")?.value || today());
     if(j && j.stage!==to){
-      const patch = {stage:to, stageSince:when, updatedAt:now()};
+      const patch = {stage:to, stageSince:when, updatedAt:now(), note:stageNote(to, when)};
       if(to==="submitted" && !j.submittedAt) patch.submittedAt = when===today() ? now() : when;
       if(CLOSED.includes(to)) patch.nextFollowupAt = null;
       else if(to==="submitted" && !ruleVal("followupNeedsContactEmail", true) && !j.nextFollowupAt)
@@ -1287,7 +1309,17 @@ document.addEventListener("change", async ev=>{
 document.addEventListener("click", async ev=>{
   const b = ev.target.closest("[data-act]"); if(!b) return;
   const id=b.dataset.id, act=b.dataset.act;
-  if(act==="open"){ dqRows = 1; openJob = id; show("job"); renderTicket(); window.scrollTo?.({top:$("v-job").offsetTop-20,behavior:"smooth"}); markRead(id); return; }
+  if(act==="open"){ dqRows = 1; openJob = id; show("job"); renderTicket(); window.scrollTo?.({top:$("v-job").offsetTop-20,behavior:"smooth"}); setTimeout(()=>markRead(id), 6000); return; }
+  if(act==="openAnswer"){
+    ev.preventDefault(); ev.stopPropagation();   // don't also toggle the approvals row
+    const first = requests.filter(r=>r.jobId===id && r.status==="done" && r.unread)
+      .sort((a,b)=>String(b.doneAt||b.createdAt).localeCompare(String(a.doneAt||a.createdAt)))[0];
+    dqRows = 1; openJob = id; show("job"); renderTicket();
+    setTimeout(()=>{ const el = (first && $("ans-"+first.id)) || document.querySelector("#v-job .comp");
+      el?.scrollIntoView({behavior:"smooth", block:"center"}); if(el && first) el.classList.add("flash"); }, 60);
+    setTimeout(()=>markRead(id), 6000);   // keep the New tag visible while Casey reads
+    return;
+  }
   if(act==="back"){ show("pipe"); return; }
   if(act==="addQ"){ dqRows++; renderTicket(); $("dq-q-"+(dqRows-1))?.focus(); return; }
   if(act==="viewDoc"){ const j = jobs.find(x=>x.id===id); if(j) openViewer(j, b.dataset.doc); return; }
@@ -1378,7 +1410,7 @@ document.addEventListener("click", async ev=>{
     await write(J,{coverText:job?.coverDraft??"",coverEditedByCasey:false,coverEditedAt:null,updatedAt:now()},"Agent draft restored.");
     render(); return; }
   if(act==="approve"){ await approve(job, J); b.disabled=false; return; }
-  if(act==="unapprove") await write(J,{stage:"awaiting_approval",approval:null,updatedAt:now()},"Approval undone. It's back in your approvals.");
+  if(act==="unapprove") await write(J,{stage:"awaiting_approval",approval:null,updatedAt:now(),note:"Waiting for your approval."},"Approval undone. It's back in your approvals.");
   if(act==="hold") await write(J,{stage:"backlog",updatedAt:now(),note:"Held by Casey"},"Moved to backlog.");
   if(act==="decline") await write(J,{stage:"declined",updatedAt:now()},"Marked don't apply.");
   if(act==="yes") await write(J,{stage:"queued",updatedAt:now()},"Queued for drafting.");

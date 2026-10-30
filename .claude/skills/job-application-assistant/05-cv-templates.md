@@ -6,6 +6,14 @@ framework_version: 1.4.6
 
 <!-- SETUP: Profile statements and section ordering are personalized by running /setup -->
 
+## Casey's resume format (overrides the moderncv template below, 2026-10-30)
+
+**Do not build CVs from the moderncv template.** Casey reported on 2026-10-30 that the moderncv layout reads as "obviously AI generated" (scammers use it) and was not getting him interviews. Every application uses his own resume, the Google Doc "CASEY CASTER Resume_2026" (Drive id `1DulKSkax2UIiqtsBLH3UUDAOaA1HjM8kbticBMiWm5I`), in its own format.
+
+- **Default:** send the current send copy unchanged. It is the Google Doc "Casey Caster Resume - original format, 2 pages (send copy)" (id `1sq4CTouLAE8idPdmSYbMniayzTsoYn0-Ctap_p1us3A`) in the Drive folder "Resume copies by application", exported to PDF at `documents/resume/Casey_Caster_Resume_original_format.pdf`. It is his original with two layout-only edits: date ranges use an ASCII hyphen (ATS rule below), and "25 project managers" reads "25 PMs" so it fits on 2 pages.
+- **If Casey changes his original:** make a new copy (Drive `copy_file` into "Resume copies by application"), re-apply only those layout edits, export to PDF (`download_file_content` with `application/pdf`), and check exactly 2 pages and `tools/verify_pdf.py --ascii-dates`. `tools/verify_layout.py` is calibrated for LaTeX and flags the Google Docs footer falsely; use a visual read instead.
+- **Tailoring:** none by default. Only with Casey's OK for a specific application, and then in a per-application copy of the Google Doc, changing wording in his own voice (no new sections, no layout change). Never generate a resume from scratch.
+
 ## Template: LaTeX moderncv (Banking Style)
 
 All CVs use the moderncv LaTeX package with the "banking" style and "blue" color scheme.
