@@ -276,7 +276,7 @@ button.chip:hover{filter:brightness(1.1)}
       <button class="tab" role="tab" id="t-review" aria-selected="false" data-view="review">Review queue <span class="pill num" id="pReview">0</span></button>
       <button class="tab" role="tab" id="t-pipe" aria-selected="false" data-view="pipe">Pipeline <span class="pill num" id="pPipe">0</span> <span class="chip new" id="pNewAns" hidden></span></button>
       <button class="tab" role="tab" id="t-companies" aria-selected="false" data-view="companies">Companies <span class="pill num" id="pCompanies">0</span></button>
-      <button class="tab" role="tab" id="t-learn" aria-selected="false" data-view="learn">Learnings <span class="pill num" id="pLearn">0</span></button>
+      <button class="tab" role="tab" id="t-learn" aria-selected="false" data-view="learn">Notes &amp; learnings <span class="pill num" id="pLearn">0</span></button>
       <button class="tab" role="tab" id="t-rules" aria-selected="false" data-view="rules">Rules <span class="pill num" id="pRules">0</span></button>
       <button class="tab" role="tab" id="t-add" aria-selected="false" data-view="add">+ Add a listing</button>
     </nav>
@@ -295,7 +295,27 @@ button.chip:hover{filter:brightness(1.1)}
     <div class="view" id="v-review" role="tabpanel" aria-labelledby="t-review" hidden></div>
     <div class="view" id="v-pipe" role="tabpanel" aria-labelledby="t-pipe" hidden></div>
     <div class="view" id="v-job" role="region" aria-label="Application ticket" hidden></div>
-    <div class="view" id="v-learn" role="tabpanel" aria-labelledby="t-learn" hidden></div>
+    <div class="view" id="v-learn" role="tabpanel" aria-labelledby="t-learn" hidden>
+      <div class="cobar" style="position:static">
+        <form id="noteForm" class="entryform">
+          <label for="noteText">New note <textarea id="noteText" required style="min-height:64px" placeholder="Something you learned, a clarification, what a recruiter told you, an idea to try"></textarea></label>
+          <div class="row">
+            <label for="noteKind">Type <select id="noteKind"></select></label>
+            <label for="noteCo">Company <span class="hint">optional</span> <input id="noteCo" list="noteCoList" placeholder="e.g. Oracle" autocomplete="off"></label>
+            <datalist id="noteCoList"></datalist>
+          </div>
+          <label style="display:flex;flex-direction:row;gap:8px;align-items:flex-start;font-weight:600"><input type="checkbox" id="noteForClaude" style="width:auto;margin-top:3px"><span>Claude should act on this <span class="hint" style="font-weight:400">(update your profile or the way it works; it tells you what it changed)</span></span></label>
+          <div class="acts" style="margin:0"><button class="btn primary" id="noteAdd" type="submit">Add note</button><span id="noteMsg" class="meta">Saved with today's date and kept for good.</span></div>
+        </form>
+        <div class="cofilters">
+          <label for="noteSearch" class="sr">Search notes</label>
+          <input id="noteSearch" type="search" placeholder="Search notes" autocomplete="off" style="flex:1;min-width:180px">
+          <label for="noteFilter" class="sr">Type</label><select id="noteFilter"></select>
+        </div>
+      </div>
+      <div id="notesLive"></div>
+      <div id="learnLive"></div>
+    </div>
 
     <div class="view" id="v-companies" role="tabpanel" aria-labelledby="t-companies" hidden>
       <div class="cobar">
@@ -787,19 +807,62 @@ function questionBank(){
     <ul class="qlist bank">${qs.map(q=>`<li><span class="chip ${q.rating==="strong"?"ok":q.rating==="gap"?"crit":""}">${esc((RATINGS.find(r=>r[0]===q.rating)||[,q.rating])[1])}</span>
       ${esc(q.q)} <span class="meta">· ${esc(q.company||"")}${q.round?", "+esc(q.round):""}${q.date?", "+esc(q.date):""}</span></li>`).join("")}</ul></article>`;
 }
+// General notes log (Casey, 2026-10-31): learnings and clarifications not tied to one application.
+// Notes marked "Claude should act on this" are read at the start of every Claude session (docs/NOTES.md).
+const NOTE_KINDS = ["Learning","Clarification","Market insight","Interview","Networking","Process","Idea"];
+let notes = [], noteUi = null, noteQuery = "", noteKindFilter = "all", notesDirty = false;
+const noteEdits = {};   // unsaved edits, by note id
+const typingInNotes = () => !!document.activeElement?.closest?.("#notesLive")?.matches?.("textarea");
+function noteCard(n){
+  const ui = noteUi?.id===n.id ? noteUi.mode : null;
+  const claude = n.forClaude ? (n.status==="done"
+      ? `<span class="chip ok">Claude: done</span>` : `<span class="chip info">For Claude: waiting</span>`) : "";
+  return `<article class="learncard" id="note-${esc(n.id)}">
+    <div class="head" style="align-items:baseline;gap:8px"><div class="facts" style="margin:0">
+      <span class="chip num">${esc(n.date||String(n.createdAt||"").slice(0,10))}</span><span class="chip">${esc(n.kind||"Learning")}</span>
+      ${n.company?`<span class="chip">${esc(n.company)}</span>`:""}${claude}${n.updatedAt&&n.updatedAt!==n.createdAt?`<span class="meta">edited ${esc(day(n.updatedAt))}</span>`:""}</div></div>
+    ${ui==="edit" ? `<textarea data-note="${esc(n.id)}" aria-label="Edit note" style="min-height:70px">${esc(noteEdits[n.id] ?? n.text ?? "")}</textarea>
+      <div class="acts" style="margin:0"><button class="btn primary" data-act="noteSave" data-id="${esc(n.id)}">Save</button>
+      <button class="btn" data-act="noteCancel" data-id="${esc(n.id)}">Cancel</button></div>`
+    : `<p style="margin:0;white-space:pre-wrap">${esc(n.text)}</p>`}
+    ${n.claudeNote?`<div class="lesson"><b>Claude${n.doneAt?" · "+esc(day(n.doneAt)):""}:</b> ${esc(n.claudeNote)}</div>`:""}
+    ${ui ? (ui==="delete" ? `<div class="acts" style="margin:0"><span class="meta">Delete this note for good?</span>
+      <button class="btn danger" data-act="noteDelConfirm" data-id="${esc(n.id)}">Delete</button>
+      <button class="btn" data-act="noteCancel" data-id="${esc(n.id)}">Keep it</button></div>` : "")
+    : `<div class="acts" style="margin:0"><button class="btn" data-act="noteEdit" data-id="${esc(n.id)}">Edit</button>
+      <button class="btn" data-act="noteClaude" data-id="${esc(n.id)}">${n.forClaude?"Don't send to Claude":"Send to Claude"}</button>
+      <button class="btn" data-act="noteDel" data-id="${esc(n.id)}">Delete</button></div>`}
+  </article>`;
+}
+function renderNotes(){
+  const names = [...new Set([...companies.map(c=>c.name), ...jobs.map(j=>j.company)].filter(Boolean))].sort();
+  $("noteCoList").innerHTML = names.map(n=>`<option value="${esc(n)}">`).join("");
+  if(typingInNotes()){ notesDirty = true; return; }
+  notesDirty = false;
+  const q = noteQuery.trim().toLowerCase();
+  const list = notes.filter(n=>noteKindFilter==="all" || (n.kind||"Learning")===noteKindFilter)
+    .filter(n=>!q || [n.text,n.kind,n.company,n.claudeNote].join(" ").toLowerCase().includes(q))
+    .sort((a,b)=>String(b.createdAt||b.date||"").localeCompare(String(a.createdAt||a.date||"")));
+  $("notesLive").innerHTML = !notes.length
+    ? `<div class="empty">No notes yet. Use this log for anything worth remembering: what a recruiter said about the market, a clarification about your background, a pattern you noticed. Mark a note for Claude when it should change your profile or how applications are drafted.</div>`
+    : list.length ? `<p class="meta" style="margin:0 0 6px">${list.length} of ${notes.length} notes, newest first</p>` + list.map(noteCard).join("")
+    : `<div class="empty">No notes match.</div>`;
+}
+
 function renderLearn(){
+  renderNotes();
   const withLesson = entries.filter(e=>e.learning);
   const retros = jobs.filter(j=>j.retro && (j.retro.why||j.retro.marketable||j.retro.differently));
   const bank = questionBank();
-  $("pLearn").textContent = withLesson.length + retros.length;
+  $("pLearn").textContent = notes.length + withLesson.length + retros.length;
   if(!withLesson.length && !retros.length && !bank){
-    $("v-learn").innerHTML = `<div class="empty">No learnings yet. Each note's "What I learned" field and each closed application's retrospective collect here, so patterns across interviews show up in one place.</div>`;
+    $("learnLive").innerHTML = `<h3 style="margin-top:16px">From your applications</h3><div class="empty">Each application note's "What I learned" field and each closed application's retrospective collect here, so patterns across interviews show up in one place.</div>`;
     return;
   }
   const byJob = {};
   withLesson.forEach(e=>{ (byJob[e.jobId] ||= []).push(e); });
   const ids = [...new Set([...Object.keys(byJob), ...retros.map(j=>j.id)])];
-  $("v-learn").innerHTML = `<p class="sub">Everything you've learned across applications. The coaching agent reads this to suggest how to position yourself and what to build next.</p>` + bank +
+  $("learnLive").innerHTML = `<h3 style="margin-top:16px">From your applications</h3><p class="sub">Everything you've learned across applications. The coaching agent reads this to suggest how to position yourself and what to build next.</p>` + bank +
     ids.map(id=>{ const j = jobs.find(x=>x.id===id) || {}; const ls = (byJob[id]||[]).sort((a,b)=>String(b.date).localeCompare(String(a.date)));
       const r = j.retro || {};
       return `<article class="learncard">
@@ -1354,6 +1417,21 @@ document.addEventListener("change", async ev=>{
 document.addEventListener("click", async ev=>{
   const b = ev.target.closest("[data-act]"); if(!b) return;
   const id=b.dataset.id, act=b.dataset.act;
+  if(act.startsWith("note")){
+    const n = notes.find(x=>x.id===id); if(!n || !db) return;
+    if(act==="noteEdit"){ noteUi={id, mode:"edit"}; noteEdits[id]=n.text||""; renderNotes(); $("notesLive").querySelector(`textarea[data-note="${CSS.escape(id)}"]`)?.focus(); return; }
+    if(act==="noteDel"){ noteUi={id, mode:"delete"}; renderNotes(); return; }
+    if(act==="noteCancel"){ noteUi=null; delete noteEdits[id]; renderNotes(); return; }
+    if(act==="noteSave"){
+      const text = (noteEdits[id] ?? "").trim(); if(!text){ toast("A note can't be empty. Use Delete instead."); return; }
+      noteUi=null; delete noteEdits[id]; document.activeElement?.blur?.();
+      await write(db.doc("notes/"+id), {text, updatedAt:now(), ...(n.forClaude && n.status==="done" ? {status:"open"} : {})}, "Note saved."); renderNotes(); return; }
+    if(act==="noteClaude"){ const on = !n.forClaude;
+      await write(db.doc("notes/"+id), {forClaude:on, status:on?"open":"", updatedAt:now()}, on?"Claude will pick this up at its next session.":"Kept as a note only."); return; }
+    if(act==="noteDelConfirm"){ noteUi=null;
+      try{ await db.doc("notes/"+id).delete(); toast("Note deleted."); }catch(e){ toast("That didn't delete. Try again."); } return; }
+    return;
+  }
   if(act==="open"){ dqRows = 1; openJob = id; show("job"); renderTicket(); window.scrollTo?.({top:$("v-job").offsetTop-20,behavior:"smooth"}); setTimeout(()=>markRead(id), 6000); return; }
   if(act==="openAnswer"){
     ev.preventDefault(); ev.stopPropagation();   // don't also toggle the approvals row
@@ -1471,6 +1549,9 @@ document.addEventListener("click", async ev=>{
 document.addEventListener("input", ev=>{
   if(/^p[er]-/.test(ev.target.id||"") && ev.target.closest?.("#v-rules")) ruleDrafts[ev.target.id] = ev.target.value;
   if(ev.target.id==="coSearch"){ coQuery = ev.target.value; renderCompanies(); return; }
+  if(ev.target.id==="noteSearch"){ noteQuery = ev.target.value; renderNotes(); return; }
+  const ne = ev.target.closest?.("textarea[data-note]");
+  if(ne){ noteEdits[ne.dataset.note] = ne.value; return; }
   const cn = ev.target.closest?.("textarea[data-conote]");
   if(cn){ const id = cn.dataset.conote; coNotes[id] = cn.value;
     const save = cn.closest("article")?.querySelector('[data-act="coNote"]'); const c = companies.find(x=>x.id===id);
@@ -1485,6 +1566,7 @@ document.addEventListener("focusout", ev=>{
   if(ticketDirty) setTimeout(()=>{ if(!typingInTicket()) renderTicket(); },0);
   if(rulesDirty) setTimeout(()=>{ if(!typingInRules()) renderRules(); },0);
   if(coDirty) setTimeout(()=>{ if(!typingInCompanies()) renderCompanies(); },0);
+  if(notesDirty) setTimeout(()=>{ if(!typingInNotes()) renderNotes(); },0);
 });
 document.addEventListener("change", ev=>{
   if(ev.target.id==="eKind") syncDebrief();
@@ -1620,6 +1702,24 @@ $("coForm").addEventListener("submit", async ev=>{
   $("coAdd").disabled=false;
 });
 
+$("noteKind").innerHTML = NOTE_KINDS.map(k=>`<option>${esc(k)}</option>`).join("");
+$("noteFilter").innerHTML = `<option value="all">All types</option>` + NOTE_KINDS.map(k=>`<option>${esc(k)}</option>`).join("");
+$("noteFilter").addEventListener("change", ev=>{ noteKindFilter = ev.target.value; renderNotes(); });
+$("noteKind").addEventListener("change", ev=>{ if(ev.target.value==="Clarification") $("noteForClaude").checked = true; });
+$("noteForm").addEventListener("submit", async ev=>{
+  ev.preventDefault(); if(!db || !canWrite){ $("noteMsg").textContent="Notes can be added only by the owner, signed in on claude.ai."; return; }
+  const text = $("noteText").value.trim(); if(!text){ $("noteMsg").textContent="Write the note first."; return; }
+  const forClaude = $("noteForClaude").checked;
+  $("noteAdd").disabled = true;
+  try{
+    await db.collection("notes").add({text, kind:$("noteKind").value, company:$("noteCo").value.trim(), forClaude, status:forClaude?"open":"",
+      date:today(), createdAt:now(), updatedAt:now(), by:"Casey"});
+    $("noteForm").reset(); $("noteMsg").textContent = "Saved with today's date and kept for good.";
+    toast(forClaude ? "Note saved. Claude will pick it up at its next session." : "Note saved.");
+  }catch(e){ $("noteMsg").textContent = e?.code==="invalid_argument" ? "Only the owner can add notes." : "That didn't save. Try again."; }
+  $("noteAdd").disabled = false;
+});
+
 render();
 (async()=>{
   db = await claude.use("db");
@@ -1637,5 +1737,6 @@ render();
   db.collection("transitions").limit(1000).onSnapshot(s=>{ transitions=s.docs.map(d=>({...d.data(),id:d.id})); render(); }, fail);
   db.collection("requests").limit(300).onSnapshot(s=>{ requests=s.docs.map(d=>({...d.data(),id:d.id})); render(); }, fail);
   db.collection("companies").limit(500).onSnapshot(s=>{ companies=s.docs.map(d=>({...d.data(),id:d.id})); render(); }, fail);
+  db.collection("notes").limit(1000).onSnapshot(s=>{ notes=s.docs.map(d=>({...d.data(),id:d.id})); render(); }, fail);
 })();
 </script>
