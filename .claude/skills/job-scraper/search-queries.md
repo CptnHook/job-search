@@ -18,6 +18,21 @@ Primary:
 - **linkedin.com/jobs** - filter: United States / San Francisco Bay Area and Remote (US); also covered by the `linkedin-search` CLI
 - **boards.greenhouse.io**, **jobs.lever.co**, **jobs.ashbyhq.com** - the applicant-tracking boards most high-growth tech companies post on
 - **builtin.com/jobs** (Built In San Francisco) - tech roles in the Bay Area
+- **VC portfolio job boards** (added 2026-10-31; executive roles at funded, high-growth companies) - the `vc-boards-search` CLI covers Accel, General Catalyst, Insight, Redpoint, Khosla, a16z and Greylock; always pass `--seniority exec`. Sequoia, Lightspeed, Kleiner Perkins and Bessemer (Consider platform) and Index Ventures can't be read without a CSRF token or credentials taken from page source, so they get the `site:` queries below instead
+- **wellfound.com** (added 2026-10-31) - startup VP and Head-of roles with pay ranges, via the `wellfound-search` CLI with `--seniority exec`. Personal use only (Wellfound's terms restrict scraping); keep volume low
+- **Executive search firms** (added 2026-10-31) - most don't publish their searches; Casey works their candidate databases from the dashboard's "Search firms to contact" list. Korn Ferry posts some client roles (`site:` queries below)
+
+Indeed and Dice were tried and dropped (Casey, 2026-10-31): not where executive roles are posted.
+
+VC-board and search-firm fallback queries (run with the priority categories below):
+
+```
+site:jobs.sequoiacap.com ("Vice President" OR "VP" OR "Head of" OR "Chief") (Operations OR Program OR "Chief of Staff")
+site:jobs.lsvp.com OR site:jobs.kleinerperkins.com OR site:jobs.bvp.com ("Vice President" OR "VP" OR "Chief") (Operations OR Program)
+site:indexventures.com/startup-jobs ("VP" OR "Head of" OR "Chief") (Operations OR Program)
+site:jobs.candidate.kornferry.com/job ("Vice President" OR "Chief" OR "Head of") (technology OR operations OR engineering) "United States"
+site:linkedin.com/jobs/view ("Riviera Partners" OR "Daversa" OR "True Search" OR "Heidrick & Struggles" OR "Spencer Stuart") ("VP" OR "Vice President" OR "Chief")
+```
 
 Secondary (company career pages via Google):
 - Direct Google searches with `site:` filters for target companies. No target list yet (Casey, 2026-10-17); search broadly. Companies added on the dashboard's Settings later feed the finder agent
