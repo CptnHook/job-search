@@ -18,6 +18,18 @@ Primary:
 - **linkedin.com/jobs** - filter: United States / San Francisco Bay Area and Remote (US); also covered by the `linkedin-search` CLI
 - **boards.greenhouse.io**, **jobs.lever.co**, **jobs.ashbyhq.com** - the applicant-tracking boards most high-growth tech companies post on
 - **builtin.com/jobs** (Built In San Francisco) - tech roles in the Bay Area
+- **dice.com** - US tech job board, covered by the `dice-search` CLI (added 2026-10-31). The `site:dice.com/job-detail` lines below are its fallback when the CLI fails
+- **indeed.com** - WebSearch only (added 2026-10-31). Indeed answers automated requests with a 401 bot check, so there is no CLI and its pages are not fetched: a search hit is a lead only. Find the same role on the employer's own careers site and store and fetch that URL instead (drop the lead if the employer posting can't be found). Never retry Indeed with browser headers
+
+Indeed and Dice fallback queries (run with the priority categories below; swap in titles from any category):
+
+```
+site:indeed.com/viewjob ("Vice President" OR "VP") ("Program Management" OR "Engineering Operations" OR "Business Operations") "San Francisco"
+site:indeed.com/viewjob ("Vice President" OR "VP") ("Technical Program Management" OR "Strategy & Operations") Remote
+site:indeed.com/viewjob ("Chief Operating Officer" OR "Chief of Staff" OR "Chief Information Officer") (SaaS OR fintech OR AI)
+site:dice.com/job-detail ("Vice President" OR "VP") ("Program Management" OR "Engineering Operations" OR "Technical Programs")
+site:dice.com/job-detail ("Vice President" OR "Head of") ("Platform Operations" OR "Technology" OR "AI Enablement") "San Francisco"
+```
 
 Secondary (company career pages via Google):
 - Direct Google searches with `site:` filters for target companies. No target list yet (Casey, 2026-10-17); search broadly. Companies added on the dashboard's Settings later feed the finder agent
