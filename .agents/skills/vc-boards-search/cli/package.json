@@ -1,0 +1,20 @@
+{
+  "name": "vc-boards-cli",
+  "version": "1.0.0",
+  "description": "CLI for searching VC portfolio-company job boards (Getro boards, a16z, Greylock) for US / SF Bay Area and remote roles - public server-rendered pages only, no credentials, zero runtime dependencies.",
+  "type": "module",
+  "main": "src/cli.ts",
+  "bin": {
+    "vc-boards-search": "src/cli.ts"
+  },
+  "scripts": {
+    "start": "bun run src/cli.ts",
+    "test": "bun test --timeout 30000",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/bun": "1.3.14"
+  }
+}
