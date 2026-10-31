@@ -130,7 +130,21 @@ export async function runSearch(opts: SearchOpts): Promise<number> {
   }
   for (const f of failed) notes.push(`${f.board}: request failed (${f.error}); other boards still returned results.`)
 
-  let results = Array.from(seen.values()).map((j) => ({ ...j, alsoOn: j.alsoOn ?? [] }))
+  // The /scrape Step 2 contract fields (id, title, company, location, date, url) are fixed
+  // here, in one place, for every platform adapter; missing values stay null.
+  let results = Array.from(seen.values()).map((j) => ({
+    id: j.id,
+    title: j.title,
+    company: j.company ?? null,
+    location: j.location ?? null,
+    date: j.date ?? null,
+    url: j.url,
+    board: j.board,
+    applyUrl: j.applyUrl ?? null,
+    remote: j.remote ?? null,
+    seniority: j.seniority ?? null,
+    alsoOn: j.alsoOn ?? [],
+  }))
   results.sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""))
   if (opts.limit !== undefined) results = results.slice(0, opts.limit)
 
