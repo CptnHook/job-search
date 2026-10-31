@@ -231,6 +231,18 @@ select{border:1px solid var(--line);background:var(--bg);border-radius:8px;paddi
 .arow > .job{border:0;border-radius:0 0 12px 12px}
 @media (max-width:620px){.arow > summary{grid-template-columns:18px 40px minmax(0,1fr)} .arow > summary .facts{grid-column:1/-1;justify-content:flex-start}}
 .chip.new{background:var(--accent);color:var(--accent-ink)}
+.psec{display:flex;flex-direction:column;gap:10px;margin-bottom:18px}
+.psec h3{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.closedsec > summary{cursor:pointer;list-style:none;color:var(--muted)}
+.closedsec > summary::-webkit-details-marker{display:none}
+.closedsec > summary::before{content:"▸ ";color:var(--muted)}
+.closedsec[open] > summary::before{content:"▾ "}
+.closedsec .tablewrap{margin-top:10px;opacity:.85}
+.engaged{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.ecard{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--ok);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.ehead{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.ehead strong{font-family:var(--display)}
+.egrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13.5px}
 button.chip{border:0;cursor:pointer;font-family:inherit;font-weight:600}
 button.chip:hover{filter:brightness(1.1)}
 .timeline li.flash{outline:2px solid var(--accent);outline-offset:4px;border-radius:6px;background:var(--ok-bg)}
@@ -442,6 +454,50 @@ try{ const t=localStorage.getItem("jh-tab"); if(t && $("v-"+t)) show(t); }catch(
 const unreadFor = id => requests.filter(r=>r.jobId===id && r.status==="done" && r.unread).length;
 // Clicking it opens the ticket at the newest unread answer.
 const newChip = (n, jobId) => n ? `<button type="button" class="chip new" data-act="openAnswer" data-id="${esc(jobId)}" title="Open the ticket at this answer">${n} new answer${n>1?"s":""} ›</button>` : "";
+// Pipeline: companies that engaged first (the work list), then active applications sorted by
+// status, then closed ones in a collapsed section at the bottom.
+const PIPE_ORDER = ["offer","negotiating","interviewing","interview","assessment","recruiter","needs_me","failed","awaiting_approval","approved","submitting","submitted","drafting","queued","hired","rejected","noresponse","withdrawn"];
+const ENGAGED = ["recruiter","assessment","interviewing","interview","offer","negotiating"];
+const CLOSED_PIPE = ["rejected","noresponse","withdrawn"];
+const openPipe = { closed:false };
+function byStatus(a,b){
+  const r = s => { const i = PIPE_ORDER.indexOf(s); return i<0 ? 99 : i; };
+  return r(a.stage)-r(b.stage) || String(b.stageSince||b.updatedAt||"").localeCompare(String(a.stageSince||a.updatedAt||""));
+}
+function lastContact(j){
+  const e = entries.filter(x=>x.jobId===j.id && INBOUND.includes(x.kind)).sort((a,b)=>String(b.date||b.createdAt).localeCompare(String(a.date||a.createdAt)))[0];
+  return e ? `${esc(day(String(e.date||e.createdAt).length>10?e.date||e.createdAt:(e.date+"T12:00:00Z")))} · ${esc(e.kind)}${e.who?` with ${esc(e.who)}`:""}` : `<span class="meta">none logged</span>`;
+}
+function nextStep(j){
+  const a = actions.filter(x=>x.jobId===j.id && x.status!=="done")[0];
+  if(a) return esc(a.title||a.kind||"Open item");
+  if(j.nextFollowupAt) return `Follow up ${esc(day(j.nextFollowupAt+"T12:00:00Z"))}${j.nextFollowupAt<=today()?` <span class="chip warn">due</span>`:""}`;
+  return `<span class="meta">Log the next step on the ticket</span>`;
+}
+function pipeRow(j){
+  const st=STAGE[j.stage]||{t:j.stage,c:""};
+  return `<tr><td>${esc(j.company)}</td><td>${safeUrl(j.url)?`<a href="${esc(j.url)}" target="_blank" rel="noopener">${esc(j.role)}</a>`:esc(j.role)}</td>
+    <td><span class="chip ${st.c}">${esc(st.t)}</span>${stalled(j)?` <span class="chip warn">stalled ${esc(stalled(j))}d</span>`:""}${j.nextFollowupAt&&j.nextFollowupAt<=today()&&!CLOSED.includes(j.stage)?` <span class="chip warn">follow up</span>`:""}</td><td class="num">${esc(j.fit??"")}</td><td>${esc(day(j.stageSince?(String(j.stageSince).length>10?j.stageSince:j.stageSince+"T12:00:00Z"):j.updatedAt))}</td>
+    <td>${newChip(unreadFor(j.id), j.id)}${esc(j.note||"")}${entries.some(e=>e.jobId===j.id)?` <span class="chip">${entries.filter(e=>e.jobId===j.id).length} notes</span>`:""}</td>
+    <td><button class="btn" data-act="open" data-id="${esc(j.id)}">Open</button></td></tr>`;
+}
+const pipeTable = rows => `<div class="tablewrap"><table><thead><tr><th>Company</th><th>Role</th><th>Status</th><th class="num">Fit</th><th>Since</th><th>Note</th><th></th></tr></thead><tbody>${rows.map(pipeRow).join("")}</tbody></table></div>`;
+function pipelineView(pipe){
+  const engaged = pipe.filter(j=>ENGAGED.includes(j.stage)).sort(byStatus);
+  const closed = pipe.filter(j=>CLOSED_PIPE.includes(j.stage)).sort(byStatus);
+  const active = pipe.filter(j=>!ENGAGED.includes(j.stage) && !CLOSED_PIPE.includes(j.stage)).sort(byStatus);
+  const engagedHtml = engaged.length ? `<div class="engaged">${engaged.map(j=>{const st=STAGE[j.stage]||{t:j.stage,c:""};
+      return `<article class="ecard"><div class="ehead"><div><div class="eyebrow">${esc(j.company)}</div><strong>${esc(j.role)}</strong></div>
+        <span class="chip ${st.c}">${esc(st.t)}</span></div>
+        <div class="egrid"><div><div class="eyebrow">Last contact</div>${lastContact(j)}</div><div><div class="eyebrow">Next step</div>${nextStep(j)}</div></div>
+        ${j.contactEmail?`<p class="meta" style="margin:0">Contact: ${esc(j.contactEmail)}</p>`:""}
+        <div class="acts" style="margin:0">${newChip(unreadFor(j.id), j.id)}<button class="btn primary" data-act="open" data-id="${esc(j.id)}">Work this one</button></div></article>`}).join("")}</div>`
+    : `<div class="empty">No company has engaged yet. When a recruiter reaches out or an interview is set, the application moves here so you can work it.</div>`;
+  return `<section class="psec"><h3>Engaged <span class="pill num">${engaged.length}</span> <span class="meta" style="font-weight:400">Companies that have reached out: recruiter calls, assessments, interviews, offers</span></h3>${engagedHtml}</section>
+    <section class="psec"><h3>Active <span class="pill num">${active.length}</span> <span class="meta" style="font-weight:400">Sorted by status</span></h3>${active.length?pipeTable(active):`<div class="empty">Nothing in progress.</div>`}</section>
+    ${closed.length?`<details class="psec closedsec" ${openPipe.closed?"open":""}><summary><h3 style="display:inline">Closed <span class="pill num">${closed.length}</span> <span class="meta" style="font-weight:400">Rejected, no response, withdrawn</span></h3></summary>${pipeTable(closed)}</details>`:""}`;
+}
+document.addEventListener("toggle", ev=>{ if(ev.target.matches?.("details.closedsec")) openPipe.closed = ev.target.open; }, true);
 // Approvals list: one condensed row per application; expand to see the full card.
 const openApprovals = new Set();
 function approvalRow(j){
@@ -1077,7 +1133,7 @@ function render(){
   $("pNeeds").textContent = needN; $("pNeeds").classList.toggle("hot", needN>0);
   $("cSubmitted").textContent = jobs.filter(j=>[...AFTER_APPLY,"hired","rejected","noresponse"].includes(j.stage)).length;
   $("cInterview").textContent = jobs.filter(j=>ACTIVE.includes(j.stage)).length;
-  $("pPipe").textContent = pipe.length;
+  $("pPipe").textContent = pipe.filter(j=>!CLOSED_PIPE.includes(j.stage)).length;
   const newAns = requests.filter(r=>r.status==="done" && r.unread).length;
   $("pNewAns").hidden = !newAns; $("pNewAns").textContent = newAns ? `${newAns} new` : "";
 
@@ -1094,13 +1150,7 @@ function render(){
   }
   $("v-review").innerHTML = review.length ? review.sort(byFit).map(j=>jobCard(j,"review")).join("")
     : `<div class="empty">The review queue is clear. Scored listings from the finder agent, and listings you add, show up here for a yes or no.</div>`;
-  $("v-pipe").innerHTML = pipe.length ? `<div class="tablewrap"><table><thead><tr><th>Company</th><th>Role</th><th>Status</th><th class="num">Fit</th><th>Updated</th><th>Note</th><th></th></tr></thead><tbody>${
-      pipe.sort((a,b)=>String(b.updatedAt||"").localeCompare(String(a.updatedAt||""))).map(j=>{const st=STAGE[j.stage]||{t:j.stage,c:""};
-        return `<tr><td>${esc(j.company)}</td><td>${safeUrl(j.url)?`<a href="${esc(j.url)}" target="_blank" rel="noopener">${esc(j.role)}</a>`:esc(j.role)}</td>
-        <td><span class="chip ${st.c}">${esc(st.t)}</span>${stalled(j)?` <span class="chip warn">stalled ${esc(stalled(j))}d</span>`:""}${j.nextFollowupAt&&j.nextFollowupAt<=today()&&!CLOSED.includes(j.stage)?` <span class="chip warn">follow up</span>`:""}</td><td class="num">${esc(j.fit??"")}</td><td>${esc(day(j.updatedAt))}</td>
-        <td>${newChip(unreadFor(j.id), j.id)}${esc(j.note||"")}${entries.some(e=>e.jobId===j.id)?` <span class="chip">${entries.filter(e=>e.jobId===j.id).length} notes</span>`:""}</td>
-        <td><button class="btn" data-act="open" data-id="${esc(j.id)}">Open</button></td></tr>`}).join("")
-    }</tbody></table></div>` : `<div class="empty">No applications yet.</div>`;
+  $("v-pipe").innerHTML = pipe.length ? pipelineView(pipe) : `<div class="empty">No applications yet.</div>`;
   renderTicket();
   renderLearn();
   renderRules();
