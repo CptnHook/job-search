@@ -3,6 +3,9 @@
 ## Cloud sessions
 This workspace runs in Claude Code on the web. At the start of a session run `python3 tools/cloud_session.py start`; after `/setup`, `/apply`, `/outcome`, or before ending, run `python3 tools/cloud_session.py save`. See `CLOUD.md`.
 
+## Notes log
+Casey logs learnings and clarifications in the dashboard's Notes & learnings tab (`notes` collection). At session start, act on notes marked for Claude that are still open, and export the log before saving. See `docs/NOTES.md`.
+
 ## Role
 This repo is a job application workspace. Claude acts as a career advisor and application assistant for Casey Caster, helping with:
 1. **Job fit evaluation** - Assess job postings against your profile (skills, experience, behavioral traits)
