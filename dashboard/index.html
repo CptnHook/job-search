@@ -318,6 +318,11 @@ button.chip:hover{filter:brightness(1.1)}
     </div>
 
     <div class="view" id="v-companies" role="tabpanel" aria-labelledby="t-companies" hidden>
+      <details class="learncard" id="firmsBox" open style="margin-bottom:10px">
+        <summary style="cursor:pointer"><h3 style="display:inline">Search firms to contact</h3> <span class="meta" id="firmsCount"></span></summary>
+        <p class="meta" style="margin:4px 0">Retained search firms fill most C-level and many VP roles. Claude tracks their public job pages; getting into their candidate databases is yours.</p>
+        <div id="firmsLive"></div>
+      </details>
       <div class="cobar">
         <div class="cofilters">
           <label for="coSearch" class="sr">Search companies</label>
@@ -1077,7 +1082,33 @@ function coCard(c){
     </details>
   </article>`;
 }
+// Executive search firms (Casey, 2026-10-31): a short contact list, `searchFirms` collection.
+const FIRM_STATUS = [["contact","To contact"],["contacted","Contacted"],["registered","Profile in"],["later","Not now"]];
+let searchFirms = [], firmsDirty = false;
+const typingInFirms = () => !!document.activeElement?.closest?.("#firmsLive")?.matches?.("input,textarea");
+function renderFirms(){
+  const open = searchFirms.filter(f=>(f.status||"contact")==="contact").length;
+  $("firmsCount").textContent = searchFirms.length ? `${open} to contact of ${searchFirms.length}` : "";
+  if(typingInFirms()){ firmsDirty = true; return; }
+  firmsDirty = false;
+  const ord = {contact:0, contacted:1, registered:2, later:3};
+  const list = searchFirms.slice().sort((a,b)=>(ord[a.status||"contact"]-ord[b.status||"contact"]) || (a.order??99)-(b.order??99) || String(a.name).localeCompare(String(b.name)));
+  $("firmsLive").innerHTML = !list.length ? `<div class="empty">No firms yet.</div>` : list.map(f=>`<div class="item" style="display:grid;gap:4px">
+      <div class="head" style="align-items:baseline;gap:8px;flex-wrap:wrap"><strong>${esc(f.name)}</strong>
+        ${f.focus?`<span class="meta">${esc(f.focus)}</span>`:""}
+        <label class="sr" for="fs-${esc(f.id)}">Status for ${esc(f.name)}</label>
+        <select id="fs-${esc(f.id)}" data-firmstatus="${esc(f.id)}" style="width:auto;margin-left:auto">${FIRM_STATUS.map(([k,t])=>`<option value="${k}" ${(f.status||"contact")===k?"selected":""}>${t}</option>`).join("")}</select></div>
+      <div class="acts" style="margin:0;flex-wrap:wrap">${safeUrl(f.openRolesUrl)?`<a class="link" href="${esc(f.openRolesUrl)}" target="_blank" rel="noopener">Open searches</a>`:""}
+        ${safeUrl(f.registerUrl)?`<a class="link" href="${esc(f.registerUrl)}" target="_blank" rel="noopener">Submit your profile</a>`:""}
+        ${f.contactedAt?`<span class="meta">Contacted ${esc(day(f.contactedAt))}</span>`:""}${f.openRoles?`<span class="chip info">${esc(f.openRoles)}</span>`:""}</div>
+      <label class="sr" for="fn-${esc(f.id)}">Notes for ${esc(f.name)}</label>
+      <input id="fn-${esc(f.id)}" data-firmnote="${esc(f.id)}" value="${esc(f.notes||"")}" placeholder="Notes: who you spoke to, next step">
+    </div>`).join("");
+  document.querySelectorAll("#firmsLive select, #firmsLive input").forEach(el=>el.disabled = !db || !canWrite);
+}
+
 function renderCompanies(){
+  renderFirms();
   const undecided = companies.filter(c=>coStatus(c)==="new").length;
   $("pCompanies").textContent = undecided;
   const q = coQuery.trim().toLowerCase();
@@ -1567,8 +1598,15 @@ document.addEventListener("focusout", ev=>{
   if(rulesDirty) setTimeout(()=>{ if(!typingInRules()) renderRules(); },0);
   if(coDirty) setTimeout(()=>{ if(!typingInCompanies()) renderCompanies(); },0);
   if(notesDirty) setTimeout(()=>{ if(!typingInNotes()) renderNotes(); },0);
+  const fn = ev.target.closest?.("input[data-firmnote]");
+  if(fn && db && canWrite){ const f = searchFirms.find(x=>x.id===fn.dataset.firmnote);
+    if(f && fn.value.trim()!==(f.notes||"")) write(db.doc("searchFirms/"+f.id), {notes:fn.value.trim(), updatedAt:now()}, "Note saved."); }
+  if(firmsDirty) setTimeout(()=>{ if(!typingInFirms()) renderFirms(); },0);
 });
 document.addEventListener("change", ev=>{
+  const fsel = ev.target.closest?.("select[data-firmstatus]");
+  if(fsel && db && canWrite){ const id = fsel.dataset.firmstatus, to = fsel.value;
+    write(db.doc("searchFirms/"+id), {status:to, updatedAt:now(), ...(to==="contacted"?{contactedAt:now()}:{})}, "Updated."); }
   if(ev.target.id==="eKind") syncDebrief();
 });
 document.addEventListener("submit", async ev=>{
@@ -1737,6 +1775,7 @@ render();
   db.collection("transitions").limit(1000).onSnapshot(s=>{ transitions=s.docs.map(d=>({...d.data(),id:d.id})); render(); }, fail);
   db.collection("requests").limit(300).onSnapshot(s=>{ requests=s.docs.map(d=>({...d.data(),id:d.id})); render(); }, fail);
   db.collection("companies").limit(500).onSnapshot(s=>{ companies=s.docs.map(d=>({...d.data(),id:d.id})); render(); }, fail);
+  db.collection("searchFirms").limit(100).onSnapshot(s=>{ searchFirms=s.docs.map(d=>({...d.data(),id:d.id})); renderFirms(); }, fail);
   db.collection("notes").limit(1000).onSnapshot(s=>{ notes=s.docs.map(d=>({...d.data(),id:d.id})); render(); }, fail);
 })();
 </script>
