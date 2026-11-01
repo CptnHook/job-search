@@ -34,6 +34,9 @@ site:jobs.candidate.kornferry.com/job ("Vice President" OR "Chief" OR "Head of")
 site:linkedin.com/jobs/view ("Riviera Partners" OR "Daversa" OR "True Search" OR "Heidrick & Struggles" OR "Spencer Stuart") ("VP" OR "Vice President" OR "Chief")
 ```
 
+Target company boards (checked directly on every run; keep only executive titles: VP, Vice President, Head of, Chief, SVP, EVP, General Manager, or Director/Sr Director where the company qualifies as large):
+- **Prometheus (Project Prometheus)** - `https://api.ashbyhq.com/posting-api/job-board/prometheus` (Ashby public job-board API; board page `https://jobs.ashbyhq.com/prometheus`). Added 2026-11-01 at Casey's request. Not confirmed to be Project Prometheus's board: nothing on it names the company, and its one posting (Oakland prototype-shop technician, Oct 2026) only fits the profile. Report any executive role found with that caveat until confirmed. The company mostly recruits senior people through networks and search firms
+
 Secondary (company career pages via Google):
 - Direct Google searches with `site:` filters for target companies. No target list yet (Casey, 2026-10-17); search broadly. Companies added on the dashboard's Settings later feed the finder agent
 
