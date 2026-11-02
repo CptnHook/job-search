@@ -6,7 +6,10 @@ export interface Job {
   id: string
   board: string
   title: string
+  /** The employer. On Getro boards this can differ from the board's org (acquired portfolio companies). */
   company: string | null
+  /** The board's portfolio-company name when it differs from `company`, else null/undefined. */
+  portfolioCompany?: string | null
   location: string | null
   /** ISO-8601 posting date, or null. */
   date: string | null

@@ -9,15 +9,8 @@
 // 60 jobs per page; pagination is server-rendered, so --page works here.
 
 import type { BoardConfig } from "../boards.js"
-import {
-  cleanText,
-  extractFlight,
-  findJsonObjects,
-  findJsonValueAfterKey,
-  httpGet,
-  queryNamesSeniority,
-  toIsoDate,
-} from "../helpers.js"
+import { resolveEmployer } from "../employer.js"
+import { cleanText, extractFlight, findJsonObjects, findJsonValueAfterKey, httpGet, queryNamesSeniority, serverLocationKind, toIsoDate } from "../helpers.js"
 import type { Job, JobDetail, PlatformAdapter, PlatformSearchResult, SearchParams } from "./types.js"
 
 export const GREYLOCK_PAGE_SIZE = 60
@@ -42,9 +35,9 @@ export function buildGreylockUrl(board: BoardConfig, p: SearchParams, jobId?: st
   const params = new URLSearchParams()
   if (p.query) params.set("search", p.query.slice(0, 120))
   if (greylockUsesServerSeniority(p)) params.set("seniorities", GREYLOCK_EXEC_SENIORITIES.join("|"))
-  const kinds = new Set(p.locationTerms.map((t) => t.kind))
-  if (kinds.size === 1 && kinds.has("bay-area")) params.set("locations", GREYLOCK_BAY_AREA.join("|"))
-  if (kinds.size === 1 && kinds.has("remote")) params.set("remote", "1")
+  const kind = serverLocationKind(p.locationTerms)
+  if (kind === "bay-area") params.set("locations", GREYLOCK_BAY_AREA.join("|"))
+  if (kind === "remote") params.set("remote", "1")
   if (p.jobage) {
     if (p.jobage <= 7) params.set("posted", "week")
     else if (p.jobage <= 31) params.set("posted", "month")
@@ -65,15 +58,19 @@ export function greylockJobFromRaw(board: BoardConfig, x: any): Job | null {
   const wm = typeof x.workMode === "string" ? x.workMode : null
   const remote = wm === "remote" ? true : wm === "onsite" || wm === "hybrid" ? false : null
   const sen: string[] = Array.isArray(x.seniorities) ? x.seniorities.filter((s: unknown) => typeof s === "string") : []
+  const applyUrl = typeof x.applyUrl === "string" && /^https?:\/\//.test(x.applyUrl) ? x.applyUrl : null
+  // Greylock has no acquisition flag: only explicit host / tenant mappings apply.
+  const emp = resolveEmployer(cleanText(x.companyName), applyUrl)
   return {
     id: `${board.name}:${id}`,
     board: board.name,
     title,
-    company: cleanText(x.companyName),
+    company: emp.company,
+    portfolioCompany: emp.portfolioCompany,
     location: locs.length ? locs.join(" · ") : remote ? "Remote" : null,
     date: toIsoDate(x.createdAt),
     url: `${board.base}?job=${id}`,
-    applyUrl: typeof x.applyUrl === "string" && /^https?:\/\//.test(x.applyUrl) ? x.applyUrl : null,
+    applyUrl,
     remote,
     seniority: sen.length ? sen.join(", ") : null,
   }
