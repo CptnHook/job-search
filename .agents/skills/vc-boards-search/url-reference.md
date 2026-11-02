@@ -25,9 +25,21 @@ GET https://<board-host>/jobs?q=<text>&filter=<base64(JSON)>
 Filter keys are AND-ed with each other. `page=` is ignored server-side.
 
 Response: `<script id="__NEXT_DATA__">` → `props.pageProps.initialState.jobs` with `total` and
-`found[]` (first 20). Per job: `id`, `title`, `slug`, `organization.{name,slug}`, `locations[]`,
-`createdAt` (unix s), `url` (external ATS link), `workMode` (`on_site`|`remote`|`hybrid`),
-`seniority`.
+`found[]` (first 20). Per job: `id`, `title`, `slug`, `organization.{id,name,slug,stage,headCount,logoUrl,industryTags,topics}`,
+`locations[]`, `searchableLocations`, `locationDetails`, `createdAt` (unix s), `url` (external ATS link),
+`workMode` (`on_site`|`remote`|`hybrid`), `seniority`, `compensation*`, `skills`, `source`.
+
+**Acquired portfolio companies** (checked 2026-11-02): when a portfolio company is acquired, Getro keeps its org and
+attaches the acquirer's jobs to it, so `organization.name` is the acquired company (Airkit and "Spindle Ai (spindle.ai)"
+for Salesforce jobs, OPOWER for Oracle, Pismo for Visa, Venmo for PayPal, Forgerock for Ping Identity, Dealer.com for
+Cox). The same posting then appears once per acquired org with the same `url`. There is **no parent/acquirer field**
+in `__NEXT_DATA__`; the only hint is `organization.stage: "acquisition"` (other values: `ipo`, `series_*`, `private`,
+`other`). Some non-acquired orgs post under a different ATS tenant (SentinelOne → Greenhouse `sentinellabs`, Tenable →
+`tenableinc`, Keyfactor → `keyfactorinc`), so a tenant mismatch alone is not evidence of a different employer. The
+org named `Remote` (slug `remote`) is Remote.com's job board: its `url`s are `remote.com/jobs/<employer-slug>-c<id>/<job>`
+for other companies. `cli/src/employer.ts` resolves the employer from `url` (explicit host map, then ATS tenant: explicit
+map, else humanized tenant only for `stage: "acquisition"`); the CLI emits it as `company` and the org as
+`portfolioCompany`.
 
 Not used: the page's load-more calls `POST https://api.getro.com/api/v2/collections/<id>/search/jobs`;
 `api.getro.com/robots.txt` is `User-agent: * / Disallow: /`. Hence page 1 only.
@@ -35,6 +47,14 @@ Not used: the page's load-more calls `POST https://api.getro.com/api/v2/collecti
 Detail: `GET https://<board-host>/companies/<org-slug>/jobs/<job-id>[-<slug>]` →
 `initialState.jobs.currentJob` with `description` (HTML), `postedAt`, `url`, `employmentTypes`,
 `compensationAmountMin/MaxCents`, `status`. The slug suffix is optional.
+
+## Location presets (client-side)
+
+`--location remote` keeps remote jobs (`workMode`/`remote` flag, or "remote" in the text) whose location names the US
+(USA, United States, a US state name or `, XX` code, a Bay Area city) or names no country; it drops ones that name
+only non-US countries/regions (list in `NON_US_PLACES`, `cli/src/helpers.ts`). `remote-any` keeps every remote job.
+Server-side, both push the same flag (Getro `work_mode:["remote"]`, a16z `remoteOnly=1`, Greylock `remote=1`); none of
+the boards has a "US remote" filter, so the country check is client-side.
 
 ## a16z (jobs.a16z.com)
 

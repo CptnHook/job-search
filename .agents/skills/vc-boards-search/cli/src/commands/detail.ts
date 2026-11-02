@@ -59,7 +59,7 @@ function renderPlain(d: JobDetail): string {
   const lines = [
     d.title,
     `${d.company ?? "—"} · ${d.location ?? "—"}${d.date ? ` · posted ${d.date.slice(0, 10)}` : ""}`,
-    `Board: ${d.board}${d.seniority ? ` · Seniority tag: ${d.seniority}` : ""}`,
+    `Board: ${d.board}${d.portfolioCompany ? ` · Portfolio company: ${d.portfolioCompany}` : ""}${d.seniority ? ` · Seniority tag: ${d.seniority}` : ""}`,
     d.employmentType ? `Employment: ${d.employmentType}` : "",
     d.compensation ? `Compensation: ${d.compensation}` : "",
     "",

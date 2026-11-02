@@ -12,7 +12,8 @@
 // `work_mode` (["remote"]).
 
 import type { BoardConfig } from "../boards.js"
-import { cleanText, extractNextData, htmlToText, httpGet, toIsoDate } from "../helpers.js"
+import { resolveEmployer } from "../employer.js"
+import { cleanText, extractNextData, htmlToText, httpGet, serverLocationKind, toIsoDate } from "../helpers.js"
 import type { Job, JobDetail, PlatformAdapter, PlatformSearchResult, SearchParams } from "./types.js"
 
 export const GETRO_PAGE_SIZE = 20
@@ -33,9 +34,9 @@ export function buildGetroUrl(board: BoardConfig, p: SearchParams): string {
   if (p.execServerSide) filter.seniority = GETRO_EXEC_SENIORITIES
   // Getro ANDs filter keys, so only a single-kind location request is pushed
   // server-side; mixed requests (e.g. bay-area,remote) are filtered client-side.
-  const kinds = new Set(p.locationTerms.map((t) => t.kind))
-  if (kinds.size === 1 && kinds.has("bay-area")) filter.searchable_locations = GETRO_BAY_AREA
-  if (kinds.size === 1 && kinds.has("remote")) filter.work_mode = ["remote"]
+  const kind = serverLocationKind(p.locationTerms)
+  if (kind === "bay-area") filter.searchable_locations = GETRO_BAY_AREA
+  if (kind === "remote") filter.work_mode = ["remote"]
   if (Object.keys(filter).length) params.set("filter", Buffer.from(JSON.stringify(filter)).toString("base64"))
   const qs = params.toString()
   return `${board.base}/jobs${qs ? `?${qs}` : ""}`
@@ -53,15 +54,18 @@ export function getroJobFromRaw(board: BoardConfig, x: any): Job | null {
   const remote = workMode === "remote" ? true : workMode === "hybrid" || workMode === "on_site" ? false : null
   const location = locs.length ? locs.join(" · ") : remote ? "Remote" : null
   const slug = typeof x.slug === "string" && x.slug ? x.slug : id
+  const applyUrl = typeof x.url === "string" && /^https?:\/\//.test(x.url) ? x.url : null
+  const emp = resolveEmployer(cleanText(org.name), applyUrl, { acquired: org.stage === "acquisition", orgSlug })
   return {
     id: `${board.name}:${orgSlug}/${id}`,
     board: board.name,
     title,
-    company: cleanText(org.name),
+    company: emp.company,
+    portfolioCompany: emp.portfolioCompany,
     location,
     date: toIsoDate(x.createdAt),
     url: `${board.base}/companies/${encodeURIComponent(orgSlug)}/jobs/${encodeURIComponent(slug)}`,
-    applyUrl: typeof x.url === "string" && /^https?:\/\//.test(x.url) ? x.url : null,
+    applyUrl,
     remote,
     seniority: typeof x.seniority === "string" ? x.seniority : null,
   }
@@ -106,17 +110,20 @@ export function parseGetroDetail(board: BoardConfig, html: string): JobDetail | 
       : null
   const description = typeof cj.description === "string" && cj.description.trim() ? htmlToText(cj.description) : null
   const status = typeof cj.status === "string" ? cj.status : null
+  const applyUrl = typeof cj.url === "string" && /^https?:\/\//.test(cj.url) ? cj.url : null
+  const emp = resolveEmployer(cleanText(org.name), applyUrl, { acquired: org.stage === "acquisition", orgSlug })
   const notes: string[] = []
   if (status && status !== "active") notes.push(`Board marks this posting as "${status}".`)
   return {
     id: `${board.name}:${orgSlug}/${id}`,
     board: board.name,
     title: cleanText(cj.title) ?? "(untitled)",
-    company: cleanText(org.name),
+    company: emp.company,
+    portfolioCompany: emp.portfolioCompany,
     location: locs.length ? locs.join(" · ") : null,
     date: toIsoDate(cj.postedAt ?? cj.createdAt),
     url: `${board.base}/companies/${encodeURIComponent(orgSlug)}/jobs/${encodeURIComponent(cj.slug ?? id)}`,
-    applyUrl: typeof cj.url === "string" && /^https?:\/\//.test(cj.url) ? cj.url : null,
+    applyUrl,
     remote: null,
     seniority: typeof cj.seniority === "string" ? cj.seniority : null,
     description,

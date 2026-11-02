@@ -7,7 +7,8 @@
 // There is no seniority facet; executive filtering is client-side only.
 
 import type { BoardConfig } from "../boards.js"
-import { cleanText, extractFlight, findJsonObjects, httpGet, slugify, toIsoDate } from "../helpers.js"
+import { resolveEmployer } from "../employer.js"
+import { cleanText, extractFlight, findJsonObjects, httpGet, serverLocationKind, slugify, toIsoDate } from "../helpers.js"
 import type { Job, JobDetail, PlatformAdapter, PlatformSearchResult, SearchParams } from "./types.js"
 
 export const A16Z_PAGE_SIZE = 25
@@ -15,9 +16,9 @@ export const A16Z_PAGE_SIZE = 25
 export function buildA16zUrl(board: BoardConfig, p: SearchParams): string {
   const params = new URLSearchParams()
   if (p.query) params.set("q", p.query)
-  const kinds = new Set(p.locationTerms.map((t) => t.kind))
-  if (kinds.size === 1 && kinds.has("bay-area")) params.set("locations", "metro:san-francisco-bay-area")
-  if (kinds.size === 1 && kinds.has("remote")) params.set("remoteOnly", "1")
+  const kind = serverLocationKind(p.locationTerms)
+  if (kind === "bay-area") params.set("locations", "metro:san-francisco-bay-area")
+  if (kind === "remote") params.set("remoteOnly", "1")
   if (p.jobage) params.set("posted", String(p.jobage))
   const qs = params.toString()
   return `${board.base}/jobs${qs ? `?${qs}` : ""}`
@@ -35,15 +36,19 @@ export function a16zJobFromRaw(board: BoardConfig, x: any): Job | null {
   const posting = typeof x.ats_posting_id === "string" && x.ats_posting_id ? x.ats_posting_id : null
   if (!title || !company || !posting) return null
   const remote = x.remote === true ? true : x.remote === false ? false : null
+  const applyUrl = typeof x.apply_url === "string" && /^https?:\/\//.test(x.apply_url) ? x.apply_url : null
+  // a16z has no acquisition flag: only explicit host / tenant mappings apply.
+  const emp = resolveEmployer(cleanText(x.company_name), applyUrl, { orgSlug: company })
   return {
     id: `${board.name}:${company}/${posting}`,
     board: board.name,
     title,
-    company: cleanText(x.company_name),
+    company: emp.company,
+    portfolioCompany: emp.portfolioCompany,
     location: cleanText(x.location),
     date: toIsoDate(x.posted_at),
     url: a16zUrl(board, company, posting, title),
-    applyUrl: typeof x.apply_url === "string" && /^https?:\/\//.test(x.apply_url) ? x.apply_url : null,
+    applyUrl,
     remote,
     seniority: null,
   }

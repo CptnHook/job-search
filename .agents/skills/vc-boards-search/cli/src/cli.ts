@@ -72,8 +72,10 @@ SEARCH FLAGS
   --seniority <level>     exec (VP/Vice President/SVP/EVP/Head of/Chief/C-level/President/
                           Director/Sr Director/General Manager titles; also sends the board's
                           own seniority filter where offered) | any. Default: any.
-  --location, -l <terms>  Comma list. Presets: bay-area, remote. Other text matches the
-                          location string (e.g. "New York"). OR-ed.
+  --location, -l <terms>  Comma list. Presets: bay-area, remote (US or country-unspecified
+                          remote; drops UK/Europe/Canada/India/... remote), remote-any
+                          (remote anywhere). Other text matches the location string
+                          (e.g. "New York"). OR-ed.
   --jobage <days>         Posted within N days.
   --page <n>              1-indexed. Getro and a16z serve page 1 only; Greylock paginates.
   --limit, -n <n>         Cap results emitted (client-side, after merge/sort).

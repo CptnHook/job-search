@@ -290,9 +290,13 @@ export const BAY_AREA_PLACES = [
   "Sausalito", "San Rafael", "Novato", "Mill Valley", "Larkspur", "Silicon Valley", "Peninsula",
 ]
 
-export type LocationTerm = { kind: "bay-area" } | { kind: "remote" } | { kind: "text"; text: string }
+export type LocationTerm = { kind: "bay-area" } | { kind: "remote" } | { kind: "remote-any" } | { kind: "text"; text: string }
 
-/** Parse `--location` (comma or pipe separated) into terms. `bay-area`/`sf-bay-area` and `remote` are presets. */
+/**
+ * Parse `--location` (comma or pipe separated) into terms. Presets: `bay-area` (`sf-bay-area`),
+ * `remote` (US or country-unspecified remote; aliases `remote-us`, `us-remote`, `remote-usa`) and
+ * `remote-any` (remote anywhere; aliases `remote-anywhere`, `remote-global`, `remote-worldwide`).
+ */
 export function parseLocationTerms(raw: string | undefined): LocationTerm[] {
   if (!raw) return []
   return raw
@@ -303,6 +307,7 @@ export function parseLocationTerms(raw: string | undefined): LocationTerm[] {
       const k = t.toLowerCase().replace(/[\s_]+/g, "-")
       if (["bay-area", "sf-bay-area", "san-francisco-bay-area", "sfba"].includes(k)) return { kind: "bay-area" }
       if (["remote", "remote-us", "us-remote", "remote-usa"].includes(k)) return { kind: "remote" }
+      if (["remote-any", "remote-anywhere", "remote-global", "remote-worldwide"].includes(k)) return { kind: "remote-any" }
       return { kind: "text", text: t }
     })
 }
@@ -312,6 +317,70 @@ const BAY_RE = new RegExp(
   "i",
 )
 
+/**
+ * The one location filter a board can apply server-side, or null. Boards AND their filter keys,
+ * so only a request made of a single preset kind is pushed; mixed requests stay client-side.
+ * `remote` and `remote-any` both push the board's remote flag (the US check is client-side).
+ */
+export function serverLocationKind(terms: LocationTerm[]): "bay-area" | "remote" | null {
+  const kinds = new Set(terms.map((t) => (t.kind === "remote-any" ? "remote" : t.kind)))
+  if (kinds.size !== 1) return null
+  const [k] = kinds
+  return k === "bay-area" || k === "remote" ? k : null
+}
+
+const US_STATE_CODES =
+  "AL|AK|AZ|AR|CA|CO|CT|DE|DC|FL|GA|HI|ID|IL|IN|IA|KS|KY|LA|ME|MD|MA|MI|MN|MS|MO|MT|NE|NV|NH|NJ|NM|NY|NC|ND|OH|OK|OR|PA|RI|SC|SD|TN|TX|UT|VT|VA|WA|WV|WI|WY"
+const US_STATE_NAMES = [
+  "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "Florida",
+  "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland",
+  "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada",
+  "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma",
+  "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah",
+  "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming",
+]
+/** US markers. Case-sensitive: "US"/"USA"/"AMER" and a ", XX" state code (so "join us" or ", Ca" do not count). */
+const US_RE = new RegExp(`\\b(?:USA|U\\.S\\.A?\\.?|US|AMER)\\b|,\\s*(?:${US_STATE_CODES})\\b(?!-)`)
+/** Case-insensitive: country and state names. Bay Area place names (BAY_RE) also count as US. */
+const US_RE_CI = new RegExp(`\\b(?:United States(?: of America)?|North America|${US_STATE_NAMES.join("|")})\\b`, "i")
+
+/** Non-US countries, regions and major non-US metros that show up on these boards. */
+export const NON_US_PLACES = [
+  "UK", "U\\.K\\.", "United Kingdom", "Great Britain", "England", "Scotland", "Wales", "Northern Ireland", "Ireland",
+  "London", "Manchester", "Edinburgh", "Dublin(?!,\\s*(?:CA|OH|California|Ohio))",
+  "EU", "Europe", "European Union", "EMEA", "EMEIA", "APAC", "APJ", "Asia", "Asia Pacific", "LATAM", "LatAm",
+  "Latin America", "South America", "Central America", "Middle East", "MENA", "Africa", "Nordics", "DACH", "Benelux",
+  "Canada", "Toronto", "Vancouver", "Montreal", "Montréal", "Ottawa", "Calgary", "Ontario", "Quebec", "British Columbia",
+  "(?<!New\\s)Mexico", "Mexico City", "Brazil", "Brasil", "São Paulo", "Sao Paulo", "Rio de Janeiro", "Argentina",
+  "Buenos Aires", "Colombia", "Bogotá", "Bogota", "Chile", "Santiago", "Peru", "Lima", "Uruguay", "Costa Rica",
+  "India", "Bengaluru", "Bangalore", "Hyderabad", "Mumbai", "Pune", "Chennai", "Gurgaon", "Gurugram", "Noida", "Delhi",
+  "UAE", "U\\.A\\.E\\.", "United Arab Emirates", "Dubai", "Abu Dhabi", "Saudi Arabia", "Riyadh", "Qatar", "Doha",
+  "Israel", "Tel Aviv", "Turkey", "Türkiye", "Istanbul", "Egypt", "Cairo", "Nigeria", "Lagos", "Kenya", "Nairobi",
+  "South Africa", "Cape Town", "Johannesburg",
+  "Germany", "Berlin", "Munich", "München", "Hamburg", "Frankfurt", "France", "Paris", "Spain", "Madrid", "Barcelona",
+  "Portugal", "Lisbon", "Porto", "Netherlands", "Amsterdam", "Belgium", "Brussels", "Luxembourg", "Switzerland",
+  "Zurich", "Zürich", "Geneva", "Austria", "Vienna", "Italy", "Milan", "Rome", "Poland", "Warsaw", "Krakow", "Kraków",
+  "Czech Republic", "Czechia", "Prague", "Romania", "Bucharest", "Hungary", "Budapest", "Greece", "Athens", "Ukraine",
+  "Kyiv", "Serbia", "Belgrade", "Croatia", "Bulgaria", "Sofia", "Estonia", "Tallinn", "Lithuania", "Vilnius", "Latvia",
+  "Sweden", "Stockholm", "Denmark", "Copenhagen", "Norway", "Oslo", "Finland", "Helsinki", "Iceland",
+  "Australia", "Sydney", "Melbourne", "Brisbane(?!,\\s*CA)", "Perth", "New Zealand", "Auckland",
+  "Singapore", "Japan", "Tokyo", "China", "Beijing", "Shanghai", "Shenzhen", "Hong Kong", "Taiwan", "Taipei", "Korea",
+  "Seoul", "Philippines", "Manila", "Indonesia", "Jakarta", "Vietnam", "Malaysia", "Kuala Lumpur", "Thailand",
+  "Bangkok", "Pakistan", "Bangladesh", "Sri Lanka",
+]
+const NON_US_RE = new RegExp(`(?<![\\p{L}\\p{N}])(?:${NON_US_PLACES.join("|")})(?![\\p{L}\\p{N}])`, "u")
+
+/** True when the location names the US, or names no non-US country/region (so "Remote" alone passes). */
+export function isUsOrUnspecifiedLocation(loc: string | null): boolean {
+  if (!loc) return true
+  if (US_RE.test(loc) || US_RE_CI.test(loc) || BAY_RE.test(loc)) return true
+  return !NON_US_RE.test(loc)
+}
+
+function isRemoteJob(job: { location: string | null; remote: boolean | null }): boolean {
+  return job.remote === true || /\bremote\b/i.test(job.location ?? "")
+}
+
 export function matchesLocation(
   terms: LocationTerm[],
   job: { location: string | null; remote: boolean | null },
@@ -320,7 +389,8 @@ export function matchesLocation(
   const loc = job.location ?? ""
   return terms.some((t) => {
     if (t.kind === "bay-area") return BAY_RE.test(loc)
-    if (t.kind === "remote") return job.remote === true || /\bremote\b/i.test(loc)
+    if (t.kind === "remote") return isRemoteJob(job) && isUsOrUnspecifiedLocation(job.location)
+    if (t.kind === "remote-any") return isRemoteJob(job)
     return loc.toLowerCase().includes(t.text.toLowerCase())
   })
 }

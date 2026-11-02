@@ -38,6 +38,41 @@ function dedupeKey(j: Job): string {
   return `${j.title}|${j.company ?? ""}`.toLowerCase().replace(/\s+/g, " ")
 }
 
+/**
+ * Fold a duplicate posting into the row already kept. The employer name wins over a
+ * portfolio-org name: if either row's board org IS the employer (no portfolioCompany),
+ * the merged row takes that name and drops portfolioCompany; otherwise the distinct
+ * portfolio-org names are joined ("Airkit, Spindle AI" for one Salesforce posting).
+ */
+export function mergeDuplicate(prev: Job & { alsoOn?: string[] }, j: Job): void {
+  if (prev.board !== j.board) prev.alsoOn = Array.from(new Set([...(prev.alsoOn ?? []), j.board]))
+  if (!prev.portfolioCompany) return
+  if (!j.portfolioCompany && j.company) {
+    prev.company = j.company
+    prev.portfolioCompany = null
+    return
+  }
+  if (j.portfolioCompany && prev.company && j.company && prev.company.toLowerCase() === j.company.toLowerCase()) {
+    const names = new Set(prev.portfolioCompany.split(", "))
+    names.add(j.portfolioCompany)
+    prev.portfolioCompany = Array.from(names).join(", ")
+  }
+}
+
+/** Merge per-board results into unique postings, in board order (first board's row is kept). */
+export function mergeJobs(lists: Job[][]): (Job & { alsoOn?: string[] })[] {
+  const seen = new Map<string, Job & { alsoOn?: string[] }>()
+  for (const jobs of lists) {
+    for (const j of jobs) {
+      const k = dedupeKey(j)
+      const prev = seen.get(k)
+      if (prev) mergeDuplicate(prev, j)
+      else seen.set(k, { ...j })
+    }
+  }
+  return Array.from(seen.values())
+}
+
 async function mapLimit<T, R>(items: T[], n: number, fn: (t: T) => Promise<R>): Promise<R[]> {
   const out: R[] = new Array(items.length)
   let next = 0
@@ -109,19 +144,8 @@ export async function runSearch(opts: SearchOpts): Promise<number> {
     }
   })
 
-  const seen = new Map<string, Job & { alsoOn?: string[] }>()
-  for (const { meta, jobs } of perBoard) {
-    boardMeta.push(meta)
-    for (const j of jobs) {
-      const k = dedupeKey(j)
-      const prev = seen.get(k)
-      if (prev) {
-        if (prev.board !== j.board) prev.alsoOn = Array.from(new Set([...(prev.alsoOn ?? []), j.board]))
-      } else {
-        seen.set(k, { ...j })
-      }
-    }
-  }
+  for (const { meta } of perBoard) boardMeta.push(meta)
+  const merged = mergeJobs(perBoard.map((b) => b.jobs))
 
   const failed = boardMeta.filter((m) => m.status === "error")
   if (failed.length === boardMeta.length && boardMeta.length > 0) {
@@ -132,7 +156,7 @@ export async function runSearch(opts: SearchOpts): Promise<number> {
 
   // The /scrape Step 2 contract fields (id, title, company, location, date, url) are fixed
   // here, in one place, for every platform adapter; missing values stay null.
-  let results = Array.from(seen.values()).map((j) => ({
+  let results = merged.map((j) => ({
     id: j.id,
     title: j.title,
     company: j.company ?? null,
@@ -140,6 +164,7 @@ export async function runSearch(opts: SearchOpts): Promise<number> {
     date: j.date ?? null,
     url: j.url,
     board: j.board,
+    portfolioCompany: j.portfolioCompany ?? null,
     applyUrl: j.applyUrl ?? null,
     remote: j.remote ?? null,
     seniority: j.seniority ?? null,
@@ -157,7 +182,7 @@ export async function runSearch(opts: SearchOpts): Promise<number> {
         ? results
             .map(
               (j) =>
-                `${j.title}\n  ${j.company ?? "—"} · ${j.location ?? "—"} · ${j.date ? j.date.slice(0, 10) : "—"}\n  board: ${j.board}${
+                `${j.title}\n  ${j.company ?? "—"}${j.portfolioCompany ? ` (via ${j.portfolioCompany})` : ""} · ${j.location ?? "—"} · ${j.date ? j.date.slice(0, 10) : "—"}\n  board: ${j.board}${
                   j.alsoOn.length ? ` (also: ${j.alsoOn.join(", ")})` : ""
                 } · id: ${j.id}\n  ${j.url}${j.applyUrl ? `\n  apply: ${j.applyUrl}` : ""}`,
             )
