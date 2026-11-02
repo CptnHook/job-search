@@ -127,7 +127,8 @@ Does this role advance career goals and contain tasks that energize?
 - Non-task factors: leadership style, department culture, company values, degree of autonomy
 
 **Life situation alignment:** Consider personal constraints:
-- **Security**: currently employed. Base must be over $300K (ideally over $350K), plus bonus and equity. FLAG a posted range whose top is under $300K; note where $350K sits in the range
+- **Security**: currently employed. Base must be over $300K (ideally over $350K), plus bonus and equity. FLAG a posted range whose top is under $300K; note where $350K sits in the range. **Pay package (Casey, 2026-11-02):** base must clearly clear $300K. Pass on a posted base whose top is under $300K, and on ranges posted only as total cash (OTE) that could put base under $300K. When no pay is posted, flag it and score it lower rather than excluding it, since many VP and C-level postings omit pay: score Career Alignment low for a sub-$300K base or a total-cash-only range, and put it first in the gaps
+- **Reporting line and title (Casey, 2026-11-02):** he wants roles that report to the C-suite (CEO, COO, CTO, CPO or another C-level executive). Pass on "Head of" titles at startups, and on roles that report to a business-unit GM or a VP. Large-company Director / Sr Director roles still follow the large-company exception above: score Career Alignment low when the role reports below the C-suite or is a startup "Head of", and name the reporting line in the gaps (unstated reporting line: say so)
 - **Flexibility**: lives in Pacifica, CA, works in San Francisco today (~20-minute commute). Hybrid preferred (some in-person time), remote acceptable; a few office days a week is fine; 5-day office is a deal-breaker. Relocation only if the employer raises it
 - **Professional development**: *(to confirm)*
 
