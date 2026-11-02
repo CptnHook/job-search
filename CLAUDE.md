@@ -98,7 +98,8 @@ Assessments on file: **DiSC D** (2021), **CliftonStrengths** Achiever, Arranger,
 - **Company stage:** startups, late-stage private, and public all fine; leans public
 - **Work arrangement:** hybrid preferred (some in-person time); remote acceptable; a few office days a week is fine. **No 5-day / fully onsite roles**. Travel as needed, preferably under 25%
 - **Location:** anywhere in the SF Bay Area / Peninsula. Works in San Francisco today (about a 20-minute commute from Pacifica)
-- **Compensation:** base salary over $300K (ideally over $350K), plus bonus and equity
+- **Compensation:** base salary over $300K (ideally over $350K), plus bonus and equity. Pass on a posted base topping out under $300K or a total-cash-only range that could put base under $300K; unposted pay is a flag, not a veto (Casey, 2026-11-02)
+- **Reporting line:** reports to the C-suite. Pass on "Head of" titles at startups and on roles reporting to a GM or VP (Casey, 2026-11-02); the large-company Director exception still applies
 - **Match signals, strongest first:** access to leadership (reports to or works with the C-suite); high-growth company; AI or developer tooling
 
 ### Target Sectors
