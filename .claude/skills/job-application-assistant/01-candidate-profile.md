@@ -16,16 +16,16 @@ Sources: resume Google Doc "CASEY CASTER Resume_2026", the Drive profile JSON (`
 - **GitHub:** none listed
 - **Status:** Employed at SingleStore. Available 4 weeks from an offer; "2 weeks notice" in free-text fields
 - **Work authorization:** US citizen; no sponsorship needed now or in the future
-- **Constraints:** works in San Francisco today (about a 20-minute commute). Open to anywhere in the SF Bay Area / Peninsula. Hybrid preferred (some in-person time); a few office days a week is fine; no 5-day office. Travel as needed, preferably under 25%. Relocation: open for the right role, but he won't target roles that require a move; if an employer raises it, it's part of the negotiation
+- **Constraints:** works in San Francisco today (about a 20-minute commute). Open to anywhere in the SF Bay Area / Peninsula. Onsite (including 5 days a week), hybrid, or remote are all fine (Casey, 2026-11-03). Travel as needed, preferably under 25%. Relocation: open for the right role, but he won't target roles that require a move; if an employer raises it, it's part of the negotiation
 
 ### Target roles (confirmed 2026-10-16, refined 2026-10-17)
 - **Target level:** VP, and open to C-level (COO, Chief Customer Officer, Chief Transformation Officer, Chief AI Officer, Chief Information Officer / Chief Information and Technology Officer, C-level Chief of Staff). **Director / Sr Director** titles count only at large companies: public, or 5,000+ employees, or $1B+ revenue
 - **Functions:** engineering operations, technical program management, program management / PMO, strategy & operations, customer success, product operations, AI enablement / AI operations, business operations, delivery / professional services, engineering effectiveness / developer productivity, operations at fintech or payments companies, chief of staff to CTO/CPO, platform operations & integration (e.g. VP of Platform Operations & Integration), technology leadership (VP of Technology, Chief Information and Technology Officer), workforce / internal technology engineering (e.g. Director, Workforce Technology Engineering, at large companies). Directions added by Casey 2026-10-24; they build on his SingleStore Internal Services role (internal platforms, tooling, cloud cost). Still narrowing where he fits best; revisit as applications come in
 - **Authority and strategy (Casey, 2026-10-20):** wants real authority and a seat in creating the strategy. He will accept a role weighted toward executing strategy over creating it, but it must involve him in shaping it. Roles that only execute a strategy owned above him, or lead mainly through "influence without authority" with no team or decision rights, are a poor fit. **Exception (Casey, 2026-10-20):** at a large company (the Director / Sr Director exception: public, 5,000+ employees, or $1B+ revenue) he doesn't expect to be involved in company strategy, so an execution-focused role is fine there
 - **Company stage:** startups, late-stage private, and public all fine; leans public
-- **Work arrangement:** hybrid preferred, with some in-person time; remote acceptable. **No 5-day / fully onsite roles**
+- **Work arrangement:** Bay Area onsite (including 5 days a week), hybrid, and remote are all fine (Casey, 2026-11-03; replaces the earlier no-5-day-onsite rule)
 - **Location:** anywhere in the SF Bay Area / Peninsula. Works in San Francisco today (about a 20-minute commute from Pacifica)
-- **Compensation:** base salary over $300K (ideally over $350K), plus bonus and equity
+- **Compensation:** base salary over $300K (ideally over $350K), plus bonus and equity; higher is welcome, no ceiling (Casey, 2026-11-03)
 - **Pay package (Casey, 2026-11-02):** base must clearly clear $300K. Pass on a posted base whose top is under $300K, and on ranges posted only as total cash (OTE) that could put base under $300K. When no pay is posted, flag it and score it lower rather than excluding it, since many VP and C-level postings omit pay
 - **Reporting line and title (Casey, 2026-11-02):** he wants roles that report to the C-suite (CEO, COO, CTO, CPO or another C-level executive). Pass on "Head of" titles at startups, and on roles that report to a business-unit GM or a VP. Large-company Director / Sr Director roles still follow the large-company exception above
 - **Sectors (Casey, 2026-10-20):** most excited by AI and developer tools; fintech and payments; security and enterprise SaaS. Cloud infrastructure and data is his strongest experience and stays in scope for career strategy, but it excites him less. All company sizes are in scope: high-growth (100-1,000), scale-up (1,000-5,000), and large public (5,000+)
@@ -130,6 +130,7 @@ San Francisco, CA
 
 ### Programming & ML
 - Not a hands-on software engineer on the resume. AI work is enablement, governance, and platform operations, not model building
+- **Technical level (Casey, 2026-11-03):** he can hold a credible conversation about how systems hook together, integrations, and how a stack comes together and its tradeoffs, but he is not a programmer and can't answer developer or coding questions. Roles that need hands-on engineering, coding interviews or deep implementation knowledge are a real gap (score Technical low and name it); roles that ask for technical fluency at the architecture and conversation level are a match
 - Uses **Claude Code** for agentic workflows
 
 ### Domain Expertise

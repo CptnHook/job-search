@@ -145,7 +145,7 @@ Home is Pacifica, CA; works in San Francisco today (~20-minute commute). Confirm
 - Hybrid anywhere in the SF Bay Area / Peninsula - ideal (he prefers some in-person time)
 - Remote (US) - acceptable
 - A few office days a week - fine
-- 5-day / fully onsite - exclude
+- Bay Area onsite, including 5 days a week - fine (Casey, 2026-11-03)
 - Outside the Bay Area with no remote option - exclude (he doesn't target relocation; consider only if a recruiter brings it)
 - Base salary range topping out under $300K - exclude when the posting states pay
 

@@ -30,7 +30,7 @@ Rules the drafter and submitter enforce:
 2. **Company application limits.** If a company caps applications (stated on its careers site or found in research), every application there gets a hold so Casey picks which roles to spend them on.
 3. **Manual-only sites.** CAPTCHA, a required account sign-up (Workday), or LinkedIn Easy Apply (automating it breaks LinkedIn's terms): don't attempt. Set stage `needs_me` and add an `actions` doc with the apply link and the prepared resume, cover letter, and form answers.
 4. **One automatic attempt.** A submission that errors is not retried. Set stage `failed`, record `lastError` and `attempts`, and add an `actions` doc. Anything that might have gone through (timeout after clicking Submit) is treated as possibly submitted: Casey checks before any retry.
-5. **Deal-breakers.** Fully onsite, a posted top salary under $300K, or below VP level: never auto-approved; usually declined at scoring.
+5. **Deal-breakers.** A posted top salary under $300K, or below VP level (Bay Area onsite is fine since 2026-11-03): never auto-approved; usually declined at scoring.
 6. **Low or unclear fit.** Fit below the `minFitAuto` rule (75 to start), or an open question such as unconfirmed office days, adds a hold.
 7. **Proof.** Every submission saves a confirmation screenshot to `job-search-data`, updates `job_search_tracker.csv` to `applied`, and sets `submittedAt`.
 
