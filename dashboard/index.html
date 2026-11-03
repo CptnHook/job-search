@@ -204,6 +204,13 @@ select{border:1px solid var(--line);background:var(--bg);border-radius:8px;paddi
 .cocard.cut{opacity:.65}
 .cocard .roles{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px;font-size:13.5px}
 .cocard textarea{min-height:52px}
+.coprof{display:flex;flex-direction:column;gap:8px;font-size:13.5px;min-width:0}
+.coprof section{display:flex;flex-direction:column;gap:3px;min-width:0;overflow-wrap:anywhere}
+.coprof p,.coprof ul{margin:0}
+.coprof ul{padding-left:18px;display:flex;flex-direction:column;gap:2px}
+.coprof .src{font-size:12px;color:var(--muted)} .coprof .src a{color:var(--muted)}
+.tag-rep{font-size:11px;padding:1px 6px;border-radius:10px;background:var(--warn-bg);color:var(--warn);white-space:nowrap}
+.coknow{margin:0;font-size:13.5px;overflow-wrap:anywhere}
 .rulecard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
 .rulecard.locked{background:var(--sunk)}
 .rulecard.prop{border-left:4px solid var(--info)}
@@ -275,7 +282,7 @@ button.chip:hover{filter:brightness(1.1)}
       <button class="tab" role="tab" id="t-approve" aria-selected="true" data-view="approve">Approvals <span class="pill num" id="pApprove">0</span></button>
       <button class="tab" role="tab" id="t-review" aria-selected="false" data-view="review">Review queue <span class="pill num" id="pReview">0</span></button>
       <button class="tab" role="tab" id="t-pipe" aria-selected="false" data-view="pipe">Pipeline <span class="pill num" id="pPipe">0</span> <span class="chip new" id="pNewAns" hidden></span></button>
-      <button class="tab" role="tab" id="t-companies" aria-selected="false" data-view="companies">Companies <span class="pill num" id="pCompanies">0</span></button>
+      <button class="tab" role="tab" id="t-companies" aria-selected="false" data-view="companies">Companies <span class="pill num" id="pCompanies">0</span> <span class="chip new" id="pCoNew" hidden></span></button>
       <button class="tab" role="tab" id="t-learn" aria-selected="false" data-view="learn">Notes &amp; learnings <span class="pill num" id="pLearn">0</span></button>
       <button class="tab" role="tab" id="t-rules" aria-selected="false" data-view="rules">Rules <span class="pill num" id="pRules">0</span></button>
       <button class="tab" role="tab" id="t-add" aria-selected="false" data-view="add">+ Add a listing</button>
@@ -328,6 +335,7 @@ button.chip:hover{filter:brightness(1.1)}
           <label for="coSearch" class="sr">Search companies</label>
           <input id="coSearch" type="search" placeholder="Search companies, roles, notes" autocomplete="off" style="flex:1;min-width:180px">
           <button class="btn primary" id="coAddToggle" type="button" aria-expanded="false" aria-controls="coForm">+ Add a company</button>
+          <a class="link" id="coSheet" target="_blank" rel="noopener" href="https://docs.google.com/spreadsheets/d/1W59L6q2DeqmCrvjy9zxoYW9DHSesFpOHKaHU2SVmC4M/edit">Connections sheet</a>
         </div>
         <form id="coForm" class="entryform" hidden>
           <div class="row">
@@ -1050,8 +1058,83 @@ const coIsNew = c => c.createdAt && daysBetween(String(c.createdAt).slice(0,10),
 const coOpen = new Set();   // company cards whose details are open (this browser only)
 let coQuery = "";
 const coText = c => [c.name,c.sector,c.stage,c.fit,c.concern,c.notes,c.why,...(c.openMatches||[]).map(r=>r.title)].join(" ").toLowerCase();
+// Company research (docs/COMPANY_RESEARCH.md): agents write companies/<id>.profile for Target companies;
+// Casey reads it here and can ask for a refresh. Agents never touch status or notes.
+const CONNECTIONS_URL = "https://docs.google.com/spreadsheets/d/1W59L6q2DeqmCrvjy9zxoYW9DHSesFpOHKaHU2SVmC4M/edit";
+const coProfOpen = new Set();   // profile panels open (this browser only)
+const coReadTimers = {};
+const arr = v => Array.isArray(v) ? v : [];
+const secItems = v => Array.isArray(v) ? v : arr(v?.items);   // founders/news/redFlags: {items} or a bare list
+const coProfileUnread = () => companies.filter(c=>coStatus(c)==="target" && c.profile?.unread).length;
+const repTag = x => x?.reported ? ` <span class="tag-rep" title="Reported, not verified from a fetched page">reported</span>` : "";
+const lnk = (url, text) => safeUrl(url) ? `<a href="${esc(url)}" target="_blank" rel="noopener">${esc(text)}</a>` : esc(text);
+function srcLine(sec){
+  const src = arr(sec?.sources).map(x=>typeof x==="string" ? {url:x} : x).filter(x=>safeUrl(x?.url));
+  if(!src.length && !sec?.updatedAt) return "";
+  const host = u => { try{ return new URL(u).hostname.replace(/^www\./,""); }catch(e){ return "source"; } };
+  return `<div class="src">${src.slice(0,4).map(x=>lnk(x.url, x.title||host(x.url))).join(" · ")}${src.length>4?` +${src.length-4}`:""}${sec?.updatedAt?`${src.length?" · ":""}${esc(day(sec.updatedAt))}`:""}</div>`;
+}
+const factRow = pairs => { const f = pairs.filter(([,v])=>v!==undefined && v!==null && v!=="" && !(Array.isArray(v)&&!v.length));
+  return f.length ? `<p>${f.map(([k,v])=>`<strong>${esc(k)}:</strong> ${esc(Array.isArray(v)?v.join(", "):v)}`).join(" · ")}</p>` : ""; };
+function profSec(title, sec, body){
+  if(!sec || !body) return "";
+  return `<section><div class="eyebrow">${esc(title)}${repTag(sec)}</div>${body}${srcLine(sec)}</section>`;
+}
+function profileHtml(c){
+  const P = c.profile || {}, o = P.overview, st = P.strengths, m = P.market, fu = P.funding, h = P.hiringSignals;
+  const txt = v => v ? `<p>${esc(v)}</p>` : "";
+  const list = (items, fmt) => items.length ? `<ul>${items.map(x=>`<li>${fmt(x)}</li>`).join("")}</ul>` : "";
+  const founders = secItems(P.founders), news = secItems(P.news), flags = secItems(P.redFlags);
+  const sec = (v) => Array.isArray(v) ? {} : (v||{});
+  const cn = P.connections || {};
+  const parts = [
+    profSec("Overview", o, o && (txt(o.summary) + factRow([["Founded",o.founded],["HQ",o.hq],["Offices",o.offices],["Headcount",o.headcount],["Growth",o.growth]]))),
+    profSec("What they're good at", st, st && (txt(st.summary) + factRow([["Products",st.products],["Differentiators",st.differentiators],["Competitors",st.competitors]]))),
+    profSec("Market", m, m && (txt(m.summary) + factRow([["Segments",m.segments],["Notable customers",m.customers],["Sales motion",m.salesMotion]]))),
+    profSec("Founders", founders.length ? sec(P.founders) : null, list(founders, f=>`${lnk(f.url, f.name)}${f.role?`, ${esc(f.role)}`:""}${f.background?` <span class="meta">${esc(f.background)}</span>`:""}${repTag(f)}`)),
+    profSec("Connections", (arr(cn.sharedHistory).length || arr(cn.searchLinks).length) ? cn : null,
+      list(arr(cn.sharedHistory), x=>`<strong>${esc(x.person)}</strong>: ${esc(x.overlap)}${repTag(x)}`)
+      + (arr(cn.searchLinks).length ? `<p>${arr(cn.searchLinks).map(x=>lnk(x.url, x.label||"Search")).join(" · ")}</p>` : "")),
+    profSec("Funding", fu, fu && factRow([["Stage",fu.stage],["Last round",fu.lastRound],["Date",fu.date],["Total raised",fu.totalRaised],["Valuation",fu.valuation],["Investors",fu.investors]])),
+    profSec("News, last 90 days", news.length ? sec(P.news) : null, list(news.slice().sort((a,b)=>String(b.date||"").localeCompare(String(a.date||""))).slice(0,6),
+      n=>`<span class="meta num">${esc(n.date||"")}</span> ${lnk(n.url, n.headline||"")}${n.kind?` <span class="chip">${esc(n.kind)}</span>`:""}${repTag(n)}`)),
+    profSec("Hiring signals", h, h && (list(arr(h.openSeniorRoles), r=>typeof r==="string" ? esc(r) : lnk(r.url, r.title||""))
+      + (arr(h.gaps).length ? `<p><strong>Building without a leader:</strong> ${esc(arr(h.gaps).join(", "))}</p>` : ""))),
+    profSec("Your angle", P.angle, P.angle && txt(typeof P.angle==="string" ? P.angle : P.angle.text)),
+    profSec("Red flags", flags.length ? sec(P.redFlags) : null, list(flags, f=>typeof f==="string" ? esc(f) : `${lnk(f.url, f.text||"")}${repTag(f)}`)),
+    profSec("Work model", P.workModel, P.workModel && txt(typeof P.workModel==="string" ? P.workModel : P.workModel.text||P.workModel.summary)),
+  ].filter(Boolean);
+  const last = arr(P.changes).at(-1);
+  return `<div class="coprof">
+    ${P.unread && last?.summary ? `<p class="lesson"><b>What changed ${esc(day(last.at))}:</b> ${esc(last.summary)}</p>` : ""}
+    ${parts.join("") || `<p class="meta">No profile sections yet.</p>`}
+    <p class="meta">${P.fullAt?`Full research ${esc(day(P.fullAt))}`:""}${P.checkedAt?`${P.fullAt?" · ":""}checked ${esc(day(P.checkedAt))}`:""}</p>
+  </div>`;
+}
+function coKnow(c){
+  const people = arr(c.profile?.connections?.people);
+  if(!people.length) return "";
+  const shown = people.slice(0,5).map(p=>`${lnk(p.url, p.name)}${p.position?` <span class="meta">${esc(p.position)}</span>`:""}`);
+  return `<p class="coknow"><strong>You know:</strong> ${shown.join(", ")}${people.length>5?` <span class="meta">+${people.length-5} more</span>`:""}</p>`;
+}
+function coResearchBits(c){
+  if(coStatus(c)!=="target") return {chips:"", panel:""};
+  const P = c.profile, n = Number(P?.connections?.count) || arr(P?.connections?.people).length;
+  const chips = [
+    n>0 ? `<span class="chip ok">You know ${n}</span>` : "",
+    P?.unread ? `<span class="chip new">${P.changes?.length ? `Updated ${esc(day(arr(P.changes).at(-1)?.at || P.checkedAt))}` : "New"}</span>` : "",
+    c.needsResearch ? `<span class="chip warn">${P ? "Refresh requested" : "Research pending"}</span>` : "",
+  ].join("");
+  const btn = `<button class="btn" data-act="coResearch" data-id="${esc(c.id)}" ${c.needsResearch?"disabled":""}>${c.needsResearch?"Research requested":"Refresh research"}</button>`;
+  const panel = P ? `<details data-coprof="${esc(c.id)}" ${coProfOpen.has(c.id)?"open":""}>
+      <summary>Profile${P.fullAt?` · researched ${esc(day(P.fullAt))}`:""}${P.unread?` <span class="chip new">New</span>`:""}</summary>
+      ${profileHtml(c)}<div class="acts" style="margin:0">${btn}</div></details>`
+    : `<div class="acts" style="margin:0">${btn}${c.needsResearch?"":` <span class="meta">No profile yet.</span>`}</div>`;
+  return {chips, panel};
+}
 function coCard(c){
   const st = coStatus(c), roles = Array.isArray(c.openMatches) ? c.openMatches : [];
+  const rb = coResearchBits(c);
   const saved = c.notes ?? "", val = coNotes[c.id] ?? saved, dirty = coNotes[c.id] !== undefined && coNotes[c.id] !== saved;
   const facts = [c.employees, c.bayArea, c.ats?.system ? `${c.ats.system}${c.ats.verified?"":" (not verified)"}` : ""].filter(Boolean);
   const size = String(c.sizeBand||"").replace(/\s*\(.*\)/,"");
@@ -1062,12 +1145,13 @@ function coCard(c){
         ${size?`<span class="chip">${esc(size)}</span>`:""}
         ${roles.length?`<span class="chip ok">${roles.length} open role${roles.length>1?"s":""}</span>`:""}
         ${coIsNew(c)?`<span class="chip info">New</span>`:""}
-        ${c.addedBy==="you"?`<span class="chip">Added by you</span>`:""}${c.needsResearch?`<span class="chip warn">Research pending</span>`:""}
+        ${c.addedBy==="you"?`<span class="chip">Added by you</span>`:""}${st==="target" ? rb.chips : (c.needsResearch?`<span class="chip warn">Research pending</span>`:"")}
         ${saved?`<span class="chip">Has notes</span>`:""}
       </div>
       <div class="acts">${CO_STATUS.filter(([k])=>k!=="new").map(([k,t])=>`<button class="btn" data-act="coStatus" data-id="${esc(c.id)}" data-status="${k}" aria-pressed="${st===k}">${t}</button>`).join("")}</div>
     </div>
     ${c.fit?`<p style="margin:0">${esc(c.fit)}</p>`:""}
+    ${st==="target" ? coKnow(c) + rb.panel : ""}
     <details data-co="${esc(c.id)}" ${coOpen.has(c.id)||dirty?"open":""}>
       <summary>Details, open roles, and your notes</summary>
       ${facts.length?`<p class="meta" style="margin:0">${esc(facts.join(" · "))}</p>`:""}
@@ -1111,6 +1195,9 @@ function renderCompanies(){
   renderFirms();
   const undecided = companies.filter(c=>coStatus(c)==="new").length;
   $("pCompanies").textContent = undecided;
+  const profNew = coProfileUnread();
+  $("pCoNew").hidden = !profNew; $("pCoNew").textContent = profNew ? `${profNew} updated` : "";
+  $("coSheet").href = safeUrl(settings.connectionsUrl) || CONNECTIONS_URL;
   const q = coQuery.trim().toLowerCase();
   const byQuery = companies.filter(c => !q || coText(c).includes(q));
   const stMatch = c => coFilter.status==="all" || (coFilter.status==="recent" ? coIsNew(c) : coStatus(c)===coFilter.status);
@@ -1333,11 +1420,29 @@ async function startRequests(reqId){
   try{ await mcp.callTool("Claude Code Remote", "fire_trigger", {trigger_id: trig, text: reqId ? `Answer dashboard request: requests/${reqId}` : "Answer open dashboard requests"}); return true; }
   catch(e){ return false; }
 }
+// Start the company research routine (docs/COMPANY_RESEARCH.md) the same way. False: the weekly run picks it up.
+async function startResearch(coId){
+  const trig = settings.researchTriggerId;
+  const mcp = trig ? await claude.use("mcp").catch(()=>null) : null;
+  if(!mcp) return false;
+  try{ await mcp.callTool("Claude Code Remote", "fire_trigger", {trigger_id: trig, text: `Research company: companies/${coId}`}); return true; }
+  catch(e){ return false; }
+}
+const researchToast = (name, started) => toast(started ? `Researching ${name}. The profile lands on its card.` : `${name}: research requested. The weekly run picks it up.`);
+// A Target company needs research when it has no profile or the last full pass is over 90 days old.
+const coNeedsFull = c => !c.profile?.fullAt || daysBetween(String(c.profile.fullAt).slice(0,10), today()) > 90;
+// Opening a profile counts as reading its update, after a few seconds (like markRead).
+function markProfileRead(id){
+  if(!db || !canWrite) return;
+  const c = companies.find(x=>x.id===id);
+  if(c?.profile?.unread) db.doc("companies/"+id).update({profile:{...c.profile, unread:false, readAt:now()}}).catch(()=>{});
+}
 async function write(ref, data, okMsg){
-  try{ await ref.update(data); if(okMsg) toast(okMsg); }
+  try{ await ref.update(data); if(okMsg) toast(okMsg); return true; }
   catch(e){
     if(e?.code==="invalid_argument"){ canWrite=false; render(); banner("You can view this dashboard but not change it."); }
     else toast("That didn't save. Try again in a moment.");
+    return false;
   }
 }
 const now = () => new Date().toISOString();
@@ -1538,9 +1643,18 @@ document.addEventListener("click", async ev=>{
     const c = companies.find(x=>x.id===id), to = b.dataset.status;
     if(c && coStatus(c)!==to){
       const label = CO_STATUS.find(([k])=>k===to)?.[1] || to;
-      await write(db.doc("companies/"+id), {status:to, decidedAt:now(), updatedAt:now()}, `${c.name}: ${label}.`);
+      const research = to==="target" && coNeedsFull(c);
+      const ok = await write(db.doc("companies/"+id), {status:to, decidedAt:now(), updatedAt:now(), ...(research?{needsResearch:true, requestedAt:now()}:{})}, research?"":`${c.name}: ${label}.`);
+      if(ok && research) researchToast(c.name, await startResearch(id));
     }
     b.disabled=false; return;
+  }
+  if(act==="coResearch"){
+    const c = companies.find(x=>x.id===id); if(!c){ b.disabled=false; return; }
+    try{ await db.doc("companies/"+id).update({needsResearch:true, requestedAt:now(), updatedAt:now()}); }
+    catch(e){ toast(e?.code==="invalid_argument"?"Only the owner can do this.":"That didn't save. Try again in a moment."); b.disabled=false; return; }
+    researchToast(c.name, await startResearch(id));
+    return;
   }
   if(act==="coNote"){
     const text = coNotes[id] ?? "";
@@ -1637,6 +1751,10 @@ document.addEventListener("submit", async ev=>{
 });
 document.addEventListener("toggle", ev=>{
   const c = ev.target; if(c.matches?.("details[data-co]")){ c.open ? coOpen.add(c.dataset.co) : coOpen.delete(c.dataset.co); return; }
+  if(c.matches?.("details[data-coprof]")){ const id = c.dataset.coprof;
+    clearTimeout(coReadTimers[id]);
+    if(c.open){ coProfOpen.add(id); coReadTimers[id] = setTimeout(()=>markProfileRead(id), 4000); } else coProfOpen.delete(id);
+    return; }
   const d = ev.target; if(!d.matches?.("details[data-docs]")) return;
   d.open ? openDocs.add(d.dataset.docs) : openDocs.delete(d.dataset.docs);
 }, true);
@@ -1732,9 +1850,11 @@ $("coForm").addEventListener("submit", async ev=>{
   try{
     const status = document.querySelector('input[name="coStatusNew"]:checked')?.value==="maybe" ? "maybe" : "target";
     const notes = $("coWhy").value.trim();
-    await db.collection("companies").add({name, careersUrl:safeUrl(url), sector:$("coSector").value, notes, ...(notes?{notesAt:now()}:{}),
-      status, decidedAt:now(), addedBy:"you", needsResearch:true, createdAt:now(), updatedAt:now()});
-    $("coForm").reset(); coFormShow(false); toast(`Added ${name}. Claude fills in the details on its next run.`);
+    const ref = await db.collection("companies").add({name, careersUrl:safeUrl(url), sector:$("coSector").value, notes, ...(notes?{notesAt:now()}:{}),
+      status, decidedAt:now(), addedBy:"you", needsResearch:true, requestedAt:now(), createdAt:now(), updatedAt:now()});
+    $("coForm").reset(); coFormShow(false);
+    if(status==="target" && ref?.id) researchToast(name, await startResearch(ref.id));
+    else toast(`Added ${name}. Claude fills in the details on its next run.`);
     coFilter = {status:"all", sector:"all"}; coQuery = ""; $("coSearch").value = ""; renderCompanies();
   }catch(e){ $("coMsg").textContent = e?.code==="invalid_argument" ? "Only the owner can add companies." : "That didn't save. Try again."; }
   $("coAdd").disabled=false;
