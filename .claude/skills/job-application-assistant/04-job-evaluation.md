@@ -62,7 +62,7 @@ How well do the required/preferred skills align with the candidate's capabilitie
 
 **Strong match areas:** technical program and portfolio management, engineering operations, strategy and operations / chief of staff, building and scaling teams, cross-functional delivery, executive alignment
 **Moderate match areas:** cloud cost optimization (FinOps) and COGS analysis, GenAI adoption and governance, M&A technical due diligence and integration, agile transformation, customer success and global implementations, SOW/MSA and vendor management
-**Weak match areas:** hands-on software engineering or coding, ML/data science research, people management of hundreds (largest documented org: 25 PMs plus 75 engineers and architects), roles needing specific tools not on the resume
+**Weak match areas:** hands-on software engineering or coding (he talks architecture and how a stack comes together, but can't answer developer or coding questions, Casey 2026-11-03), ML/data science research, people management of hundreds (largest documented org: 25 PMs plus 75 engineers and architects), roles needing specific tools not on the resume
 
 ### 2. Experience Match (0-100)
 Does work history align with what they're looking for? Match on the function and nature of the work performed, not the literal job title - a "Data Consultant" and a "Data Scientist" role can be functionally identical.
@@ -92,8 +92,8 @@ Does the role and company culture match the behavioral profile?
 
 ### 4. Location & Logistics (Pass/Fail + Notes)
 - SF Bay Area / Peninsula office, hybrid: PASS
+- SF Bay Area / Peninsula, onsite up to 5 days a week: PASS (Casey, 2026-11-03)
 - Remote, or remote with occasional office: PASS
-- 5-day / fully onsite: FAIL (deal-breaker)
 - Office days not stated: FLAG (confirm with the recruiter)
 - Requires relocation: FLAG (Casey is open for the right role but won't target moves; relocation is part of the conversation, not an automatic fail)
 - Travel over about 25%: FLAG (he travels as needed, preferably under 25%)
@@ -129,7 +129,7 @@ Does this role advance career goals and contain tasks that energize?
 **Life situation alignment:** Consider personal constraints:
 - **Security**: currently employed. Base must be over $300K (ideally over $350K), plus bonus and equity. FLAG a posted range whose top is under $300K; note where $350K sits in the range. **Pay package (Casey, 2026-11-02):** base must clearly clear $300K. Pass on a posted base whose top is under $300K, and on ranges posted only as total cash (OTE) that could put base under $300K. When no pay is posted, flag it and score it lower rather than excluding it, since many VP and C-level postings omit pay: score Career Alignment low for a sub-$300K base or a total-cash-only range, and put it first in the gaps
 - **Reporting line and title (Casey, 2026-11-02):** he wants roles that report to the C-suite (CEO, COO, CTO, CPO or another C-level executive). Pass on "Head of" titles at startups, and on roles that report to a business-unit GM or a VP. Large-company Director / Sr Director roles still follow the large-company exception above: score Career Alignment low when the role reports below the C-suite or is a startup "Head of", and name the reporting line in the gaps (unstated reporting line: say so)
-- **Flexibility**: lives in Pacifica, CA, works in San Francisco today (~20-minute commute). Hybrid preferred (some in-person time), remote acceptable; a few office days a week is fine; 5-day office is a deal-breaker. Relocation only if the employer raises it
+- **Flexibility**: lives in Pacifica, CA, works in San Francisco today (~20-minute commute). Bay Area onsite (including 5 days a week), hybrid, and remote are all fine (Casey, 2026-11-03). Relocation only if the employer raises it
 - **Professional development**: *(to confirm)*
 
 ### 6. Salary Benchmark (Optional)

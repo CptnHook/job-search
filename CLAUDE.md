@@ -83,6 +83,7 @@ Assessments on file: **DiSC D** (2021), **CliftonStrengths** Achiever, Arranger,
 - **Decides to fit the situation:** fast when the path is clear, data-driven when it isn't, course-corrects as he goes
 - **Leadership style:** supportive, encouraging, value-oriented; hires and develops leaders (mentored three future CEOs)
 - **Growth area:** not as technical as he could be; relies on and empowers deeply technical people (frame as a deliberate leadership choice)
+- **Technical level (Casey, 2026-11-03):** he can hold a credible conversation about how systems hook together, integrations, and how a stack comes together and its tradeoffs, but he is not a programmer and can't answer developer or coding questions. Roles that need hands-on engineering, coding interviews or deep implementation knowledge are a real gap (score Technical low and name it); roles that ask for technical fluency at the architecture and conversation level are a match
 - **Thrives in:** high-growth companies of 100-1,000 people where clarity, speed, and structure matter; also open to large public companies
 
 ### What Excites You
@@ -96,9 +97,9 @@ Assessments on file: **DiSC D** (2021), **CliftonStrengths** Achiever, Arranger,
 - **Functions:** engineering operations, TPM, PMO, strategy & operations, customer success, product operations, AI enablement/operations, business operations, delivery/professional services, engineering effectiveness/developer productivity, fintech/payments operations, chief of staff to CTO/CPO, platform operations & integration, technology leadership (VP of Technology, CIO/CITO), workforce/internal technology engineering (employee tooling and enterprise IT; Director titles at large companies only). Added 2026-10-24 (Casey). Still narrowing; revisit as applications come in
 - **Authority and strategy:** needs real authority and involvement in creating the strategy; a role weighted toward execution is fine only if he helps shape the strategy. Pure execution of a strategy owned above him, or influence-without-authority roles with no team or decision rights, are a poor fit (Casey, 2026-10-20). At a large company (public, 5,000+ employees, or $1B+ revenue) he doesn't expect a part in company strategy, so execution-focused roles are fine there
 - **Company stage:** startups, late-stage private, and public all fine; leans public
-- **Work arrangement:** hybrid preferred (some in-person time); remote acceptable; a few office days a week is fine. **No 5-day / fully onsite roles**. Travel as needed, preferably under 25%
+- **Work arrangement:** Bay Area onsite (including 5 days a week), hybrid, and remote are all fine (Casey, 2026-11-03; this replaces the earlier no-5-day-onsite rule). Travel as needed, preferably under 25%
 - **Location:** anywhere in the SF Bay Area / Peninsula. Works in San Francisco today (about a 20-minute commute from Pacifica)
-- **Compensation:** base salary over $300K (ideally over $350K), plus bonus and equity. Pass on a posted base topping out under $300K or a total-cash-only range that could put base under $300K; unposted pay is a flag, not a veto (Casey, 2026-11-02)
+- **Compensation:** base salary over $300K (ideally over $350K), plus bonus and equity; higher is welcome, no ceiling (Casey, 2026-11-03). Pass on a posted base topping out under $300K or a total-cash-only range that could put base under $300K; unposted pay is a flag, not a veto (Casey, 2026-11-02)
 - **Reporting line:** reports to the C-suite. Pass on "Head of" titles at startups and on roles reporting to a GM or VP (Casey, 2026-11-02); the large-company Director exception still applies
 - **Match signals, strongest first:** access to leadership (reports to or works with the C-suite); high-growth company; AI or developer tooling
 
@@ -109,7 +110,6 @@ Assessments on file: **DiSC D** (2021), **CliftonStrengths** Achiever, Arranger,
 - Big banks (e.g. Capital One-, JPMorgan-, Wells Fargo-type): not preferred, but not a deal-breaker; he kept the Capital One application (2026-10-20)
 
 ### Deal-breakers
-- 5-day / fully onsite office roles
 - Base salary below $300K
 - Below VP level, except Director / Sr Director at a large company (public, 5,000+ employees, or $1B+ revenue)
 - Never apply on Casey's behalf without his review and approval
