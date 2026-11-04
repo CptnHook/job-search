@@ -48,6 +48,11 @@ EXCLUDE = [
     ".vscode/*", ".idea/*", ".superpowers/*", "skills-lock.json",
 ]
 DATA_REPO_FILES = {"README.md", ".gitignore"}
+# A save that would delete more than this share of the data repo's files (and
+# more than MASS_DELETE_MIN of them) almost always means the workspace was never
+# restored, e.g. `start` ran against the wrong branch. Refuse it unless asked.
+MASS_DELETE_SHARE = 0.25
+MASS_DELETE_MIN = 10
 
 
 def git(cwd: Path, *args: str, check: bool = True) -> str:
@@ -98,12 +103,49 @@ def restorable(repo: Path, paths: list[str]) -> set[str]:
     return {p for p in result.stdout.split("\0") if p}
 
 
+def default_branch(data: Path) -> str:
+    """The data repo's default branch on origin (usually main)."""
+    ref = git(data, "symbolic-ref", "--short", "refs/remotes/origin/HEAD", check=False).strip()
+    if ref.startswith("origin/"):
+        return ref[len("origin/"):]
+    out = git(data, "ls-remote", "--symref", "origin", "HEAD", check=False)
+    for line in out.splitlines():
+        if line.startswith("ref: refs/heads/"):
+            return line.split()[1][len("refs/heads/"):]
+    return "main"
+
+
+def use_default_branch(data: Path) -> str | None:
+    """Put the data repo on origin's default branch, up to date.
+
+    Cloud sessions can clone a repo onto a fresh session branch; working from
+    it restores nothing and makes the next save look like mass deletion.
+    Returns an error message, or None when the repo is ready.
+    """
+    git(data, "fetch", "--quiet", "origin", check=False)
+    branch = default_branch(data)
+    remote_has_it = bool(git(data, "rev-parse", "--verify", "--quiet", f"origin/{branch}", check=False).strip())
+    if not remote_has_it:
+        return None  # a brand-new, empty data repo
+    if git(data, "branch", "--show-current").strip() != branch:
+        if git(data, "status", "--porcelain").strip():
+            return (f"The data repo is on {git(data, 'branch', '--show-current').strip() or 'a detached HEAD'}, "
+                    f"not {branch}, and has uncommitted changes. Commit or discard them, then retry.")
+        git(data, "checkout", "--quiet", "-B", branch, f"origin/{branch}")
+        print(f"Switched the data repo to {branch}.")
+    else:
+        git(data, "merge", "--ff-only", "--quiet", f"origin/{branch}")
+    return None
+
+
 def start(repo: Path, data: Path) -> int:
     if not (data / ".git").is_dir():
         print(f"Data repo not found at {data}. Clone it there or set JOB_SEARCH_DATA_DIR.")
         return 1
-    if git(data, "rev-parse", "--verify", "HEAD", check=False).strip():
-        git(data, "pull", "--ff-only", "--quiet")
+    problem = use_default_branch(data)
+    if problem:
+        print(problem)
+        return 1
     candidates = [rel for rel in data_files(data) if not excluded(rel)]
     allowed = restorable(repo, candidates)
     skipped = [rel for rel in candidates if rel not in allowed]
@@ -118,15 +160,26 @@ def start(repo: Path, data: Path) -> int:
     return 0
 
 
-def save(repo: Path, data: Path, push: bool = True) -> int:
+def save(repo: Path, data: Path, push: bool = True, allow_removals: bool = False) -> int:
     if not (data / ".git").is_dir():
         print(f"Data repo not found at {data}. Clone it there or set JOB_SEARCH_DATA_DIR.")
         return 1
+    problem = use_default_branch(data)
+    if problem:
+        print(problem)
+        return 1
     current = ignored_files(repo)
+    # Files deleted in the workspace are deleted in the data repo too.
+    existing = [rel for rel in data_files(data) if not excluded(rel)]
+    removed = [rel for rel in existing if rel not in set(current)]
+    if (not allow_removals and len(removed) > MASS_DELETE_MIN
+            and len(removed) > MASS_DELETE_SHARE * len(existing)):
+        print(f"Refusing to save: it would delete {len(removed)} of {len(existing)} files in the data repo. "
+              "The workspace was probably never restored; run `start` first. "
+              "If the deletions are intended, rerun with --allow-removals.")
+        return 1
     for rel in current:
         copy(repo / rel, data / rel)
-    # Files deleted in the workspace are deleted in the data repo too.
-    removed = [rel for rel in data_files(data) if rel not in set(current) and not excluded(rel)]
     for rel in removed:
         (data / rel).unlink()
     git(data, "add", "-A")
@@ -140,7 +193,7 @@ def save(repo: Path, data: Path, push: bool = True) -> int:
     # push can leave commits that exist only in this container.
     has_commits = bool(git(data, "rev-parse", "--verify", "HEAD", check=False).strip())
     if push and has_commits:
-        branch = git(data, "branch", "--show-current").strip() or "main"
+        branch = git(data, "branch", "--show-current").strip() or default_branch(data)
         git(data, "push", "--quiet", "-u", "origin", branch)
     if changed:
         print(f"Saved {len(current)} file(s), removed {len(removed)}, to {data}{' and pushed' if push else ''}.")
@@ -153,6 +206,8 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("command", choices=["start", "save", "list"])
     parser.add_argument("--no-push", action="store_true", help="save: commit but don't push")
+    parser.add_argument("--allow-removals", action="store_true",
+                        help="save: allow deleting many data-repo files at once")
     args = parser.parse_args(argv)
     repo, data = REPO_ROOT, data_dir(REPO_ROOT)
     if args.command == "list":
@@ -161,7 +216,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if args.command == "start":
         return start(repo, data)
-    return save(repo, data, push=not args.no_push)
+    return save(repo, data, push=not args.no_push, allow_removals=args.allow_removals)
 
 
 if __name__ == "__main__":

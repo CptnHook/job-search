@@ -91,6 +91,30 @@ class CloudSessionTests(unittest.TestCase):
                                     capture_output=True, text=True).stdout
         self.assertIn("Save job-search working files", remote_log)
 
+    def test_start_switches_a_session_branch_back_to_main(self):
+        (self.work / "job_search_tracker.csv").write_text("company\nExample\n", encoding="utf-8")
+        self.assertEqual(cloud_session.save(self.work, self.data), 0)
+        fresh = self._workspace("fresh")
+        fresh_data = self.tmp / "fresh-data"
+        git(self.tmp, "clone", "-q", str(self.remote), str(fresh_data))
+        git(fresh_data, "checkout", "-q", "--orphan", "claude/session-branch")
+        git(fresh_data, "rm", "-rfq", ".")
+        self.assertEqual(cloud_session.start(fresh, fresh_data), 0)
+        self.assertIn("Example", (fresh / "job_search_tracker.csv").read_text(encoding="utf-8"))
+        current = subprocess.run(["git", "-C", str(fresh_data), "branch", "--show-current"],
+                                 capture_output=True, text=True).stdout.strip()
+        self.assertEqual(current, "main")
+
+    def test_save_refuses_mass_deletion_from_an_unrestored_workspace(self):
+        for i in range(20):
+            (self.work / "documents" / "cv" / f"f{i}.pdf").write_text("synthetic", encoding="utf-8")
+        self.assertEqual(cloud_session.save(self.work, self.data), 0)
+        empty = self._workspace("empty")
+        self.assertEqual(cloud_session.save(empty, self.data), 1)
+        self.assertTrue((self.data / "documents" / "cv" / "f0.pdf").exists())
+        self.assertEqual(cloud_session.save(empty, self.data, allow_removals=True), 0)
+        self.assertFalse((self.data / "documents" / "cv" / "f0.pdf").exists())
+
 
 if __name__ == "__main__":
     unittest.main()
