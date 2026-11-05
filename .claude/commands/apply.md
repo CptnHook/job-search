@@ -228,6 +228,18 @@ Once the reviewer agent returns its feedback:
 
 After all edits are applied, the two files on disk are the final drafts.
 
+### Fact check (required before the drafts go to Casey)
+
+Write the cover letter text and every resume change (`cvChanges[].after`) to scratch files, save the posting text and any verified company facts to another, and run:
+
+```bash
+python3 tools/verify_facts.py --text <cover.txt> --text <cv_changes.txt> \
+  --source <Drive profile JSON, downloaded to scratch> --source CLAUDE.md \
+  --allow-from <posting.txt> --company "<Company>" --json
+```
+
+Every number and named tool must trace to his profile or resume (or, for the employer's own numbers and products, to the posting or verified facts); phrases his rules forbid ("owns a P&L", Smartsheet, NetSuite, Workday as a tool, FinOps tools, SMC, the Cornell AI coursework, em-dashes) block. On a block, fix the draft and re-run until it passes; never pass a check by adding text to a source file. Write the final result to the dashboard as `jobs.factCheck` (`{ok, blocked[], warnings[], checkedAt}`). If something can't be fixed without Casey (a number he may have given verbally), keep the block, add a hold naming it, and ask him. Rules live in `tools/fact_rules.json`.
+
 ---
 
 ## Step 5: DRAFTER - Compile & Inspect PDFs (MANDATORY)
