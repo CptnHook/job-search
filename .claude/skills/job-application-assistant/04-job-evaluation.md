@@ -161,7 +161,9 @@ A listing the scorer declines, or Casey declines on the dashboard, carries `decl
 | `duplicate` | Already applied or duplicate |
 | `other` | Other (with `declineNote`) |
 
-Use `other` with a one-line `declineNote` only when nothing above fits, so new patterns stay visible.
+Use `other` with a one-line `declineNote` only when nothing above fits, so new patterns stay visible. Set `declinedAt` when declining.
+
+**Re-scoring.** A job at stage `new` with `rescoreOf` was declined earlier and Casey sent it back after a rule changed. Score it from scratch under today's rules: ignore the old `summary`, `fit` and `declineReasons` (overwrite them), and clear `rescoreOf` when done.
 
 ### 6. Salary Benchmark (Optional)
 
