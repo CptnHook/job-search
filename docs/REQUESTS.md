@@ -11,6 +11,8 @@ Casey asks Claude questions from the **Ask Claude** box on an application ticket
 | `research` | Company research for this application |
 | `interview-prep` | Prep for the next interview stage |
 | `draft-followup` | A follow-up email draft (text only; never sent) |
+| `outreach` | Someone to reach out to about this role and a note for Casey to send. With `contactId`, a note to that saved contact (see Outreach below) |
+| `offer-review` | A review of the offer and a negotiation plan ([OFFER_REVIEW.md](OFFER_REVIEW.md)) |
 | `question` | An answer to the question in `prompt` |
 
 ## Answering
@@ -22,6 +24,13 @@ Casey asks Claude questions from the **Ask Claude** box on an application ticket
 5. Save any cache changes with `python3 tools/cloud_session.py save`.
 
 The dashboard shows `unread: true` answers as **New** on the ticket, the Pipeline row, the Approvals row, and the Pipeline tab. Opening the ticket sets `unread: false` and `readAt`.
+
+## Outreach
+
+1. **Saved contacts first.** With `contactId`, write to that person. Without it, look in `contacts` for someone at the company Casey already knows (a past interviewer, a recruiter from another application) and in the `network` matches; offer that person first and say why.
+2. **Otherwise, find one person** with WebSearch, in this order, stopping at the first you can confirm: the role's hiring manager, the assigned recruiter, a peer executive. At most three searches. Confirm the name and current title on a page you fetched yourself (the company's site, a press release, a talk or podcast page). A LinkedIn profile URL that turns up in search results may be given to Casey as a link to open; never fetch LinkedIn pages or log in to LinkedIn. Never guess a name or an email address; if no one can be confirmed, say so.
+3. **Draft the note.** Three short sentences in his voice (`03-writing-style.md`): why this person, one proof point from his profile that fits what they care about (a recruiter: the role's hard requirements; a hiring manager or executive: the outcome he'd deliver), and a small ask (a 15-minute call, or who owns the search). Give two versions: a LinkedIn connection note under 300 characters and a short email. Every number must pass `tools/verify_facts.py`.
+4. Add a person you found as a `contacts` doc with `status: "suggested"`, `source: "search"`, `profileUrl` when there is one. Put the person, how you confirmed them, and both drafts in `result`. Never send anything.
 
 ## Rules
 

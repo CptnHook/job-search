@@ -14,9 +14,10 @@ The "Application email watcher" routine reads Casey's Gmail for messages from co
    - **Rejection**: stage `rejected`, note "Rejected <date>".
    - **Offer**: stage `offer`, plus an action.
    - **Anything else from the company** (newsletters, job alerts): ignore.
-5. For every change, also add an `entries` doc `{jobId, company, role, kind:"Email", date, notes:<one-line summary>, gmailId, source:"email watcher", createdAt}` and a `transitions` doc when the stage moves. Update the matching tracker row's `status` per `/outcome`'s vocabulary and append a dated note. Save with `python3 tools/cloud_session.py save`.
-6. An email from a company Casey applied to with no job doc (he applied on his own): add a tracker row and tell him in the summary.
-7. End with a two-line summary: what changed, and what needs Casey. If nothing new arrived, change nothing.
+5. **Suggest the person.** When the sender is a person (a recruiter, a search-firm partner, a hiring manager), and no `contacts` doc has the same name at that company, add one with `status: "suggested"`, `source: "email"`, `{name, company, type, title (from the signature), email, jobIds:[jobId], lastContactAt, createdAt}`. Casey keeps or removes it on the dashboard; never set `kept` yourself, and never add someone only cc'd or named in the body.
+6. For every change, also add an `entries` doc `{jobId, company, role, kind:"Email", date, notes:<one-line summary>, gmailId, source:"email watcher", createdAt}` and a `transitions` doc when the stage moves. Update the matching tracker row's `status` per `/outcome`'s vocabulary and append a dated note. Save with `python3 tools/cloud_session.py save`.
+7. An email from a company Casey applied to with no job doc (he applied on his own): add a tracker row and tell him in the summary.
+8. End with a two-line summary: what changed, and what needs Casey. If nothing new arrived, change nothing.
 
 ## Rules
 
