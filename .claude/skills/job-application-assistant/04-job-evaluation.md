@@ -132,6 +132,37 @@ Does this role advance career goals and contain tasks that energize?
 - **Flexibility**: lives in Pacifica, CA, works in San Francisco today (~20-minute commute). Bay Area onsite (including 5 days a week), hybrid, and remote are all fine (Casey, 2026-11-03). Relocation only if the employer raises it
 - **Professional development**: *(to confirm)*
 
+### Reporting line and authority check (Casey, 2026-11-05)
+
+Run on every scored posting, from the posting text only. It feeds Career Alignment and Behavioral Fit and is shown on the dashboard ticket.
+
+- **`reportsTo`**: the posting's own words for who the role reports to, quoted (`null` when the posting doesn't say). **`reportsToLevel`**: `c-suite` (CEO, COO, CTO, CPO, CFO, another C-level, or the board), `vp`, `gm` (business-unit GM or president of a unit), `other`, or `unstated`.
+- **`roleClarity.points[]`**: six points, each `{name, status (present/partial/missing), quote}`: Reporting line, Scope (what the role owns), Decision rights (team, budget, or approval authority), Team size, Budget, Success measure (what good looks like in the first 3-6 months). `quote` is a short verbatim phrase from the posting, empty when missing.
+- **`roleClarity.askFirst[]`**: when 3 or more points are missing, the questions Casey should ask the recruiter before committing time (one per missing point, specific to the role).
+- **Holds and declines:** `reportsToLevel` `vp` or `gm` declines the listing (decline reason `reports-below-csuite`) except under the large-company Director exception; `unstated` adds a hold, "Reporting line not stated". No team, budget, or decision rights at a company that isn't large adds the decline reason `no-authority`.
+
+### Decline reasons
+
+A listing the scorer declines, or Casey declines on the dashboard, carries `declineReasons[]`, one or more of these ids (the dashboard shows the labels and counts them on the Analytics tab):
+
+| id | Label |
+|---|---|
+| `pay-below-floor` | Base below the $300K floor |
+| `pay-total-cash` | Pay posted only as total cash |
+| `below-level` | Below VP level |
+| `startup-head-of` | Startup "Head of" title |
+| `reports-below-csuite` | Reports to a VP or GM |
+| `no-authority` | No authority or say in strategy |
+| `hands-on-engineering` | Hands-on engineering or coding |
+| `big-bank` | Big bank |
+| `sector` | Sector doesn't interest him |
+| `relocation` | Requires relocation |
+| `company-concern` | Concern about the company |
+| `duplicate` | Already applied or duplicate |
+| `other` | Other (with `declineNote`) |
+
+Use `other` with a one-line `declineNote` only when nothing above fits, so new patterns stay visible.
+
 ### 6. Salary Benchmark (Optional)
 
 If the salary lookup tool is configured (`salary_data.json` exists), look up the company:

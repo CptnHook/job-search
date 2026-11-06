@@ -78,6 +78,12 @@ Done when: each agent runs on a schedule in Claude Code on the web, writes only 
 
 Done when: C1–C3 show on the Learnings tab with honest sample-size handling; the coach's proposals appear in the inbox and take effect only on Accept.
 
+## Second career-ops review (2026-11-05)
+
+Built in the first batch: B3's fact check (`tools/verify_facts.py`, rules in `tools/fact_rules.json`, run by `/apply` before a draft reaches Casey); C1-C3 on a new **Analytics** tab (cumulative funnel, median days per stage, fit band vs answers with a verdict, yield by source, decline reasons, coach insights), with rates hidden below the `analyticsMinSample` rule; the reporting-line and role-clarity check (`reportsTo`, `reportsToLevel`, `roleClarity`) in the scorer; a fixed decline-reason list Casey picks from when he declines; company history on each ticket and a "Quiet after an interview" list on Pipeline; Undo after Decline, Backlog, Yes and Approve; and a "new this week · follow-ups due" header line.
+
+Casey also asked to adopt career-ops's outreach drafting (find a hiring manager, recruiter or peer through ordinary web search, then draft a message he sends himself; no LinkedIn login or scraping) and form filling on more application sites after his Approve. Both are the next batch.
+
 ## Not adopting
 
 - Auto-tuning of any kind; disguising automation (browser-imitating user agents); automating LinkedIn, CAPTCHA, or Workday sign-ups.

@@ -1,0 +1,151 @@
+{
+  "_about": "Rules for tools/verify_facts.py (docs/AUTOMATION.md, Fact check). Phrases are matched case-insensitively as regular expressions on word boundaries. 'block' stops the draft; 'warn' is shown for Casey to judge.",
+  "block_phrases": [
+    {
+      "pattern": "\\bown(s|ed|ing)?\\s+(a|the|an)?\\s*p\\s*&\\s*l\\b",
+      "why": "Say he manages the engineering budget with Finance, never that he owns a P&L"
+    },
+    {
+      "pattern": "\\bp\\s*&\\s*l\\s+(owner|ownership|responsibility)\\b",
+      "why": "Say he manages the engineering budget with Finance, never that he owns a P&L"
+    },
+    {
+      "pattern": "\\bsmartsheet\\b",
+      "why": "Never list Smartsheet"
+    },
+    {
+      "pattern": "\\bnetsuite\\b",
+      "why": "Never list NetSuite"
+    },
+    {
+      "pattern": "\\bworkday\\b",
+      "why": "Never list Workday as a tool",
+      "skip_if_company": true
+    },
+    {
+      "pattern": "\\bfinops\\b",
+      "why": "Never list FinOps tools"
+    },
+    {
+      "pattern": "\\bcloudhealth\\b|\\bapptio\\b|\\bvantage\\.sh\\b|\\bcloudability\\b",
+      "why": "Never list FinOps tools"
+    },
+    {
+      "pattern": "\\bscrum master\\b|\\bSMC\\b|\\bCSM certif",
+      "why": "His Scrum Master certification has lapsed; don't list it"
+    },
+    {
+      "pattern": "\\bcornell\\b[^.]{0,40}\\bAI\\b|\\bAI\\b[^.]{0,40}\\bcornell\\b",
+      "why": "The Cornell AI coursework is not listed, by Casey's choice"
+    },
+    {
+      "pattern": "\\bowns?\\s+(the\\s+)?company strategy\\b",
+      "why": "Overstates his role"
+    },
+    {
+      "pattern": "—|–|(?<=\\w)\\s?--\\s?(?=\\w)",
+      "why": "No em-dashes or en-dashes (writing style rule 1)"
+    }
+  ],
+  "warn_phrases": [
+    {
+      "pattern": "\\bi am passionate about\\b|\\bpassionate about\\b",
+      "why": "Cliche (writing style rule 2)"
+    },
+    {
+      "pattern": "\\bgreat fit\\b|\\bperfect fit\\b",
+      "why": "Cliche (writing style rule 2)"
+    },
+    {
+      "pattern": "\\bleverag(e|ing) my\\b",
+      "why": "Cliche (writing style rule 2)"
+    },
+    {
+      "pattern": "\\bhit the ground running\\b",
+      "why": "Cliche (writing style rule 2)"
+    },
+    {
+      "pattern": "\\bdrive results\\b|\\bresults-driven\\b",
+      "why": "Cliche (writing style rule 2)"
+    },
+    {
+      "pattern": "\\bsynerg(y|ies)\\b",
+      "why": "Cliche (writing style rule 2)"
+    },
+    {
+      "pattern": "\\bi think i could\\b|\\bi believe i (could|would)\\b",
+      "why": "Apologetic phrasing (writing style rule 4)"
+    },
+    {
+      "pattern": "\\bthought leader\\b|\\bguru\\b|\\brockstar\\b|\\bninja\\b",
+      "why": "Buzzword without backing (writing style rule 3)"
+    }
+  ],
+  "ai_tool_terms": "\\b(agentic coding|ai coding|coding agents?|ai-assisted (coding|development)|ai developer tools?|ai tooling)\\b",
+  "known_tools": [
+    "Jira",
+    "Confluence",
+    "Looker",
+    "Tableau",
+    "Power BI",
+    "SQL",
+    "Excel",
+    "Sheets",
+    "AWS",
+    "GCP",
+    "Azure",
+    "GitHub",
+    "Claude Code",
+    "Bedrock",
+    "Vertex AI",
+    "Cursor",
+    "ChatGPT",
+    "Copilot",
+    "Salesforce",
+    "Coupa",
+    "Asana",
+    "Monday.com",
+    "ClickUp",
+    "Notion",
+    "Airtable",
+    "Trello",
+    "ServiceNow",
+    "Zendesk",
+    "HubSpot",
+    "Gainsight",
+    "Snowflake",
+    "Databricks",
+    "BigQuery",
+    "dbt",
+    "Kubernetes",
+    "Terraform",
+    "Docker",
+    "Datadog",
+    "Splunk",
+    "PagerDuty",
+    "Okta",
+    "SAP",
+    "Oracle ERP",
+    "Anaplan",
+    "Adaptive Insights",
+    "Gong",
+    "Slack",
+    "Microsoft Project",
+    "MS Project",
+    "Planview",
+    "Clarity PPM",
+    "Aha!",
+    "Productboard",
+    "Figma",
+    "Miro",
+    "Python",
+    "Java",
+    "Rust",
+    "TypeScript",
+    "LangChain",
+    "OpenAI API",
+    "Gemini",
+    "Llama"
+  ],
+  "metric_min": 10
+}

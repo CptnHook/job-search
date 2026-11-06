@@ -30,7 +30,7 @@ The routine starts a fresh session each time Approve fires it, and on a schedule
    - `attempts` is 0 and there is no `submission/attempt.json` in the application folder.
    - The posting is still live: `https://boards-api.greenhouse.io/v1/boards/<board>/jobs/<id>` returns it. A 404 means it closed. A timeout means unknown, so don't send this run.
    - The PDFs' SHA-256 values match the plan.
-4. **Claim it.** Set stage `submitting`, `attempts: 1`, and `updatedAt` on the job doc before running the tool. This is the one automatic attempt.
+4. **Claim it.** Set stage `submitting`, `attempts: 1`, and `updatedAt` on the job doc before running the tool. This is the one automatic attempt. Pin the write to the job's version from step 2: if Casey undid the approval since (the dashboard's Undo or Undo approval), the write fails, and nothing is sent.
 5. **Send.** Run this in the background:
    `python3 tools/submitter/greenhouse.py submit --plan <plan> --cv <pdf> --cover <pdf> --evidence documents/applications/<folder>/submission --submit --approved-hash <approval.answersHash> --code-file <scratch>/code.txt`
    If stderr prints `NEEDS_CODE`, Greenhouse has emailed Casey a security code. Find that email in Gmail (from Greenhouse, about this company, received in the last 15 minutes) and write only the code to the code file. Don't guess, and don't reuse an older code.

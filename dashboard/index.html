@@ -253,6 +253,16 @@ select{border:1px solid var(--line);background:var(--bg);border-radius:8px;paddi
 button.chip{border:0;cursor:pointer;font-family:inherit;font-weight:600}
 button.chip:hover{filter:brightness(1.1)}
 .timeline li.flash{outline:2px solid var(--accent);outline-offset:4px;border-radius:6px;background:var(--ok-bg)}
+.declinebox{display:flex;flex-direction:column;gap:8px;width:100%}
+.declinebox .facts{gap:6px}
+.declinebox label.pick{display:inline-flex;flex-direction:row;align-items:center;gap:6px;width:auto;text-align:left;font-size:13px;font-weight:500;padding:4px 10px;border:1px solid var(--line);border-radius:999px;cursor:pointer;white-space:nowrap}
+.declinebox label.pick input{width:auto;margin:0;accent-color:var(--accent)}
+.toast button{margin-left:10px;padding:3px 10px;font-size:13px}
+.statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.stile{border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.stile b{display:block;font-size:22px;font-family:var(--display)}
+.bar{height:8px;border-radius:4px;background:var(--sunk);overflow:hidden;margin-top:6px}
+.bar span{display:block;height:100%;background:var(--accent)}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));
   background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:8px;font-size:14px;z-index:20}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -263,7 +273,7 @@ button.chip:hover{filter:brightness(1.1)}
     <div>
       <div class="eyebrow">Casey Caster · VP search</div>
       <h1>Job Hunt Command Center</h1>
-      <p class="sub stats"><span id="cNeedsBox"><b id="cNeeds" class="num">0</b> need you</span> · <b id="cApprove" class="num">0</b> to approve · <b id="cReview" class="num">0</b> to review · <b id="cSubmitted" class="num">0</b> applied · <b id="cInterview" class="num">0</b> interviewing</p>
+      <p class="sub stats"><span id="cNeedsBox"><b id="cNeeds" class="num">0</b> need you</span> · <b id="cApprove" class="num">0</b> to approve · <b id="cReview" class="num">0</b> to review · <b id="cSubmitted" class="num">0</b> applied · <b id="cInterview" class="num">0</b> interviewing<br><span id="cWeek"></span></p>
     </div>
     <div class="switchbox" title="Off: every application waits for your Approve click. On: drafted applications are approved and submitted automatically, unless a rule holds one for you.">
       <button id="autoToggle" class="toggle" role="switch" aria-checked="false" aria-labelledby="autoLabel" aria-describedby="autoHelp" disabled></button>
@@ -284,6 +294,7 @@ button.chip:hover{filter:brightness(1.1)}
       <button class="tab" role="tab" id="t-pipe" aria-selected="false" data-view="pipe">Pipeline <span class="pill num" id="pPipe">0</span> <span class="chip new" id="pNewAns" hidden></span></button>
       <button class="tab" role="tab" id="t-companies" aria-selected="false" data-view="companies">Companies <span class="pill num" id="pCompanies">0</span> <span class="chip new" id="pCoNew" hidden></span></button>
       <button class="tab" role="tab" id="t-learn" aria-selected="false" data-view="learn">Notes &amp; learnings <span class="pill num" id="pLearn">0</span></button>
+      <button class="tab" role="tab" id="t-stats" aria-selected="false" data-view="stats">Analytics</button>
       <button class="tab" role="tab" id="t-rules" aria-selected="false" data-view="rules">Rules <span class="pill num" id="pRules">0</span></button>
       <button class="tab" role="tab" id="t-add" aria-selected="false" data-view="add">+ Add a listing</button>
     </nav>
@@ -370,6 +381,12 @@ button.chip:hover{filter:brightness(1.1)}
       </form>
     </div>
 
+    <div class="view" id="v-stats" role="tabpanel" aria-labelledby="t-stats" hidden>
+      <div class="panel" aria-labelledby="statsH">
+        <div class="panel-h"><h2 id="statsH">Analytics</h2><span class="eyebrow">How the search is going, from your own stage history</span></div>
+        <div id="statsBody"><div class="empty">Nothing to measure yet.</div></div>
+      </div>
+    </div>
     <div class="view" id="v-rules" role="tabpanel" aria-labelledby="t-rules" hidden>
       <div id="rulesLive"></div>
       <div class="rules">
@@ -380,7 +397,7 @@ button.chip:hover{filter:brightness(1.1)}
           <li><strong>Company limits.</strong> If a company caps how many roles you can apply to, every application there needs your approval so you can choose.</li>
           <li><strong>Manual-only sites.</strong> CAPTCHAs, Workday account sign-ups, and LinkedIn Easy Apply (automation breaks LinkedIn's terms) go to <em>Needs you</em> with a prepared pack and the link.</li>
           <li><strong>One automatic attempt.</strong> If a submission errors, the agent stops after that attempt and lists it under <em>Needs you</em>. It never retries on its own, so nothing is sent twice.</li>
-          <li><strong>Deal-breakers.</strong> Fully onsite roles, a posted top salary under $300K, or below VP level are never auto-approved.</li>
+          <li><strong>Deal-breakers.</strong> A posted base under $300K, below VP level, a startup "Head of" title, or a role reporting to a VP or GM is never auto-approved.</li>
           <li><strong>Low or unclear fit.</strong> Fit under <span id="minFitTxt" class="num">75</span>, or a posting with open questions (office days, location), waits for you.</li>
           <li><strong>Never without a record.</strong> Every submission saves a confirmation screenshot and updates the tracker; nothing is sent from this page itself.</li>
         </ol>
@@ -439,6 +456,122 @@ function legitLine(j){
   if(L.note) bits.push(L.note);
   return bits.length ? `<p class="meta" style="margin:0"><strong>Posting check:</strong> ${esc(bits.join(" · "))}${L.checkedAt?` <span>(checked ${esc(day(L.checkedAt))})</span>`:""}</p>` : "";
 }
+// Reporting line and role clarity, from the scorer (04-job-evaluation.md).
+const LEVEL = {"c-suite":["Reports to the C-suite","ok"], vp:["Reports to a VP","crit"], gm:["Reports to a GM","crit"], other:["Reporting line: other","warn"], unstated:["Reporting line not stated","warn"]};
+const CLAR = {present:"ok", partial:"", missing:"warn"};
+function roleHtml(j){
+  const lv = LEVEL[j.reportsToLevel];
+  const rc = j.roleClarity && typeof j.roleClarity==="object" ? j.roleClarity : null;
+  const pts = Array.isArray(rc?.points) ? rc.points.filter(p=>p && typeof p==="object") : [];
+  const ask = Array.isArray(rc?.askFirst) ? rc.askFirst.filter(Boolean) : [];
+  if(!lv && !j.reportsTo && !pts.length) return "";
+  const stated = pts.filter(p=>p.status!=="missing").length;
+  return `<div class="why"><p class="meta" style="margin:0">${lv?`<span class="chip ${lv[1]}">${esc(lv[0])}</span> `:""}${j.reportsTo?`<strong>Reports to:</strong> “${esc(j.reportsTo)}”`:""}</p>
+    ${pts.length?`<details><summary class="link" style="cursor:pointer">Role clarity: ${stated} of ${pts.length} points stated in the posting</summary><ul class="qlist" style="margin-top:6px">${pts.map(p=>`<li><span class="chip ${CLAR[p.status]??""}">${esc(p.status||"")}</span> ${esc(p.name||"")}${p.quote?` <span class="meta">· “${esc(p.quote)}”</span>`:""}</li>`).join("")}</ul></details>`:""}
+    ${ask.length?`<div class="lesson"><b style="color:var(--ink)">Ask before you commit:</b><ul class="qlist" style="margin-top:4px">${ask.map(q=>`<li>${esc(q)}</li>`).join("")}</ul></div>`:""}</div>`;
+}
+// Fact check the drafter ran with tools/verify_facts.py: every number and tool traces to his own sources.
+function factHtml(j){
+  const f = j.factCheck; if(!f || typeof f!=="object") return "";
+  const bl = Array.isArray(f.blocked)?f.blocked:[], wn = Array.isArray(f.warnings)?f.warnings:[];
+  const stale = !!(j.coverEditedAt && f.checkedAt && j.coverEditedAt > f.checkedAt);
+  const items = [...bl.map(b=>`<li><span class="chip crit">not backed</span> “${esc(b.what)}” <span class="meta">· ${esc(b.why)}</span></li>`),
+    ...wn.map(w=>`<li><span class="chip warn">check</span> “${esc(w.what)}” <span class="meta">· ${esc(w.why)}</span></li>`)].join("");
+  return `<div class="${bl.length?"holds":"why"}"><div><strong>Fact check:</strong> ${bl.length?`${bl.length} item${bl.length>1?"s":""} not backed by your profile or resume`:"every number and tool traces to your profile or resume"}${f.checkedAt?` <span class="meta">(checked ${esc(day(f.checkedAt))})</span>`:""}${stale?` <span class="chip warn">you edited the letter after this check</span>`:""}</div>${items?`<ul class="qlist" style="margin-top:6px">${items}</ul>`:""}</div>`;
+}
+// Why a listing was declined: a fixed list so the reasons can be counted (04-job-evaluation.md).
+const DECLINE = [["pay-below-floor","Base below the $300K floor"],["pay-total-cash","Pay posted only as total cash"],["below-level","Below VP level"],
+  ["startup-head-of","Startup \"Head of\" title"],["reports-below-csuite","Reports to a VP or GM"],["no-authority","No authority or say in strategy"],
+  ["hands-on-engineering","Hands-on engineering or coding"],["big-bank","Big bank"],["sector","Sector doesn't interest me"],["relocation","Requires relocation"],
+  ["company-concern","Concern about the company"],["duplicate","Already applied or duplicate"],["other","Other"]];
+const declineLabel = id => (DECLINE.find(d=>d[0]===id)||[id,String(id)])[1];
+let declineUi = null;   // {id, act, sel:Set, note} while Casey picks reasons
+function declineForm(j){
+  const d = declineUi;
+  return `<div class="declinebox"><span class="meta">Why not? Pick any that apply, so the reasons can be counted.</span>
+    <div class="facts">${DECLINE.map(([k,t])=>`<label class="pick"><input type="checkbox" data-dr="${esc(k)}" ${d.sel.has(k)?"checked":""}> ${esc(t)}</label>`).join("")}</div>
+    <label class="sr" for="dn-${esc(j.id)}">Note</label><input id="dn-${esc(j.id)}" data-dn="1" placeholder="Note (optional)" value="${esc(d.note||"")}" style="max-width:440px">
+    <div class="acts" style="margin:0"><button class="btn danger" data-act="confirmDecline" data-id="${esc(j.id)}">${d.act==="no"?"Decline":"Don't apply"}</button>
+    <button class="btn" data-act="cancelDecline" data-id="${esc(j.id)}">Cancel</button></div></div>`;
+}
+const reasonChips = j => Array.isArray(j.declineReasons)&&j.declineReasons.length ? j.declineReasons.map(r=>`<span class="chip">${esc(declineLabel(r))}</span>`).join("") : "";
+// Every application Casey has had at this company: how it went, and whether they ever answered.
+const coKey = s => String(s||"").toLowerCase().replace(/[,.]|\b(inc|llc|ltd|corp|corporation|co)\b/g," ").replace(/\s+/g," ").trim();
+const RESPONDED = ["recruiter","assessment","interviewing","interview","offer","negotiating","hired"];
+const everReached = (j, list) => list.includes(j.stage) || transitions.some(t=>t.jobId===j.id && list.includes(t.to));
+const appliedEver = j => everReached(j, [...AFTER_APPLY,"hired","rejected","noresponse"]) || !!j.submittedAt;
+function coHistory(j){
+  const k = coKey(j.company); if(!k) return "";
+  const others = jobs.filter(x=>x.id!==j.id && coKey(x.company)===k && appliedEver(x));
+  if(!others.length) return `<p class="meta" style="margin:0"><strong>History with ${esc(j.company)}:</strong> no earlier applications.</p>`;
+  const answered = others.filter(x=>everReached(x, RESPONDED)).length;
+  return `<details><summary class="link" style="cursor:pointer">History with ${esc(j.company)}: ${others.length} earlier application${others.length>1?"s":""}, ${answered} answered</summary>
+    <ul class="qlist" style="margin-top:6px">${others.sort((a,b)=>String(b.submittedAt||b.updatedAt).localeCompare(String(a.submittedAt||a.updatedAt))).map(x=>`<li>${esc(x.role||"")} · <span class="chip ${STAGE[x.stage]?.c||""}">${esc(STAGE[x.stage]?.t||x.stage)}</span>${x.submittedAt?` <span class="meta">applied ${esc(day(x.submittedAt))}</span>`:""}${everReached(x,RESPONDED)?` <span class="chip ok">they answered</span>`:""}</li>`).join("")}</ul></details>`;
+}
+// Interviews with nothing from the company since: facts only, after a courtesy window.
+function quietAfterInterview(){
+  const win = ruleVal("quietAfterInterviewDays", 10);
+  return jobs.filter(j=>["interviewing","interview"].includes(j.stage)).map(j=>{
+    const last = entries.filter(e=>e.jobId===j.id && INBOUND.includes(e.kind)).map(e=>String(e.date||e.createdAt).slice(0,10)).sort().pop()
+      || stageSince(j);
+    return last ? {j, last, days: daysBetween(last, today())} : null;
+  }).filter(x=>x && x.days > win).sort((a,b)=>b.days-a.days);
+}
+// Analytics (docs/AUTOMATION.md): counts from stage history. A stage counts every application that
+// ever reached it, so a later rejection doesn't erase an interview. No rate is shown below the
+// sample floor, and a rate with nothing to divide by shows a dash.
+const FUNNEL = [["applied","Applied",[...AFTER_APPLY,"hired","rejected","noresponse"]],["answered","Company answered",RESPONDED],
+  ["interview","Interviewed",["interviewing","interview","offer","negotiating","hired"]],["offer","Offer",["offer","negotiating","hired"]],["hired","Job achieved",["hired"]]];
+const median = a => { if(!a.length) return null; const s=[...a].sort((x,y)=>x-y), m=Math.floor(s.length/2); return s.length%2 ? s[m] : Math.round((s[m-1]+s[m])/2); };
+function rate(n, d, floor){
+  if(!d) return {txt:"—", note:"nothing to divide by"};
+  if(d < floor) return {txt:"—", note:`${d} so far; rates show from ${floor}`};
+  return {txt:Math.round(100*n/d)+"%", note:`${n} of ${d}`};
+}
+let insights = null;
+function renderStats(){
+  const floor = ruleVal("analyticsMinSample", 8);
+  const applied = jobs.filter(appliedEver);
+  const reached = FUNNEL.map(([k,t,list])=>({k,t,n: k==="applied" ? applied.length : applied.filter(j=>everReached(j,list)).length}));
+  const tiles = reached.map((r,i)=>{ const rt = i ? rate(r.n, reached[0].n, floor) : null;
+    return `<div class="stile"><span class="eyebrow">${esc(r.t)}</span><b class="num">${r.n}</b>${rt?`<span class="meta">${rt.txt.endsWith("%")?`${esc(rt.txt)} of applied · `:""}${esc(rt.note)}</span><div class="bar"><span style="width:${rt.txt.endsWith("%")?rt.txt:"0%"}"></span></div>`:`<span class="meta">ever reached</span>`}</div>`; }).join("");
+  // Days in each stage, from finished spans; applications still sitting in a stage are counted apart.
+  const spansAll = jobs.flatMap(j=>stageSpans(j).map(x=>({...x, j})));
+  const stageRows = [...STEPS].filter(([k])=>k!=="hired").map(([k,t])=>{
+    const done = spansAll.filter(x=>x.stage===k && !x.current).map(x=>x.days);
+    const waiting = spansAll.filter(x=>x.stage===k && x.current && !CLOSED.includes(x.j.stage)).length;
+    return `<tr><td>${esc(t)}</td><td class="num">${done.length?esc(median(done))+" d":"—"}</td><td class="num">${done.length}</td><td class="num">${waiting}</td></tr>`; }).join("");
+  // Fit score vs whether the company answered, on applications that have an outcome.
+  const resolved = applied.filter(j=>j.fit!=null && (CLOSED.includes(j.stage) || everReached(j, RESPONDED)));
+  const bands = [["75+",j=>j.fit>=75],["60–74",j=>j.fit>=60&&j.fit<75],["Under 60",j=>j.fit<60]].map(([t,f])=>{ const g=resolved.filter(f); return {t, d:g.length, n:g.filter(j=>everReached(j,RESPONDED)).length}; });
+  const hi = bands[0], lo = bands.slice(1).reduce((a,b)=>({d:a.d+b.d,n:a.n+b.n}),{d:0,n:0});
+  const verdict = hi.d<floor || lo.d<floor ? "Not enough closed applications yet to say whether the fit score predicts answers."
+    : (hi.n/hi.d) - (lo.n/lo.d) >= 0.15 ? "Higher fit scores are getting more answers: the score is separating."
+    : (lo.n/lo.d) - (hi.n/hi.d) >= 0.15 ? "Lower-scored applications are getting more answers: the scoring may be off. Worth a look in Rules."
+    : "Answer rates are about the same across fit bands: the score isn't separating yet.";
+  const bandRows = bands.map(b=>{ const r=rate(b.n,b.d,floor); return `<tr><td>${esc(b.t)}</td><td class="num">${b.d}</td><td class="num">${b.n}</td><td class="num">${esc(r.txt)}</td></tr>`; }).join("");
+  // Where applications came from, and which sources got answers.
+  const bySrc = {}; applied.forEach(j=>{ const k = j.source || "unknown"; (bySrc[k] ||= {d:0,n:0}); bySrc[k].d++; if(everReached(j,RESPONDED)) bySrc[k].n++; });
+  const srcRows = Object.entries(bySrc).sort((a,b)=>b[1].d-a[1].d).map(([k,v])=>`<tr><td>${esc(k)}</td><td class="num">${v.d}</td><td class="num">${v.n}</td><td class="num">${esc(rate(v.n,v.d,floor).txt)}</td></tr>`).join("");
+  // Why listings were declined.
+  const dc = {}; jobs.filter(j=>j.stage==="declined").forEach(j=>{ const rs = Array.isArray(j.declineReasons)&&j.declineReasons.length ? j.declineReasons : ["none"]; rs.forEach(r=>{ dc[r]=(dc[r]||0)+1; }); });
+  const declined = jobs.filter(j=>j.stage==="declined").length;
+  const decRows = Object.entries(dc).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<tr><td>${k==="none"?`<span class="meta">No reason recorded</span>`:esc(declineLabel(k))}</td><td class="num">${v}</td></tr>`).join("");
+  const others = jobs.filter(j=>j.stage==="declined" && (j.declineReasons||[]).includes("other") && j.declineNote).map(j=>`<li>${esc(j.company||"")}: ${esc(j.declineNote)}</li>`).join("");
+  const I = insights;
+  const insHtml = !I ? `<div class="empty">The coach hasn't written insights yet. It runs weekly and when a ticket closes.</div>`
+    : `${I.summary?`<p>${esc(I.summary)}</p>`:""}
+      ${Array.isArray(I.patterns)&&I.patterns.length?`<h4>Patterns</h4><ul class="qlist">${I.patterns.map(p=>`<li>${esc(p.text||p)}${p.sampleSize?` <span class="chip num">n=${esc(p.sampleSize)}</span>`:""}${p.evidence?` <span class="meta">· ${esc(p.evidence)}</span>`:""}</li>`).join("")}</ul>`:""}
+      ${Array.isArray(I.suggestions)&&I.suggestions.length?`<h4>Suggestions</h4><ul class="qlist">${I.suggestions.map(p=>`<li>${esc(p.text||p)}${p.why?` <span class="meta">· ${esc(p.why)}</span>`:""}</li>`).join("")}</ul>`:""}
+      ${I.updatedAt?`<p class="meta">Updated ${esc(day(I.updatedAt))}</p>`:""}`;
+  const tbl = (head, rows, empty) => rows ? `<div class="tablewrap"><table><thead><tr>${head.map((h,i)=>`<th${i?' class="num"':""}>${h}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div>` : `<div class="empty">${empty}</div>`;
+  $("statsBody").innerHTML = `<section class="psec"><h3>Funnel</h3><p class="meta">Each stage counts every application that ever reached it. Rates show once ${esc(floor)} applications are in (the analyticsMinSample rule).</p><div class="statgrid">${tiles}</div></section>
+    <section class="psec"><h3>Days in each stage</h3>${tbl(["Stage","Median","Finished","Still there"], stageRows, "No stage history yet.")}</section>
+    <section class="psec"><h3>Does the fit score predict answers?</h3><p class="meta">${esc(verdict)}</p>${tbl(["Fit","Applications with an outcome","Answered","Rate"], resolved.length?bandRows:"", "No applications have an outcome yet.")}</section>
+    <section class="psec"><h3>Where applications came from</h3>${tbl(["Source","Applied","Answered","Rate"], srcRows, "No applications yet.")}</section>
+    <section class="psec"><h3>Why listings were declined <span class="pill num">${declined}</span></h3>${tbl(["Reason","Listings"], decRows, "Nothing declined yet.")}${others?`<details><summary class="link" style="cursor:pointer">Other reasons</summary><ul class="qlist">${others}</ul></details>`:""}</section>
+    <section class="psec"><h3>Coach insights</h3>${insHtml}</section>`;
+}
 const COMP_SOURCES = ["Posting","Recruiter (verbal)","Recruiter (email)","Offer letter","Contract","Me"];
 const ACTIVE = ["recruiter","assessment","interviewing","offer","negotiating","interview"];
 let db=null, canWrite=true, settings={autoApprove:false,minFitAuto:75}, jobs=[], actions=[], network=[], entries=[];
@@ -470,7 +603,18 @@ const hasAnswers = j => !!(j.formAnswers && Array.isArray(j.formAnswers.answers)
 // Letter text saved after its PDF was built: the PDF must be rebuilt before it can go out.
 const coverStale = j => !!(j.coverBuiltAt && j.coverEditedAt && j.coverEditedAt > j.coverBuiltAt);
 const canApprove = j => hasDocs(j) && !coverStale(j) && (sendMode(j)==="manual" || hasAnswers(j));
-function toast(msg){ const t=$("toast"); t.textContent=msg; t.hidden=false; clearTimeout(toast.h); toast.h=setTimeout(()=>t.hidden=true,2600); }
+// A toast can carry Undo for a quick decision (Skip, Decline, Approve); it stays up a little longer then.
+function toast(msg, undo){
+  const t=$("toast"); t.textContent=msg; clearTimeout(toast.h);
+  if(undo){ const b=document.createElement("button"); b.type="button"; b.className="btn"; b.textContent="Undo";
+    b.onclick = async ()=>{ t.hidden=true; clearTimeout(toast.h); await undo(); }; t.appendChild(b); }
+  t.hidden=false; toast.h=setTimeout(()=>t.hidden=true, undo?8000:2600);
+}
+// Undo puts back the fields a decision changed, as they were before it.
+function undoer(J, job, keys, msg){
+  const prev = {}; keys.forEach(k=>{ prev[k] = job?.[k]===undefined ? null : job[k]; });
+  return async ()=>{ await write(J, {...prev, updatedAt:now()}, msg||"Undone."); };
+}
 function banner(msg,crit){ const b=$("banner"); b.textContent=msg; b.className="banner"+(crit?" crit":""); b.hidden=!msg; }
 
 // tabs (remember the last one per viewer)
@@ -526,7 +670,10 @@ function pipelineView(pipe){
         ${j.contactEmail?`<p class="meta" style="margin:0">Contact: ${esc(j.contactEmail)}</p>`:""}
         <div class="acts" style="margin:0">${newChip(unreadFor(j.id), j.id)}<button class="btn primary" data-act="open" data-id="${esc(j.id)}">Work this one</button></div></article>`}).join("")}</div>`
     : `<div class="empty">No company has engaged yet. When a recruiter reaches out or an interview is set, the application moves here so you can work it.</div>`;
-  return `<section class="psec"><h3>Engaged <span class="pill num">${engaged.length}</span> <span class="meta" style="font-weight:400">Companies that have reached out: recruiter calls, assessments, interviews, offers</span></h3>${engagedHtml}</section>
+  const quiet = quietAfterInterview();
+  const quietHtml = quiet.length ? `<section class="psec"><h3>Quiet after an interview <span class="pill num">${quiet.length}</span> <span class="meta" style="font-weight:400">No word from the company for more than ${esc(ruleVal("quietAfterInterviewDays",10))} days</span></h3>
+    <ul class="qlist">${quiet.map(({j,last,days})=>`<li><strong>${esc(j.company||"")}</strong> · ${esc(j.role||"")} <span class="meta">· last heard ${esc(day(last+"T12:00:00Z"))}, ${esc(days)} days ago</span> <button class="btn" data-act="open" data-id="${esc(j.id)}">Open</button></li>`).join("")}</ul></section>` : "";
+  return quietHtml + `<section class="psec"><h3>Engaged <span class="pill num">${engaged.length}</span> <span class="meta" style="font-weight:400">Companies that have reached out: recruiter calls, assessments, interviews, offers</span></h3>${engagedHtml}</section>
     <section class="psec"><h3>Active <span class="pill num">${active.length}</span> <span class="meta" style="font-weight:400">Sorted by status</span></h3>${active.length?pipeTable(active):`<div class="empty">Nothing in progress.</div>`}</section>
     ${closed.length?`<details class="psec closedsec" ${openPipe.closed?"open":""}><summary><h3 style="display:inline">Closed <span class="pill num">${closed.length}</span> <span class="meta" style="font-weight:400">Rejected, no response, withdrawn</span></h3></summary>${pipeTable(closed)}</details>`:""}`;
 }
@@ -603,12 +750,15 @@ function jobCard(j, mode){
   if(mode==="review") btns = `<button class="btn primary" data-act="yes" data-id="${esc(j.id)}">Yes, draft it</button>
     <button class="btn" data-act="backlog" data-id="${esc(j.id)}">Backlog</button>
     <button class="btn danger" data-act="no" data-id="${esc(j.id)}">No</button>`;
+  if(declineUi?.id===j.id && (mode==="approve"||mode==="review")) btns = declineForm(j);
   return `<article class="job">
     <div><div class="role">${esc(j.role||"Untitled role")}</div><div class="co">${esc(j.company||"Company pending")}</div>
       <div class="facts">${facts}</div></div>
     <div class="fit">${j.fit!=null?esc(j.fit):"—"}<small>fit / 100</small>${confChip(j)?`<div style="margin-top:6px">${confChip(j)}</div>`:""}</div>
     ${j.summary?`<p class="why">${esc(j.summary)}</p>`:""}
+    ${roleHtml(j)}
     ${legitLine(j)?`<div class="why">${legitLine(j)}</div>`:""}
+    ${mode==="approve"||mode==="approved"?factHtml(j):""}
     ${holds.length?`<div class="holds">${holds.map(h=>`<div>Held for you: ${esc(h)}</div>`).join("")}</div>`:""}
     ${j.lastError && ["needs_me","failed","awaiting_approval"].includes(j.stage)?`<div class="holds"><div>Not sent: ${esc(j.lastError)}</div></div>`:""}
     ${docBtns?`<div class="acts"><span class="meta">Review before approving:</span>${docBtns}</div>`:""}
@@ -743,6 +893,10 @@ function renderTicket(){
     <div class="lesson" style="background:var(--sunk)"><b style="color:var(--ink)">Follow-ups:</b> ${fu}
       ${j.contactEmail?`<span class="meta"> · Contact: ${esc(j.contactEmail)}</span>`:""}</div>
     ${legitLine(j)}
+    ${coHistory(j)}
+    ${roleHtml(j)}
+    ${factHtml(j)}
+    ${reasonChips(j)?`<p class="meta" style="margin:0">Declined because: ${reasonChips(j)}${j.declineNote?` · ${esc(j.declineNote)}`:""}</p>`:""}
     ${Array.isArray(j.fitDims)&&j.fitDims.length?`<details><summary class="link" style="cursor:pointer">How the fit score was built</summary><ul class="qlist" style="margin-top:6px">${j.fitDims.map(d=>`<li><span class="chip ${d.evidence==="supported"?"ok":d.evidence==="unknown"?"warn":""}">${esc(d.evidence||"")}</span> ${esc(d.name||"")}${d.score!=null?` <span class="num">${esc(d.score)}</span>`:""}${d.note?` <span class="meta">· ${esc(d.note)}</span>`:""}</li>`).join("")}</ul></details>`:""}
     ${askSection(j)}
     ${compSection(j)}
@@ -1310,6 +1464,9 @@ function render(){
   const fuSoon = fuJobs.filter(j=>j.nextFollowupAt>today() && j.nextFollowupAt<=addDays(today(),3)).sort((a,b)=>a.nextFollowupAt.localeCompare(b.nextFollowupAt));
   const quiet = jobs.filter(goneQuiet);
   const needN = openActions.length + fuDue.length + quiet.length;
+  const weekAgo = new Date(Date.now()-7*864e5).toISOString();
+  const newWeek = jobs.filter(j=>String(j.createdAt||"")>=weekAgo && !["declined"].includes(j.stage)).length;
+  $("cWeek").textContent = `${newWeek} new listing${newWeek===1?"":"s"} this week · ${fuDue.length} follow-up${fuDue.length===1?"":"s"} due`;
   $("cNeeds").textContent = needN; $("cNeedsBox").classList.toggle("hot", needN>0);
   $("pNeeds").textContent = needN; $("pNeeds").classList.toggle("hot", needN>0);
   $("cSubmitted").textContent = jobs.filter(j=>[...AFTER_APPLY,"hired","rejected","noresponse"].includes(j.stage)).length;
@@ -1333,6 +1490,7 @@ function render(){
     : `<div class="empty">The review queue is clear. Scored listings from the finder agent, and listings you add, show up here for a yes or no.</div>`;
   $("v-pipe").innerHTML = pipe.length ? pipelineView(pipe) : `<div class="empty">No applications yet.</div>`;
   renderTicket();
+  renderStats();
   renderLearn();
   renderRules();
   renderCompanies();
@@ -1389,7 +1547,7 @@ async function approve(job, J){
         title:`Send the ${job.role||"application"} application`,
         detail:`${job.formAnswers?.manualReason||"This site needs a person to apply."} The answers and documents are on the ticket.`,
         url:safeUrl(job.url), createdAt:now()});
-      toast("Approved. It's in Needs you, ready for you to send.");
+      toast("Approved. It's in Needs you, ready for you to send.");   // the action stays; Casey marks it done
     }catch(e){ toast("That didn't save. Try again in a moment."); }
     return;
   }
@@ -1397,11 +1555,17 @@ async function approve(job, J){
   catch(e){ toast("That didn't save. Try again in a moment."); return; }
   const trig = settings.submitTriggerId;
   const mcp = trig ? await claude.use("mcp").catch(()=>null) : null;
-  if(!mcp){ toast("Approved. It goes out on the next scheduled sender run."); return; }
+  // Undo works like Undo approval: only while the sender hasn't claimed it (its claim is pinned to the version it read).
+  const undo = async ()=>{
+    const cur = jobs.find(x=>x.id===job.id);
+    if(cur && cur.stage!=="approved"){ toast("Sending has already started, so this can't be undone here."); return; }
+    await write(J,{stage:"awaiting_approval",approval:null,sendRequestedAt:null,updatedAt:now(),note:"Waiting for your approval."},"Approval undone. It's back in your approvals.");
+  };
+  if(!mcp){ toast("Approved. It goes out on the next scheduled sender run.", undo); return; }
   try{
     await mcp.callTool("Claude Code Remote", "fire_trigger", {trigger_id: trig, text: `Send approved application: jobs/${job.id}`});
     await J.update({sendRequestedAt:now()}).catch(()=>{});
-    toast("Approved. Sending has started; you'll see Applied here when it's confirmed.");
+    toast("Approved. Sending has started; you'll see Applied here when it's confirmed.", undo);
   }catch(e){
     const why = {approval_required:"the dashboard needs your OK to use Claude Code Remote",
       server_not_connected:"Claude Code Remote isn't connected for this account",
@@ -1437,8 +1601,8 @@ function markProfileRead(id){
   const c = companies.find(x=>x.id===id);
   if(c?.profile?.unread) db.doc("companies/"+id).update({profile:{...c.profile, unread:false, readAt:now()}}).catch(()=>{});
 }
-async function write(ref, data, okMsg){
-  try{ await ref.update(data); if(okMsg) toast(okMsg); return true; }
+async function write(ref, data, okMsg, undo){
+  try{ await ref.update(data); if(okMsg) toast(okMsg, undo); return true; }
   catch(e){
     if(e?.code==="invalid_argument"){ canWrite=false; render(); banner("You can view this dashboard but not change it."); }
     else toast("That didn't save. Try again in a moment.");
@@ -1679,11 +1843,23 @@ document.addEventListener("click", async ev=>{
     render(); return; }
   if(act==="approve"){ await approve(job, J); b.disabled=false; return; }
   if(act==="unapprove") await write(J,{stage:"awaiting_approval",approval:null,updatedAt:now(),note:"Waiting for your approval."},"Approval undone. It's back in your approvals.");
-  if(act==="hold") await write(J,{stage:"backlog",updatedAt:now(),note:"Held by Casey"},"Moved to backlog.");
-  if(act==="decline") await write(J,{stage:"declined",updatedAt:now()},"Marked don't apply.");
-  if(act==="yes") await write(J,{stage:"queued",updatedAt:now()},"Queued for drafting.");
-  if(act==="no") await write(J,{stage:"declined",updatedAt:now()},"Declined.");
-  if(act==="backlog") await write(J,{stage:"backlog",updatedAt:now()},"Moved to backlog.");
+  const back = undoer(J, job, ["stage","note","declineReasons","declineNote","declinedBy"]);
+  if(act==="hold") await write(J,{stage:"backlog",updatedAt:now(),note:"Held by Casey"},"Moved to backlog.", back);
+  if(act==="decline" || act==="no"){
+    declineUi = {id, act, sel:new Set(Array.isArray(job?.declineReasons)?job.declineReasons:[]), note:job?.declineNote||""};
+    render(); return;
+  }
+  if(act==="cancelDecline"){ declineUi = null; render(); return; }
+  if(act==="confirmDecline"){
+    const d = declineUi; if(!d || d.id!==id){ b.disabled=false; return; }
+    if(d.sel.has("other") && !String(d.note||"").trim()){ toast("Add a short note for Other."); b.disabled=false; return; }
+    declineUi = null;
+    await write(J,{stage:"declined",declineReasons:[...d.sel],declineNote:String(d.note||"").trim(),declinedBy:"you",updatedAt:now()},
+      d.act==="no"?"Declined.":"Marked don't apply.", back);
+    render(); return;
+  }
+  if(act==="yes") await write(J,{stage:"queued",updatedAt:now()},"Queued for drafting.", back);
+  if(act==="backlog") await write(J,{stage:"backlog",updatedAt:now()},"Moved to backlog.", back);
   if(act==="done") await write(db.doc("actions/"+id),{status:"done",doneAt:now()},"Marked done.");
   if(act==="contacted") await write(db.doc("network/"+id),{status:"contacted",contactedAt:now()},"Noted.");
   if(act==="dismiss") await write(db.doc("network/"+id),{status:"dismissed"},"Dismissed.");
@@ -1691,6 +1867,11 @@ document.addEventListener("click", async ev=>{
 });
 
 // cover-letter editing: keep drafts locally until Save
+document.addEventListener("change", ev=>{
+  const k = ev.target.dataset?.dr; if(!k || !declineUi) return;
+  ev.target.checked ? declineUi.sel.add(k) : declineUi.sel.delete(k);
+});
+document.addEventListener("input", ev=>{ if(ev.target.dataset?.dn && declineUi) declineUi.note = ev.target.value; });
 document.addEventListener("input", ev=>{
   if(/^p[er]-/.test(ev.target.id||"") && ev.target.closest?.("#v-rules")) ruleDrafts[ev.target.id] = ev.target.value;
   if(ev.target.id==="coSearch"){ coQuery = ev.target.value; renderCompanies(); return; }
@@ -1896,6 +2077,7 @@ render();
   db.collection("requests").limit(300).onSnapshot(s=>{ requests=s.docs.map(d=>({...d.data(),id:d.id})); render(); }, fail);
   db.collection("companies").limit(500).onSnapshot(s=>{ companies=s.docs.map(d=>({...d.data(),id:d.id})); render(); }, fail);
   db.collection("searchFirms").limit(100).onSnapshot(s=>{ searchFirms=s.docs.map(d=>({...d.data(),id:d.id})); renderFirms(); }, fail);
+  db.doc("insights/main").onSnapshot(s=>{ insights = s.exists ? s.data() : null; render(); }, ()=>{});
   db.collection("notes").limit(1000).onSnapshot(s=>{ notes=s.docs.map(d=>({...d.data(),id:d.id})); render(); }, fail);
 })();
 </script>
