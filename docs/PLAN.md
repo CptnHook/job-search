@@ -82,6 +82,8 @@ Done when: C1–C3 show on the Learnings tab with honest sample-size handling; t
 
 Built in the first batch: B3's fact check (`tools/verify_facts.py`, rules in `tools/fact_rules.json`, run by `/apply` before a draft reaches Casey); C1-C3 on a new **Analytics** tab (cumulative funnel, median days per stage, fit band vs answers with a verdict, yield by source, decline reasons, coach insights), with rates hidden below the `analyticsMinSample` rule; the reporting-line and role-clarity check (`reportsTo`, `reportsToLevel`, `roleClarity`) in the scorer; a fixed decline-reason list Casey picks from when he declines; company history on each ticket and a "Quiet after an interview" list on Pipeline; Undo after Decline, Backlog, Yes and Approve; and a "new this week · follow-ups due" header line.
 
+Second batch (2026-11-06): a `contacts` store with outreach drafting (`outreach` requests: saved contacts first, else at most three web searches, confirmed on fetched pages, no LinkedIn fetching; Casey sends), debrief upgrades (panel, stated priorities, corrections, stories, concerns; story bank), re-score after a rule is loosened, and the offer kit (checklist, `offer-review` requests per [OFFER_REVIEW.md](OFFER_REVIEW.md), `statedTo`/`round` on pay figures).
+
 Casey also asked to adopt career-ops's outreach drafting (find a hiring manager, recruiter or peer through ordinary web search, then draft a message he sends himself; no LinkedIn login or scraping) and form filling on more application sites after his Approve. Both are the next batch.
 
 ## Not adopting
