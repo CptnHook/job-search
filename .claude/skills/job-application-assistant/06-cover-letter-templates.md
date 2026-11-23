@@ -141,11 +141,11 @@ Source: Casey's Google Doc "cover-letter-brief.md" (https://docs.google.com/docu
 
 > Dear [Hiring Manager Name],
 >
-> What excites me most is helping a business do what it didn't think it could. That's what draws me to the [VP Title] role at [Company Name], and in particular [specific connection to the company's ambitions].
+> I build organizations capable of achieving more than they could before. That's what draws me to the [VP Title] role at [Company Name], and in particular [specific connection to the company's ambitions].
 >
 > At Ripple, I started with four project managers who couldn't keep up with customer demand. That team grew into a global organization, and the result I point to is [business outcome: what Ripple or its customers could do afterward]. Along the way we built programs and tools that met customer needs without continually adding headcount.
 >
-> Today I lead Engineering Infrastructure & Internal Services at SingleStore with the same mindset. I give people clear direction, build what the business needs, and change course when a better opportunity shows up. I'll retire a structure I built the day it stops paying for itself. [SingleStore result.]
+> Today I lead Engineering Infrastructure & Internal Services at SingleStore with the same mindset. I set clear direction, define what success looks like, and trust the people closest to the work to decide how. I measure progress against milestones, intervene when the mission needs protecting, and accept a short-term cost when it meaningfully expands what the organization can do. [SingleStore result.]
 >
 > The pattern holds at other scales. I led a $20M program across multiple sites and vendors, and I delivered more than $2M in cost efficiencies at a multinational software company.
 >
@@ -155,6 +155,14 @@ Source: Casey's Google Doc "cover-letter-brief.md" (https://docs.google.com/docu
 > Casey Caster
 
 **Optional:** for customer-delivery roles, add the earlier-career line about driving hundreds of implementations and product upgrades for financial institutions worldwide. Never mention "TPMO"; describe the outcome instead.
+
+**Leadership philosophy (Casey, 2026-11-23: "refactor the cover letters based on my leadership philosophy doc").** Source: the "Your leadership philosophy (your words)" section of his Claude Doc "Personal brand plan" (https://claude.ai/artifact/HzePdwMjdAS1fncD3nD86W). The opener and the SingleStore mindset lines above come from it, and the earlier lines ("What excites me most is helping a business do what it didn't think it could", "I give people clear direction, build what the business needs, and change course when a better opportunity shows up", "I'll retire a structure I built the day it stops paying for itself") are retired. Every line below is his own wording and counts as sourced; use at most one or two beyond the template's, matched to the role, and never as a list of all seven principles:
+- Short version: "I build organizations that reliably deliver today while expanding what's possible tomorrow. I set clear direction, empower teams to own the execution, and use measurable milestones to maintain alignment and accountability."
+- "I believe the strongest organizations don't depend on one person directing every decision."
+- "I lead through intent rather than instruction."
+- "I don't pursue change simply for improvement's sake. I weigh the disruption against the future capability it creates."
+- Principles: clarity of intent; distributed ownership; collaborative execution; milestone accountability; operational discipline; organizational effectiveness; transformational investment.
+- Close of the full version: "Set the direction. Build the capability. Empower execution. Measure outcomes. Expand what's possible."
 
 **Confirmed fills (Casey, 2026-10-22):**
 - Ripple outcome: "banks could go live on RippleNet in eight weeks instead of eight months, as the network grew past 200 members." (The win was cutting implementation time.)

@@ -31,6 +31,7 @@ DEFAULT_SOURCES = [REPO / "CLAUDE.md", REPO / ".claude/skills/job-application-as
 
 # $30M+, 50%, 5x, 800+, 28 FTEs, 10,000+, $2.5M, 2021. Units: k/m/b (and words), %, x.
 NUM = re.compile(r"(?<![\w.])\$?(\d{1,3}(?:,\d{3})+|\d+(?:\.\d+)?)\s?(%|x\b|k\b|m\b|b\b|bn\b|mm\b|thousand\b|million\b|billion\b)?(\+)?", re.I)
+DATE = re.compile(r"\b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|June?|July?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\.? \d{1,2},? \d{4}\b|\b\d{4}-\d{2}-\d{2}\b")
 UNIT = {"%": "%", "x": "x", "k": "k", "thousand": "k", "m": "m", "mm": "m", "million": "m", "b": "b", "bn": "b", "billion": "b"}
 
 
@@ -101,6 +102,8 @@ def check(text, source_text, rules, company="", allowed_text=""):
         if m:
             warnings.append({"what": m.group(0), "why": r["why"]})
 
+    # A letter's date line ("November 23, 2026") is not a claim: drop calendar dates first.
+    text = DATE.sub(" ", text)
     have = {c for _, c in metrics(source_text + "\n" + allowed_text, 0)}
     seen = set()
     for shown, canon in metrics(text, rules.get("metric_min", 10)):

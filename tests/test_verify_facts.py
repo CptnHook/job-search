@@ -37,6 +37,11 @@ class MetricTests(unittest.TestCase):
     def test_small_bare_numbers_are_ignored(self):
         self.assertTrue(run("I can start in 4 weeks and have 2 references.")["ok"])
 
+    def test_letter_dates_are_not_claims(self):
+        self.assertTrue(run("November 23, 2026\nDear Hiring Team, I cut spend 50%.")["ok"])
+        self.assertTrue(run("Dated 2026-11-23.")["ok"])
+        self.assertFalse(run("November 23, 2026. I grew revenue 40%.")["ok"])
+
     def test_posting_numbers_are_allowed(self):
         self.assertFalse(run("Re: requisition 349125.")["ok"])
         self.assertTrue(run("Re: requisition 349125.", allowed="Req ID 349125")["ok"])
