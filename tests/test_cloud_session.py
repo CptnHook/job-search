@@ -115,6 +115,47 @@ class CloudSessionTests(unittest.TestCase):
         self.assertEqual(cloud_session.save(empty, self.data, allow_removals=True), 0)
         self.assertFalse((self.data / "documents" / "cv" / "f0.pdf").exists())
 
+    def _second_session(self):
+        """Another session (a routine) that restores, edits and saves."""
+        other = self._workspace("other")
+        other_data = self.tmp / "other-data"
+        git(self.tmp, "clone", "-q", str(self.remote), str(other_data))
+        git(other_data, "config", "user.email", "test@example.com")
+        git(other_data, "config", "user.name", "Test")
+        self.assertEqual(cloud_session.start(other, other_data), 0)
+        return other, other_data
+
+    def _seed(self):
+        (self.work / "job_search_tracker.csv").write_text("v1\n", encoding="utf-8")
+        (self.work / "documents" / "cv" / "a.pdf").write_text("a1", encoding="utf-8")
+        self.assertEqual(cloud_session.save(self.work, self.data), 0)
+        self.assertEqual(cloud_session.start(self.work, self.data), 0)
+
+    def test_save_keeps_newer_files_another_session_saved(self):
+        self._seed()
+        other, other_data = self._second_session()
+        (other / "job_search_tracker.csv").write_text("v2 from routine\n", encoding="utf-8")
+        (other / "documents" / "cv" / "new.pdf").write_text("routine file", encoding="utf-8")
+        self.assertEqual(cloud_session.save(other, other_data), 0)
+        # This session changed only a.pdf; its stale tracker must not overwrite v2.
+        (self.work / "documents" / "cv" / "a.pdf").write_text("a2", encoding="utf-8")
+        self.assertEqual(cloud_session.save(self.work, self.data), 0)
+        self.assertEqual((self.data / "job_search_tracker.csv").read_text(encoding="utf-8"), "v2 from routine\n")
+        self.assertEqual((self.data / "documents" / "cv" / "new.pdf").read_text(encoding="utf-8"), "routine file")
+        self.assertEqual((self.data / "documents" / "cv" / "a.pdf").read_text(encoding="utf-8"), "a2")
+        self.assertEqual((self.work / "job_search_tracker.csv").read_text(encoding="utf-8"), "v2 from routine\n")
+
+    def test_save_refuses_a_file_changed_on_both_sides(self):
+        self._seed()
+        other, other_data = self._second_session()
+        (other / "job_search_tracker.csv").write_text("routine\n", encoding="utf-8")
+        self.assertEqual(cloud_session.save(other, other_data), 0)
+        (self.work / "job_search_tracker.csv").write_text("mine\n", encoding="utf-8")
+        self.assertEqual(cloud_session.save(self.work, self.data), 1)
+        self.assertEqual((self.data / "job_search_tracker.csv").read_text(encoding="utf-8"), "routine\n")
+        self.assertEqual(cloud_session.save(self.work, self.data, keep_local=True), 0)
+        self.assertEqual((self.data / "job_search_tracker.csv").read_text(encoding="utf-8"), "mine\n")
+
 
 if __name__ == "__main__":
     unittest.main()

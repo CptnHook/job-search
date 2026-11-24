@@ -8,6 +8,13 @@ This workspace runs in Claude Code on the web, so no laptop is needed. Personal 
 2. At the start: `python3 tools/cloud_session.py start`. This restores `documents/`, the tracker, application drafts, and other ignored state.
 3. Before ending, or after any `/apply`, `/outcome`, or `/setup`: `python3 tools/cloud_session.py save`. This copies everything git ignores here (except build output, dependencies, and `.env*` secrets) into the data repo, commits, and pushes.
 
+   Routines save to the same data repo while a session is open, so `save` never blindly overwrites. `start` records the data-repo commit it restored from. At save time, every file the data repo changed since then is checked:
+   - Untouched here: the newer version is copied into this workspace and kept.
+   - Changed only here: this workspace's version is saved.
+   - Changed on both sides: the save stops and names the file. Merge it by hand, or rerun with `--keep-local` to keep this workspace's copy.
+
+   A workspace that never ran `start` gets a warning, because it has no sync point to compare against.
+
 `python3 tools/cloud_session.py list` shows what would be saved.
 
 ## Environment setup script

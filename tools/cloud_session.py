@@ -138,6 +138,69 @@ def use_default_branch(data: Path) -> str | None:
     return None
 
 
+def base_file(repo: Path) -> Path:
+    """Where this workspace remembers the data-repo commit it last synced with.
+
+    It lives in the workspace's .git directory, so it is never committed and
+    never copied to the data repo.
+    """
+    return Path(git(repo, "rev-parse", "--absolute-git-dir").strip()) / "cloud_session_base"
+
+
+def record_base(repo: Path, data: Path) -> None:
+    head = git(data, "rev-parse", "--verify", "--quiet", "HEAD", check=False).strip()
+    if head:
+        base_file(repo).write_text(head + "\n", encoding="utf-8")
+
+
+def read_base(repo: Path, data: Path) -> str | None:
+    try:
+        sha = base_file(repo).read_text(encoding="utf-8").strip()
+    except OSError:
+        return None
+    ok = subprocess.run(["git", "-C", str(data), "cat-file", "-e", f"{sha}^{{commit}}"], capture_output=True)
+    return sha if sha and ok.returncode == 0 else None
+
+
+def blob_at(data: Path, commit: str, rel: str) -> bytes | None:
+    result = subprocess.run(["git", "-C", str(data), "show", f"{commit}:{rel}"], capture_output=True)
+    return result.stdout if result.returncode == 0 else None
+
+
+def read_bytes(path: Path) -> bytes | None:
+    return path.read_bytes() if path.is_file() else None
+
+
+def reconcile(repo: Path, data: Path, base: str) -> tuple[list[str], list[str]]:
+    """Bring in what other sessions saved since this workspace last synced.
+
+    A save mirrors the workspace into the data repo, so a workspace restored
+    days ago would overwrite newer files a routine saved in the meantime. For
+    every file the data repo changed since `base`: if this workspace never
+    touched it, the newer version is copied into the workspace; if both sides
+    changed it differently, it is a conflict. Returns (taken, conflicts).
+    """
+    head = git(data, "rev-parse", "HEAD").strip()
+    if head == base:
+        return [], []
+    changed = [p for p in git(data, "diff", "--name-only", "-z", base, head).split("\0")
+               if p and not excluded(p) and p not in DATA_REPO_FILES]
+    taken, conflicts = [], []
+    for rel in sorted(restorable(repo, changed)):
+        local, remote = read_bytes(repo / rel), read_bytes(data / rel)
+        if local == remote:
+            continue
+        if local == blob_at(data, base, rel):
+            if remote is None:
+                (repo / rel).unlink()
+            else:
+                copy(data / rel, repo / rel)
+            taken.append(rel)
+        else:
+            conflicts.append(rel)
+    return taken, conflicts
+
+
 def start(repo: Path, data: Path) -> int:
     if not (data / ".git").is_dir():
         print(f"Data repo not found at {data}. Clone it there or set JOB_SEARCH_DATA_DIR.")
@@ -152,6 +215,7 @@ def start(repo: Path, data: Path) -> int:
     for rel in candidates:
         if rel in allowed:
             copy(data / rel, repo / rel)
+    record_base(repo, data)
     print(f"Restored {len(allowed)} file(s) from {data}.")
     if skipped:
         # Only ignored, untracked paths are restored, so working files can
@@ -160,7 +224,8 @@ def start(repo: Path, data: Path) -> int:
     return 0
 
 
-def save(repo: Path, data: Path, push: bool = True, allow_removals: bool = False) -> int:
+def save(repo: Path, data: Path, push: bool = True, allow_removals: bool = False,
+         keep_local: bool = False) -> int:
     if not (data / ".git").is_dir():
         print(f"Data repo not found at {data}. Clone it there or set JOB_SEARCH_DATA_DIR.")
         return 1
@@ -168,6 +233,19 @@ def save(repo: Path, data: Path, push: bool = True, allow_removals: bool = False
     if problem:
         print(problem)
         return 1
+    base = read_base(repo, data)
+    if base is None:
+        print("Note: no sync point recorded for this workspace (run `start` at session start); "
+              "newer files saved by other sessions can't be protected on this save.")
+    else:
+        taken, conflicts = reconcile(repo, data, base)
+        if taken:
+            print(f"Brought in {len(taken)} newer file(s) saved by another session: {', '.join(taken)}")
+        if conflicts and not keep_local:
+            print(f"Refusing to save: {len(conflicts)} file(s) changed both here and in the data repo since "
+                  f"this session synced: {', '.join(conflicts)}. Merge them by hand (the data repo's version "
+                  "is in the data folder), or rerun with --keep-local to overwrite the newer copies.")
+            return 1
     current = ignored_files(repo)
     # Files deleted in the workspace are deleted in the data repo too.
     existing = [rel for rel in data_files(data) if not excluded(rel)]
@@ -195,6 +273,7 @@ def save(repo: Path, data: Path, push: bool = True, allow_removals: bool = False
     if push and has_commits:
         branch = git(data, "branch", "--show-current").strip() or default_branch(data)
         git(data, "push", "--quiet", "-u", "origin", branch)
+    record_base(repo, data)
     if changed:
         print(f"Saved {len(current)} file(s), removed {len(removed)}, to {data}{' and pushed' if push else ''}.")
     elif push and has_commits:
@@ -208,6 +287,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--no-push", action="store_true", help="save: commit but don't push")
     parser.add_argument("--allow-removals", action="store_true",
                         help="save: allow deleting many data-repo files at once")
+    parser.add_argument("--keep-local", action="store_true",
+                        help="save: on a file changed both here and in the data repo, keep this workspace's copy")
     args = parser.parse_args(argv)
     repo, data = REPO_ROOT, data_dir(REPO_ROOT)
     if args.command == "list":
@@ -216,7 +297,8 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if args.command == "start":
         return start(repo, data)
-    return save(repo, data, push=not args.no_push, allow_removals=args.allow_removals)
+    return save(repo, data, push=not args.no_push, allow_removals=args.allow_removals,
+                keep_local=args.keep_local)
 
 
 if __name__ == "__main__":
